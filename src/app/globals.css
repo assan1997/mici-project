@@ -17,17 +17,10 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
 }
 
 .content-container {
-  height: calc(100vh - 80px);
+  height: calc(100vh - 110px);
 }
 
 @layer utilities {

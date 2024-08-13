@@ -1,12 +1,15 @@
 import { FC } from "react";
-export const CompassIcon: FC<{ color: string }> = ({ color }) => {
+export const CompassIcon: FC<{ color: string; size: number }> = ({
+  color,
+  size,
+}) => {
   return (
     <svg
       id="fi_10897074"
       viewBox="0 0 100 100"
       xmlns="http://www.w3.org/2000/svg"
-      width="33"
-      height="33"
+      width={size}
+      height={size}
     >
       <path
         fill={color}

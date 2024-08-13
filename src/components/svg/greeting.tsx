@@ -1,12 +1,15 @@
 import { FC } from "react";
-export const GreetingIcon: FC<{ color: string }> = ({ color }) => {
+export const GreetingIcon: FC<{ color: string; size: number }> = ({
+  color,
+  size,
+}) => {
   return (
     <svg
       id="fi_2652673"
       enableBackground="new 0 0 512 512"
-      height="30"
+      height={size}
       viewBox="0 0 512 512"
-      width="30"
+      width={size}
       xmlns="http://www.w3.org/2000/svg"
     >
       <path

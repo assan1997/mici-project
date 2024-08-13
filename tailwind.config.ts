@@ -18,6 +18,20 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      colors: {
+        "primary-black-leg": {
+          50: "#F6F6F6",
+          100: "#E7E7E7",
+          200: "#D1D1D1",
+          300: "#B0B0B0",
+          400: "#888888",
+          500: "#6D6D6D",
+          600: "#5D5D5D",
+          700: "#4F4F4F",
+          900: "#3D3D3D",
+          950: "#000000",
+        },
+      },
       boxShadow: {
         custom: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", // X, Y, Blur, Spread, Color
         custom_2: "0px 1px 3px 0px #0000001A,  0px -1px 0px 0px #BF1A16 inset",

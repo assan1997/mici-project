@@ -1,13 +1,16 @@
 import { FC } from "react";
 
-export const PrintIcon2: FC<{ color: string }> = ({ color }) => {
+export const PrintIcon2: FC<{ color: string; size: number }> = ({
+  color,
+  size,
+}) => {
   return (
     <svg
       id="fi_1831778"
       enableBackground="new 0 0 64 64"
-      height="30"
+      height={size}
       viewBox="0 0 64 64"
-      width="30"
+      width={size}
       xmlns="http://www.w3.org/2000/svg"
     >
       <path

@@ -1,11 +1,14 @@
 import { FC } from "react";
 
-export const CardBoardIcon: FC<{ color: string }> = ({ color }) => {
+export const CardBoardIcon: FC<{ color: string; size: number }> = ({
+  color,
+  size,
+}) => {
   return (
     <svg
-      height="30"
+      height={size}
       viewBox="0 -12 512.00032 512"
-      width="30"
+      width={size}
       xmlns="http://www.w3.org/2000/svg"
       id="fi_1380641"
     >

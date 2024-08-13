@@ -1,5 +1,8 @@
 import { FC } from "react";
-export const UserIcon: FC<{ color: string }> = ({ color }) => {
+export const UserIcon: FC<{ color: string; size: number }> = ({
+  color,
+  size,
+}) => {
   return (
     <svg
       version="1.1"
@@ -7,8 +10,8 @@ export const UserIcon: FC<{ color: string }> = ({ color }) => {
       xmlns="http://www.w3.org/2000/svg"
       x="0px"
       y="0px"
-      width="30"
-      height="30"
+      width={size}
+      height={size}
       viewBox="0 0 505.4 505.4"
     >
       <g>

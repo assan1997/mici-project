@@ -1,6 +1,9 @@
 import { FC } from "react";
 
-export const PaintIcon: FC<{ color: string }> = ({ color }) => {
+export const PaintIcon: FC<{ color: string; size: number }> = ({
+  color,
+  size,
+}) => {
   return (
     <svg
       version="1.1"
@@ -9,8 +12,8 @@ export const PaintIcon: FC<{ color: string }> = ({ color }) => {
       x="0px"
       y="0px"
       viewBox="0 0 325.04 325.04"
-      width="30"
-      height="30"
+      width={size}
+      height={size}
     >
       <g>
         <path

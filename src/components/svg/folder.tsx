@@ -1,14 +1,17 @@
 import { FC } from "react";
 
-export const FolderIcon: FC<{ color: string }> = ({ color }) => {
+export const FolderIcon: FC<{ color: string; size?: number }> = ({
+  color,
+  size,
+}) => {
   return (
     <svg
       clipRule="evenodd"
       fillRule="evenodd"
       strokeLinejoin="round"
       strokeMiterlimit="2"
-      width="25"
-      height="25"
+      width={size}
+      height={size}
       viewBox="0 0 48 48"
       xmlns="http://www.w3.org/2000/svg"
       id="fi_10828574"

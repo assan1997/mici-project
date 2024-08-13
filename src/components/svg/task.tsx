@@ -1,13 +1,16 @@
 import { FC } from "react";
 
-export const TaskIcon: FC<{ color: string }> = ({ color }) => {
+export const TaskIcon: FC<{ color: string; size: number }> = ({
+  color,
+  size,
+}) => {
   return (
     <svg
       id="fi_3815452"
       enableBackground="new 0 0 512 512"
-      height="25"
+      height={size}
       viewBox="0 0 512 512"
-      width="25"
+      width={size}
       xmlns="http://www.w3.org/2000/svg"
     >
       <g>

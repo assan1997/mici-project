@@ -8,3 +8,5 @@ export { PaintIcon } from "./paint";
 export { CompassIcon } from "./compass";
 export { TaskIcon } from "./task";
 export { ChevronRigthIcon } from "./chevronRightIcon";
+export { EditIcon } from "./edit";
+export { RulerIcon } from "./ruler";
