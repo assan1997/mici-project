@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Raleway, Montserrat, Poppins } from "next/font/google";
 import { SideBarProvider } from "@/context/sidebar.context";
+import { ToastProvider } from "@/context/toast.context";
+import { DataProvider } from "@/context/data.context";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -45,7 +47,11 @@ export default function RootLayout({
       <body
         className={`${inter.className} ${raleway.variable} ${montserat.variable} ${poppins.variable}`}
       >
-        <SideBarProvider>{children}</SideBarProvider>
+        <ToastProvider>
+          <DataProvider>
+            <SideBarProvider>{children}</SideBarProvider>
+          </DataProvider>
+        </ToastProvider>
       </body>
     </html>
   );

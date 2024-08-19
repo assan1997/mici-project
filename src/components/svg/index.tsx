@@ -10,3 +10,8 @@ export { TaskIcon } from "./task";
 export { ChevronRigthIcon } from "./chevronRightIcon";
 export { EditIcon } from "./edit";
 export { RulerIcon } from "./ruler";
+export { CloseIcon } from "./closeIcon";
+export { DeleteUserIcon } from "./delete-user-icon"
+export { DetailsIcon } from "./details-icon"
+export { UpdateIcon } from "./update-icon"
+export { OptionsIcon } from "./options-icon"

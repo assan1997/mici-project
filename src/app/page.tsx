@@ -4,6 +4,10 @@ import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
 import { useRouter } from "next/navigation";
+import { login } from "../services/auth";
+import { useToast } from "@/context/toast.context";
+import { useData } from "@/context/data.context";
+// import { User } from "@/context/data.context";
 export default function Home() {
   const authSchema = z.object({
     email: z.string(),
@@ -11,12 +15,33 @@ export default function Home() {
   });
   const form = useForm({ schema: authSchema });
   const Router = useRouter();
-  const onSubmit = (data: z.infer<typeof authSchema>) => {
+  const { showToast } = useToast();
+  const { dispatchUser } = useData();
+
+  const onSubmit = async (data: z.infer<typeof authSchema>) => {
     let { email, password } = data;
     email = email.trim();
     password = password.trim();
-    if (email.length > 0 && password.length > 0)
-      Router.push("/workspace/folder");
+    if (email.length > 0 && password.length > 0) {
+      const { success, data } = await login({ email, password });
+      if (success) {
+        console.log("success", success);
+        console.log("data", data);
+        dispatchUser(data);
+        showToast({
+          message: "Connecté",
+          type: "success",
+          position: "top-center",
+        });
+        Router.push("/workspace/folder");
+      } else {
+        showToast({
+          message: "Echec de l'authentification",
+          type: "danger",
+          position: "top-center",
+        });
+      }
+    }
   };
   return (
     <div className="w-full h-screen bg-gray-100 flex items-center justify-center">

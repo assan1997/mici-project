@@ -7,6 +7,8 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import BaseDropdown from "@/components/ui/dropdown/BaseDropdown";
 import { Nav, SubNav, useSideBar } from "@/context/sidebar.context";
+import { useData } from "@/context/data.context";
+import { logout } from "@/services/auth";
 
 const MainContainer: FC<{ children: any; title: string }> = ({
   children,
@@ -20,7 +22,6 @@ const MainContainer: FC<{ children: any; title: string }> = ({
   }, [pathName]);
 
   const { setResize, resize } = useSideBar();
-
   return (
     <div className="w-full h-screen scrollbar-hide flex flex-row bg-white">
       <SideBar resize={resize} />
@@ -186,6 +187,7 @@ const TopBar: FC<{
   title: string;
   subTitle: string;
 }> = ({ title, setResize, resize, subTitle }) => {
+  const { user } = useData();
   const Router = useRouter();
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
   return (
@@ -219,10 +221,10 @@ const TopBar: FC<{
             <div className="w-[34px] h-[34px] bg-slate-100 rounded-full"></div>
             <div className="flex flex-col">
               <span className="text-[#292D32] text-[14px] font-poppins">
-                Mozart
+                {user?.name}
               </span>
               <span className="text-[#292d3244] text-[12px] font-poppins">
-                Admin
+                {user?.role_id}
               </span>
             </div>
           </div>
@@ -265,6 +267,7 @@ const TopBar: FC<{
               </ul> */}
               <button
                 onClick={async () => {
+                  await logout();
                   Router.push("/");
                 }}
                 className="flex w-full items-center gap-[8px] p-[10px] cursor-pointer  sm:hover:bg-primary-black-leg-50 "

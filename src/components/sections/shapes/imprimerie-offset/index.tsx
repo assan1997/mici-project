@@ -3,26 +3,30 @@ import { FC, useMemo, useState } from "react";
 import BaseDropdown from "@/components/ui/dropdown/BaseDropdown";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import Link from "next/link";
-import { EditIcon, FolderIcon, RulerIcon } from "@/components/svg";
+import { CloseIcon, EditIcon, FolderIcon, RulerIcon } from "@/components/svg";
 import BaseInput from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
-export const ImprimerieOffset: FC<{}> = ({}) => {
-  const meetLink = z.object({
-    number: z.number(),
-    client: z.string(),
-    state: z.string(),
-    product: z.string(),
-    manufacturing: z.string(),
-    format: z.string(),
-    color: z.string(),
-    support: z.string(),
-    commercial: z.string(),
-    details: z.string(),
+import React from "react";
+import ComboboxMultiSelect from "@/components/ui/select/comboBoxMultiSelect";
+import { useData, User } from "@/context/data.context";
+export const ImprimerieOffset: FC<{}> = ({ }) => {
+  const shapeSchema = z.object({
+    client: z.number(),
+    commercial: z.number(),
+    department: z.number(),
     rules: z.string(),
+    code: z.string(),
+    dim_lx_lh: z.number(),
+    dim_square: z.number(),
+    dim_plaque: z.number(),
+    paper_type: z.number(),
+    pose_number: z.number(),
+    reference: z.string(),
+    observation: z.string()
   });
-  const form = useForm({ schema: meetLink });
+  const form = useForm({ schema: shapeSchema });
   const data = [
     {
       Code: "001",
@@ -325,7 +329,6 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
       options: "Modifier | Supprimer",
     },
   ];
-
   const tableHead = [
     "Code",
     "Client",
@@ -341,12 +344,13 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
     "Date & Heure Validation",
     "options",
   ];
-
   const [openDropdown, setDropdown] = useState<boolean>(false);
-
-  const onSubmit = () => {};
+  const onSubmit = () => { };
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
-  const openModal = () => {};
+  const { users } = useData()
+  interface ComboSelect { label: string; value: string }
+  const [user, setUser] = useState<ComboSelect[]>([]);
+
 
   return (
     <div className="w-full h-full">
@@ -368,11 +372,9 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
               {tableHead.map((head, index) => (
                 <th
                   key={index}
-                  className={`font-poppins  ${
-                    head === "options" ? "w-auto" : "min-w-[150px]"
-                  } text-[13px] py-[10px] font-medium  ${
-                    index > 0 && index < tableHead.length
-                  }  text-[#2f2f2f]`}
+                  className={`font-poppins  ${head === "options" ? "w-auto" : "min-w-[150px]"
+                    } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
+                    }  text-[#2f2f2f]`}
                 >
                   <div className="h-full relative flex items-center text-start px-[10px] justify-start">
                     {head}
@@ -516,38 +518,30 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
       </div>
       <div className="w-full bg-white/80 rounded-b-xl h-[60px]"></div>
       <BaseModal open={openCreationModal} classname={""}>
-        <div className="w-[calc(100vh)] h-[500px] overflow-auto">
+        <div className="w-[calc(150vh)] h-[500px] overflow-auto">
           <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
-            <span className="font-[16px] font-poppins text-[#060606]">
-              Nouveau dossier
+            <span className="text-[18px] font-medium font-poppins text-[#060606]">
+              Nouvelle forme
             </span>
             <button
               onClick={() => setCreationModal(false)}
-              className={`w-[38px] h-[38px] flex items-center justify-center border rounded-full bg-white transition-all`}
+              className={`w-[30px] h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
             >
               <span className={``}>
-                <svg
-                  id="fi_2961937"
-                  height="14"
-                  viewBox="0 0 64 64"
-                  width="14"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="m4.59 59.41a2 2 0 0 0 2.83 0l24.58-24.58 24.59 24.58a2 2 0 0 0 2.83-2.83l-24.59-24.58 24.58-24.59a2 2 0 0 0 -2.83-2.83l-24.58 24.59-24.59-24.58a2 2 0 0 0 -2.82 2.82l24.58 24.59-24.58 24.59a2 2 0 0 0 0 2.82z"></path>
-                </svg>
+                <CloseIcon />
               </span>
             </button>
           </div>
-          <div className="flex flex-col justify-center w-full h-[calc(100%-130px)] relative py-[10px] px-[20px]">
+          <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] relative py-[10px] px-[20px]">
             <Form form={form} onSubmit={onSubmit}>
               <div className="w-full grid gap-[8px] grid-cols-3">
                 <BaseInput
-                  label="N° Dossier"
-                  id="number"
-                  placeholder="N° Dossier"
+                  label="Département"
+                  id="department"
+                  placeholder="Département"
                   // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="number"
-                  {...form.register("number")}
+                  type="text"
+                  {...form.register("department")}
                 />
                 <BaseInput
                   label="Client"
@@ -557,78 +551,102 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                   type="text"
                   {...form.register("client")}
                 />
-                <BaseInput
-                  label="State"
-                  id="state"
-                  placeholder="Etat"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
+
+                {/* <BaseInput
+                  label="Commercial"
+                  id="commercial"
+                  placeholder="Nom du commercial"
                   type="text"
-                  {...form.register("state")}
-                />
-                <BaseInput
-                  label="Produit"
-                  id="product"
-                  placeholder="Produit"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("product")}
-                />
-                <BaseInput
-                  label="Fabrication"
-                  id="manufacturing"
-                  placeholder="Fabrication"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("manufacturing")}
+                  {...form.register("commercial")}
+                /> */}
+                <ComboboxMultiSelect
+                  label={"Commercial"}
+                  placeholder="Selectionnez un utilisateur"
+                  className="w-full"
+                  icon={
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                        stroke="black"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  }
+                  id={`commercial`}
+                  options={users?.map((user: User) => ({
+                    value: user.id as unknown as string,
+                    label: user.name,
+                  }))}
+                  error={undefined}
+                  isUniq={true}
+                  selectedElementInDropdown={user}
+                  setSelectedUniqElementInDropdown={setUser}
+                  borderColor="border-grayscale-200"
                 />
 
                 <BaseInput
-                  label="Format"
-                  id="format"
-                  placeholder="Format"
-                  // leftIcon={<RulerIcon color={""} size={0} />}
+                  label="Reference"
+                  id="reference"
+                  placeholder="Reference"
+                  // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
-                  {...form.register("format")}
+                  {...form.register("reference")}
                 />
                 <BaseInput
-                  label="Couleurs"
-                  id="color"
-                  placeholder="Couleurs"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  label="Code"
+                  id="code"
+                  placeholder="Code"
+                  // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
-                  {...form.register("color")}
+                  {...form.register("code")}
                 />
                 <BaseInput
-                  label="Support"
-                  id="support"
-                  placeholder="Support"
+                  label="Dimension Lx Lh"
+                  id="dim_lx_lh"
+                  placeholder="Dimension Lx Lh"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
-                  {...form.register("support")}
+                  {...form.register("dim_lx_lh")}
                 />
                 <BaseInput
-                  label="Commercial"
-                  id="commercial"
-                  placeholder="Commercial"
+                  label="Dimensions Carrée"
+                  id="dim_square"
+                  placeholder="Dimensions Carrée"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
-                  {...form.register("commercial")}
+                  {...form.register("dim_square")}
                 />
                 <BaseInput
-                  label="Détails"
-                  id="details"
-                  placeholder="Détails"
+                  label="Type Papier"
+                  id="paper_type"
+                  placeholder="Type Papier"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
-                  {...form.register("details")}
+                  {...form.register("paper_type")}
                 />
                 <BaseInput
-                  label="Règles"
-                  id="rules"
-                  placeholder="Règles"
+                  label="N° des poses"
+                  id="pose_number"
+                  placeholder="N° des poses"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
-                  {...form.register("rules")}
+                  {...form.register("pose_number")}
+                />
+                <BaseInput
+                  label="Observation"
+                  id="observation"
+                  placeholder="observation"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("observation")}
                 />
               </div>
             </Form>
