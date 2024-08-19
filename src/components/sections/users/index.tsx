@@ -601,7 +601,6 @@ export const Users: FC<{}> = ({ }) => {
             <button
               type="button"
               onClick={() => {
-                alert(currentEntry);
                 handleDeleteUser(currentEntry as unknown as number);
               }}
               className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}

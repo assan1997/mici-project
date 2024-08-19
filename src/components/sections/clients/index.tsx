@@ -113,7 +113,6 @@ export const Clients: FC<{}> = ({ }) => {
       department_ids: departments,
       // departments.map((dep: ComboSelect) => dep.value as unknown as number)
     };
-
     if (JSON.stringify(entry.name) === JSON.stringify(clientInEntry?.name)) delete entry.name;
     if (!entry.user_id || JSON.stringify(entry.user_id) === JSON.stringify(clientInEntry?.user?.id)) delete entry.user_id;
     if (
@@ -555,7 +554,6 @@ export const Clients: FC<{}> = ({ }) => {
             <button
               type="button"
               onClick={() => {
-                alert(currentEntry);
                 handleDeleteClient(currentEntry as unknown as number);
               }}
               className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
