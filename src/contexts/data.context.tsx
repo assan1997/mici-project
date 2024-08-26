@@ -15,6 +15,7 @@ import { getAllDepartments, getDepartmentById } from "@/services/department";
 import { getAllSections } from "@/services/section";
 import { getAllUsers } from "@/services/users";
 import { getAllClients } from "@/services/clients";
+import { getAllOffsetShapes } from "@/services/shapes";
 
 export interface Client {
   id: number;
@@ -65,30 +66,38 @@ export interface User {
 }
 
 export interface DataContextType {
-  clients: Client[];
-  users: User[];
+  clients: Client[] | undefined;
+  users: User[] | undefined;
   user: User | undefined;
   departments: Department[];
   sections: Section[];
+  offsetShapes: OffsetShape[] | undefined;
   dispatchUser: React.Dispatch<React.SetStateAction<User | undefined>>;
-  dispatchUsers: React.Dispatch<React.SetStateAction<User[]>>;
-  dispatchClients: React.Dispatch<React.SetStateAction<Client[]>>;
+  dispatchUsers: React.Dispatch<React.SetStateAction<User[] | undefined>>;
+  dispatchClients: React.Dispatch<React.SetStateAction<Client[] | undefined>>;
   dispatchDepartment: React.Dispatch<React.SetStateAction<Department[]>>;
+  dispatchOffsetShapes: React.Dispatch<React.SetStateAction<OffsetShape[] | undefined>>;
   loadUsers: LoadUsers
 }
 
-export interface Shape {
-  client_id: string;
-  department_id: string;
-  commercial_id: string;
+export interface OffsetShape {
+  id: number;
+  client: Client;
+  department: Department;
+  commercial: User;
   dim_lx_lh: string;
   dim_square: string;
   dim_plate: string;
   paper_type: string;
   pose_number: string;
   part: string;
+  reference: string;
   observation: string;
-  user_id: string;
+  created_at: string;
+  updated_at: string;
+  code: string;
+  user: User;
+  logs: any[];
 }
 
 const DataContext = createContext<DataContextType>({
@@ -97,6 +106,7 @@ const DataContext = createContext<DataContextType>({
   sections: [],
   user: undefined,
   departments: [],
+  offsetShapes: [],
   dispatchUser: () => { },
   dispatchUsers: () => { },
   dispatchClients: () => { },
@@ -106,26 +116,28 @@ const DataContext = createContext<DataContextType>({
     isLoadAllUsers: false,
     isloadSections: false,
     isLoadDepartments: false,
-  }
+  },
+  dispatchOffsetShapes: () => { },
 });
 
 export const useData = () => useContext(DataContext);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [clients, setClients] = useState<Client[] | undefined>();
+  const [users, setUsers] = useState<User[] | undefined>();
   const [user, setUser] = useState<User>();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
-  const pathName = usePathname();
-  const Router = useRouter();
+  const [offsetShapes, setOffsetShapes] = useState<OffsetShape[] | undefined>();
 
+  const Router = useRouter();
   const dispatchUser = useMemo(() => setUser, []);
   const dispatchClients = useMemo(() => setClients, []);
   const dispatchDepartment = useMemo(() => setDepartments, []);
   const dispatchSection = useMemo(() => setSections, []);
   const dispatchUsers = useMemo(() => setUsers, []);
+  const dispatchOffsetShapes = useMemo(() => setOffsetShapes, []);
 
   const [loadUsers, setLoadUsers] = useState<LoadUsers>({
     isLoadCurrentUser: false,
@@ -169,19 +181,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadAllUsers: true }))
       if (!success) return;
       dispatchUsers(data);
-      // ?.map((tmpUser: any) => {
-      //   let tmpSections: Section[] = [], tmpDepartments: Department[] = []
-      //   if (sections.length > 0)
-      //     tmpSections = sections?.filter(
-      //       (section: Section) => tmpUser.sections.map((tmp: Section) => tmp.id).includes(section.id) && section
-      //     );
-      //   if (departments.length > 0)
-      //     tmpDepartments = departments?.filter(
-      //       (department: Section) =>
-      //         tmpUser.departments.map((tmp: Department) => tmp.id).includes(department.id) && department
-      //     );
-      //   return { ...tmpUser, sections: tmpSections, departments: tmpDepartments };
-      // })
     })();
   }, [user]);
 
@@ -190,21 +189,21 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       const { data, success } = await getAllClients();
       if (!success) return;
       dispatchClients(data);
-      // ?.map((tmpUser: any) => {
-      //   let tmpSections: Section[] = [], tmpDepartments: Department[] = []
-      //   if (sections.length > 0)
-      //     tmpSections = sections?.filter(
-      //       (section: Section) => tmpUser.sections.map((tmp: Section) => tmp.id).includes(section.id) && section
-      //     );
-      //   if (departments.length > 0)
-      //     tmpDepartments = departments?.filter(
-      //       (department: Section) =>
-      //         tmpUser.departments.map((tmp: Department) => tmp.id).includes(department.id) && department
-      //     );
-      //   return { ...tmpUser, sections: tmpSections, departments: tmpDepartments };
-      // })
     })();
   }, [user]);
+
+  useEffect(() => {
+    if (users && users?.length > 0) {
+      (async () => {
+        let { data, success } = await getAllOffsetShapes();
+        if (!success) return;
+        dispatchOffsetShapes(data.map((dat: any) => ({ ...dat, commercial: users?.find((use) => use.id === dat.commercial_id) })));
+      })();
+    }
+
+  }, [users]);
+
+  const commercials = useMemo(() => { }, [])
 
   return (
     <DataContext.Provider
@@ -212,13 +211,15 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         clients,
         users,
         sections,
+        offsetShapes,
         user,
+        departments,
+        loadUsers,
         dispatchUser,
         dispatchUsers,
         dispatchClients,
         dispatchDepartment,
-        departments,
-        loadUsers
+        dispatchOffsetShapes,
       }}
     >
       {children}

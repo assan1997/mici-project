@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Inter, Raleway, Montserrat, Poppins } from "next/font/google";
-import { SideBarProvider } from "@/context/sidebar.context";
-import { ToastProvider } from "@/context/toast.context";
-import { DataProvider } from "@/context/data.context";
+import { SideBarProvider } from "@/contexts/sidebar.context";
+import { ToastProvider } from "@/contexts/toast.context";
+import { DataProvider } from "@/contexts/data.context";
+import { NextUIProvider } from "@nextui-org/react";
+import { Suspense } from "react";
 import "./globals.css";
-
 const inter = Inter({ subsets: ["latin"] });
 
 const raleway = Raleway({
@@ -47,11 +48,17 @@ export default function RootLayout({
       <body
         className={`${inter.className} ${raleway.variable} ${montserat.variable} ${poppins.variable}`}
       >
-        <ToastProvider>
-          <DataProvider>
-            <SideBarProvider>{children}</SideBarProvider>
-          </DataProvider>
-        </ToastProvider>
+        <Suspense>
+          <NextUIProvider>
+            <ToastProvider>
+              <DataProvider>
+                <SideBarProvider>
+                  {children}
+                </SideBarProvider>
+              </DataProvider>
+            </ToastProvider>
+          </NextUIProvider>
+        </Suspense>
       </body>
     </html>
   );

@@ -1,8 +1,9 @@
-import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import React, { ChangeEventHandler, Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { Transition } from '@headlessui/react';
 import { twMerge } from 'tailwind-merge';
 import { ChevronDownIcon } from '../../svg/chevronDownIcon';
 import { BaseCheckbox } from './BaseCheck';
+import { SearchMdIcon } from '@/components/svg/search-md';
 interface FormikSelectFieldProps {
   label: string;
   icon: any;
@@ -18,6 +19,7 @@ interface FormikSelectFieldProps {
   isUniq?: boolean;
   hAuto?: boolean;
   placeholder?: string;
+  search?: boolean;
   otherActions?: () => void;
 }
 const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
@@ -108,12 +110,21 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
     setLocalOptions(options)
   }, [JSON.stringify(options)])
 
-
   const selectedContainer = useRef<any>(null);
+  const [canSearch, setCanSearch] = useState<boolean>(false);
 
   useEffect(() => {
     // selectedContainer.current
   }, [])
+
+  const handleSearch = (event: any) => {
+    let { value } = event.target;
+    value = value.trim();
+    setLocalOptions(options.filter((tmpOption) => tmpOption?.label.toLowerCase().includes(value.toLowerCase()) && tmpOption))
+    if (value.length > 0) setSelectDropdown(id);
+    else setSelectDropdown("");
+  }
+  const inputRef = useRef<any>(null)
   return (
     <>
       <section ref={selectDropdownBox} className={`relative inline-block  ${className}`}>
@@ -141,36 +152,62 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
             'min-h-[48px]',
             borderColor,
             error?.id &&
-            ' border-danger-600 focus:border-danger-600 focus:ring-1 focus:ring-offset-2 focus:ring-danger-700'
+            'border-danger-600 focus:border-danger-600 focus:ring-1 focus:ring-offset-2 focus:ring-danger-700'
           )}
         >
-          <div ref={selectedContainer} className={`w-[93%] flex items-center ${hAuto ? 'flex-wrap' : ''} gap-[.8rem] overflow-y-hidden scrollbar-hide`}>
-            {
-              (selectedElementInDropdown && selectedElementInDropdown?.length > 0) ? (
-                selectedElementInDropdown.map((el, idx) => (
-                  <div key={idx} className='border border-grayscale-100 rounded-[8px] p-[.8rem] w-fit h-[24px] flex items-center justify-between gap-2'>
-                    <span className='text-[14px] font-poppins text-grayscale-700 font-[500] leading-[2rem] whitespace-nowrap'>
-                      {el?.label}
-                    </span>
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        removeLevel(el?.value)
-                      }}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 9L9 3M3 3L9 9" stroke="#4F4D55" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <span className='text-black/40 text-[14px] leading-[24px] font-[400] font-poppins'>
-                  {placeholder || `Sélectionner`}
-                </span>
-              )
-            }
-          </div>
+          <button className='mr-[10px]' type='button' onClick={(e) => {
+            e.stopPropagation();
+            setCanSearch(tmp => {
+              setTimeout(() => {
+                console.log('tmp', tmp)
+                if (inputRef.current) {
+                  if (tmp) inputRef.current.focus();
+                  // else inputRef.current.blur()
+                }
+              })
+
+              return !tmp
+            });
+
+          }}
+          >
+            <SearchMdIcon color={canSearch ? '#FD8D65' : '#000'} />
+          </button>
+          {
+            <>
+              {
+                canSearch ? <input onBlur={() => {
+
+                }} placeholder='Recherche' ref={inputRef} onChange={handleSearch} className={`p-[.8rem] w-fit h-[24px] text-[14px] w-full border-none outline-none font-poppins`} /> : <div ref={selectedContainer} className={`w-[93%] flex items-center ${hAuto ? 'flex-wrap' : ''} gap-[.8rem] overflow-y-hidden scrollbar-hide`}>
+                  {
+                    (selectedElementInDropdown && selectedElementInDropdown?.length > 0) ? (
+                      selectedElementInDropdown.map((el, idx) => (
+                        <div key={idx} className='border border-grayscale-100 rounded-[8px] p-[.8rem] w-fit h-[24px] flex items-center justify-between gap-2'>
+                          <span className='text-[14px] font-poppins text-grayscale-700 font-[500] leading-[2rem] whitespace-nowrap'>
+                            {el?.label}
+                          </span>
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              removeLevel(el?.value)
+                            }}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M3 9L9 3M3 3L9 9" stroke="#4F4D55" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <span className='text-black/40 text-[14px] leading-[24px] font-[400] font-poppins'>
+                        {placeholder || `Sélectionner`}
+                      </span>
+                    )
+                  }
+                </div>
+              }
+            </>
+          }
           <div
             className='shrink-0 text-gray-500 transition duration-300 ease-linear'
             onClick={(e) => {
@@ -218,8 +255,9 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
                           inputName={`${id}_name`}
                           boxClass="!border-none"
                           onClick={() => {
-                            console.log(item)
                             controlDataSelection(item)
+                            setCanSearch(false)
+                            // inputRef.current.value = " "
                           }}
                           checked={selectedElementInDropdown?.find(x => x.value === item.value) ? true : false}
                           {...rest}
@@ -229,7 +267,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
                   }
                 </ul>
                 :
-                <div className=' w-full'>
+                <div className='w-full'>
                   <span className='block text-center text-[12px] font-poppins opacity-60 '>{"Aucune donnée trouvée"}</span>
                 </div>
             }

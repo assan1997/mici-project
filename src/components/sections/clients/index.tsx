@@ -17,15 +17,18 @@ import BaseInput from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
-import { Client, Department, Section, useData, User } from "@/context/data.context";
+import { Client, Department, Section, useData, User } from "@/contexts/data.context";
 import Image from "next/image";
 import MenuDropdown from "@/components/ui/dropdown/MenuDropdown";
 import useActiveState from "@/lib/hooks/useActiveState";
 import ComboboxMultiSelect from "@/components/ui/select/comboBoxMultiSelect";
 import { createClient, getAllClients, deleteClient, updateClient } from "@/services/clients";
-import { useToast } from "@/context/toast.context";
+import { useToast } from "@/contexts/toast.context";
 import { ClientEntry } from "@/services/clients";
 import { formatTime } from "@/lib/utils/timestamp";
+import { Spinner } from "@/components/ui/loader/spinner";
+import { TableSkeleton } from "@/components/ui/loader/Skeleton";
+import { motion } from "framer-motion";
 export const Clients: FC<{}> = ({ }) => {
   const userSchema = z.object({
     name: z.string(),
@@ -36,26 +39,19 @@ export const Clients: FC<{}> = ({ }) => {
   const {
     users,
     clients,
-    sections: allSections,
     departments: allDepartments,
-    dispatchUsers,
     dispatchClients,
-    loadUsers,
   } = useData();
   const tableHead = [
     "Nom du client",
     "Nom du commercial",
     "Date de création",
     "Date de mise à jour",
-    // "Role",
-    // "Departements",
-    // "Sections",
     "Options",
   ];
 
   interface ComboSelect { label: string; value: string }
   const [user, setUser] = useState<ComboSelect[]>([]);
-
   const [departments, setDepartments] = useState<
     ComboSelect[]
   >([]);
@@ -64,6 +60,7 @@ export const Clients: FC<{}> = ({ }) => {
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
   const [currentEntry, setCurrentEntry] = useState<number>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const { showToast } = useToast();
   const reset = () => {
@@ -73,8 +70,8 @@ export const Clients: FC<{}> = ({ }) => {
     setUser([]);
     setDepartments([]);
   }
-
   const onSubmit = async (data: z.infer<typeof userSchema>) => {
+    setLoading(true);
     let { name, departments, user } = data;
     name = name.trim();
     let user_id = user
@@ -86,24 +83,31 @@ export const Clients: FC<{}> = ({ }) => {
     });
     if (success) {
       showToast({
-        message: "Client crée",
+        message: "Crée avec succès",
         type: "success",
-        position: "bottom-left",
+        position: "top-center",
       });
-
       dispatchClients((tmp) => {
-        createdClient.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep)
-        createdClient.user = users.find((use) => use.id === user)
-        tmp.unshift(createdClient);
-        return [...tmp];
+        createdClient.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep);
+        createdClient.user = users?.find((use) => use.id === user);
+        tmp?.unshift(createdClient);
+        if (tmp) return [...tmp];
       });
       reset();
       setCreationModal(false);
+      setLoading(false);
     } else {
+      showToast({
+        message: "L'opération à e",
+        type: "danger",
+        position: "top-center",
+      });
+      setLoading(false);
       console.log("error");
     }
   };
   const onSubmitUpdate = async (data: z.infer<typeof userSchema>) => {
+    setLoading(true);
     let { name, departments } = data;
     name = name.trim();
     let user_id = user[0].value as unknown as number;
@@ -111,7 +115,6 @@ export const Clients: FC<{}> = ({ }) => {
       name,
       user_id,
       department_ids: departments,
-      // departments.map((dep: ComboSelect) => dep.value as unknown as number)
     };
     if (JSON.stringify(entry.name) === JSON.stringify(clientInEntry?.name)) delete entry.name;
     if (!entry.user_id || JSON.stringify(entry.user_id) === JSON.stringify(clientInEntry?.user?.id)) delete entry.user_id;
@@ -127,34 +130,39 @@ export const Clients: FC<{}> = ({ }) => {
     );
     if (success) {
       showToast({
-        message: "Client crée",
+        message: "Modifié avec succès",
         type: "success",
-        position: "bottom-left",
+        position: "top-center",
       });
       dispatchClients((clients): Client[] => {
         updatedClient.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep)
-        updatedClient.user = users.find((user) => user.id === user_id);
-        return clients.map((client: Client) => client.id === currentEntry ? ({ ...updatedClient }) : client)
+        updatedClient.user = users?.find((user) => user.id === user_id);
+        return clients?.map((client: Client) => client.id === currentEntry ? ({ ...updatedClient }) : client) as any
       })
       setOpenEditionModal(false);
+      setLoading(false);
     } else {
+      showToast({
+        message: "L'opération à échouée",
+        type: "danger",
+        position: "top-center",
+      });
+      setLoading(false);
       console.log("error");
     }
   };
-
   const { box, handleClick } = useActiveState();
   const clientInEntry = useMemo(() => {
-    const client: Client | undefined = clients.find(
+    const client: Client | undefined = clients?.find(
       (client: Client) => client.id === currentEntry
     );
     return client;
   }, [currentEntry]);
 
   useEffect(() => {
-    const client: Client | undefined = clients.find(
+    const client: Client | undefined = clients?.find(
       (client: Client) => client.id === currentEntry
     );
-
     if (client) {
       form.setValue('name', client?.name as string);
       const dep = client?.departments?.map((department: Department) => ({
@@ -195,8 +203,8 @@ export const Clients: FC<{}> = ({ }) => {
   const handleDeleteClient = async (id: number) => {
     const { success } = await deleteClient(id);
     if (!success) return;
-    dispatchClients((clients: Client[]) => {
-      return clients.filter((client: Client) => client.id !== id && client);
+    dispatchClients((clients: Client[] | undefined) => {
+      return clients?.filter((client: Client) => client.id !== id && client);
     });
     setDelationModal(false);
   };
@@ -218,106 +226,121 @@ export const Clients: FC<{}> = ({ }) => {
         </button>
       </div>
       {/* overflow-auto  */}
-      <div className="w-full bg-white/80 rounded-t-xl h-[60px] flex items-center justify-center border-b"></div>
-      <div className="relative w-full scrollbar-hide">
-        <table className="w-full relative">
-          <thead className="bg-white/50">
-            <tr className="">
-              {tableHead.map((head, index) => (
-                <th
-                  key={index}
-                  className={`font-poppins  ${head === "options" ? "w-auto" : "min-w-[150px]"
-                    } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
-                    }  text-[#2f2f2f]`}
-                >
-                  <div
-                    className={`h-full relative flex items-center  px-[20px] ${head === "Options"
-                      ? "justify-end text-end"
-                      : "justify-start text-start"
-                      } `}
-                  >
-                    {head}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white/80">
-            {clients.map((row, index) => (
-              <tr key={index} className="border-b">
-                <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                  {row?.name}
-                </td>
-                <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                  {row?.user?.name}
-                </td>
-                <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                  {formatTime(new Date(row?.["created_at"]).getTime(), "d:mo:y", "short")}
-                </td>
-                <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                  {formatTime(new Date(row?.["updated_at"]).getTime(), "d:mo:y", "short")}
-                </td>
-                <td className="text-[#2f2f2f] w-auto p-[10px] text-start font-poppins text-[13px]">
-                  <div className="w-full h-full flex items-center justify-end">
-                    <div ref={box}>
-                      <MenuDropdown
-                        dropdownOrigin="bottom-right"
-                        otherStyles={"w-auto"}
-                        buttonContent={
-                          <div>
-                            <div
-                              onClick={() => {
-                                handleClick();
-                                setCurrentEntry(row.id);
-                              }}
-                              className={`h-[44px] flex items-center justify-center`}
-                            >
-                              <OptionsIcon color={""} />
-                            </div>
-                          </div>
-                        }
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{
+          duration: 1,
+          ease: [0.36, 0.01, 0, 0.99],
+          delay: 0.2,
+        }}
+        className="rounded-[16px] bg-white p-[12px] block mt-[1.6rem]"
+      >
+        <div className="w-full bg-white/80 rounded-t-xl h-[60px] flex items-center justify-center border-b"></div>
+        <div className="relative w-full scrollbar-hide">
+          {
+            !clients ? <TableSkeleton head={tableHead} /> : <table className="w-full relative">
+              <thead className="bg-white/50">
+                <tr className="">
+                  {tableHead.map((head, index) => (
+                    <th
+                      key={index}
+                      className={`font-poppins  ${head === "options" ? "w-auto" : "min-w-[150px]"
+                        } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
+                        }  text-[#2f2f2f]`}
+                    >
+                      <div
+                        className={`h-full relative flex items-center  px-[20px] ${head === "Options"
+                          ? "justify-end text-end"
+                          : "justify-start text-start"
+                          } `}
                       >
-                        <div className="bg-white shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-                          <div className="flex flex-col items-center w-full">
-                            <button
-                              type="button"
-                              onClick={() => setOpenEditionModal(true)}
-                              className="flex items-center w-full gap-[8px] py-[4px] px-[10px] rounded-t-[12px] cursor-pointer"
-                            >
-                              <UpdateIcon color={""} />
-                              <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                Modifier
-                              </span>
-                            </button>
-                            <button type="button" onClick={() => { }} className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer">
-                              <DetailsIcon color={""} />
-                              <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                Détails
-                              </span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDelationModal(true);
-                              }}
-                              className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                            >
-                              <DeleteUserIcon className={""} />
-                              <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                Supprimer
-                              </span>
-                            </button>
-                          </div>
+                        {head}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white/80">
+                {clients?.map((row, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                      {row?.name}
+                    </td>
+                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                      {row?.user?.name}
+                    </td>
+                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                      {formatTime(new Date(row?.["created_at"]).getTime(), "d:mo:y", "short")}
+                    </td>
+                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                      {formatTime(new Date(row?.["updated_at"]).getTime(), "d:mo:y", "short")}
+                    </td>
+                    <td className="text-[#2f2f2f] w-auto p-[10px] text-start font-poppins text-[13px]">
+                      <div className="w-full h-full flex items-center justify-end">
+                        <div ref={box}>
+                          <MenuDropdown
+                            dropdownOrigin="bottom-right"
+                            otherStyles={"w-auto"}
+                            buttonContent={
+                              <div>
+                                <div
+                                  onClick={() => {
+                                    handleClick();
+                                    setCurrentEntry(row.id);
+                                  }}
+                                  className={`h-[44px] flex items-center justify-center`}
+                                >
+                                  <OptionsIcon color={""} />
+                                </div>
+                              </div>
+                            }
+                          >
+                            <div className="bg-white shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                              <div className="flex flex-col items-center w-full">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenEditionModal(true)}
+                                  className="flex items-center w-full gap-[8px] py-[4px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                >
+                                  <UpdateIcon color={""} />
+                                  <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                    Modifier
+                                  </span>
+                                </button>
+                                <button type="button" onClick={() => { }} className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer">
+                                  <DetailsIcon color={""} />
+                                  <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                    Détails
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDelationModal(true);
+                                  }}
+                                  className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                >
+                                  <DeleteUserIcon className={""} />
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    Supprimer
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          </MenuDropdown>
                         </div>
-                      </MenuDropdown>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          }
+        </div>
+        <div className="w-full bg-white/80 rounded-b-xl h-[60px]"></div>
+      </motion.div>
+
       {/* CREATION MODAL */}
       <BaseModal open={openCreationModal} classname={""}>
         <Form form={form} onSubmit={onSubmit}>
@@ -368,7 +391,7 @@ export const Clients: FC<{}> = ({ }) => {
                   options={users?.map((user: User) => ({
                     value: user.id as unknown as string,
                     label: user.name,
-                  }))}
+                  })) as any}
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={user}
@@ -414,7 +437,7 @@ export const Clients: FC<{}> = ({ }) => {
                 // onClick={() => setCreationModal((tmp) => !tmp)}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
-                Enregistrer
+                {loading ? <Spinner color={"#fff"} size={20} /> : "Enregistrer"}
               </button>
             </div>
           </div>
@@ -470,7 +493,7 @@ export const Clients: FC<{}> = ({ }) => {
                   options={users?.map((user: User) => ({
                     value: user.id as unknown as string,
                     label: user.name,
-                  }))}
+                  })) as any}
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={user}
@@ -516,7 +539,7 @@ export const Clients: FC<{}> = ({ }) => {
                 // onClick={() => setCreationModal((tmp) => !tmp)}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
-                Mettre à jour
+                {loading ? <Spinner color={"#fff"} size={20} /> : " Mettre à jour"}
               </button>
             </div>
           </div>
@@ -544,13 +567,13 @@ export const Clients: FC<{}> = ({ }) => {
             </button>
           </div>
           <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-            <button
+            {/* <button
               type="button"
               onClick={() => setDelationModal((tmp) => !tmp)}
               className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
             >
               Annuler
-            </button>
+            </button> */}
             <button
               type="button"
               onClick={() => {
@@ -558,12 +581,12 @@ export const Clients: FC<{}> = ({ }) => {
               }}
               className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
             >
-              Supprimer
+              {loading ? <Spinner color={"#fff"} size={20} /> : "Supprimer"}
             </button>
           </div>
         </div>
       </BaseModal>
-      <div className="w-full bg-white/80 rounded-b-xl h-[60px]"></div>
+
     </div>
   );
 };

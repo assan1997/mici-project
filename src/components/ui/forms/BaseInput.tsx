@@ -11,7 +11,8 @@ type InputProps = {
   type?: React.HTMLInputTypeAttribute;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-} & React.ComponentPropsWithRef<"input">;
+  field?: string;
+} & React.ComponentPropsWithRef<"textarea"> & React.ComponentPropsWithRef<"input">;
 
 const BaseInput = React.forwardRef<HTMLInputElement, InputProps>(
   (
@@ -23,6 +24,7 @@ const BaseInput = React.forwardRef<HTMLInputElement, InputProps>(
       helperText,
       leftIcon,
       rightIcon,
+      field,
       ...props
     },
     ref
@@ -48,26 +50,33 @@ const BaseInput = React.forwardRef<HTMLInputElement, InputProps>(
               {leftIcon}
             </div>
           )}
-          <input
-            ref={ref}
-            type={type}
-            aria-describedby={id}
-            id={id}
-            placeholder={placeholder}
-            className={`
-                    w-full border-[1px] text-[#060606] sm:hover:ring-primary-c1-50 font-poppins border-neutral-grayscale-200 rounded-[12px] h-[48px] py-[12px] focus:outline-none 
-                    bg-white shadow-custom
-                    text-[14px] leading-[24px] font-[400] placeholder:text-primary-black-leg-400
-                    ${
-                      leftIcon
-                        ? "pl-[48px] pr-[12px]"
-                        : rightIcon
-                        ? "pr-[48px] pl-[12px]"
-                        : "px-[12px]"
-                    }
-                `}
-            {...props}
-          />
+          {
+            field && field === "text-area" ? <textarea
+              aria-describedby={id}
+              id={id}
+              placeholder={placeholder}
+              className={`
+                w-full border-[1px] sm:hover:ring-primary-c1-50 border-neutral-grayscale-200 rounded-[10px] h-[48px] py-[12px] focus:outline-none focus:border-vermilion-300 focus:ring-2 focus:ring-offset-2 focus:ring-vermilion-400
+                bg-white shadow-custom focus:ring-offset-2 transition duration-300 ease-out disabled:cursor-not-allowed disabled:placeholder:text-grayscale-500 readOnly:cursor-not-allowed
+                text-[16px] leading-[24px] font-[400]  placeholder:text-primary-black-leg-400
+                ${leftIcon ? "pl-[48px] pr-[12px]" : rightIcon ? "pr-[48px] pl-[12px]" : "px-[12px]"}
+            `}
+              {...props}></textarea> : <input
+              ref={ref}
+              type={type}
+              aria-describedby={id}
+              id={id}
+              placeholder={placeholder}
+              className={`
+                w-full border-[1px] sm:hover:ring-primary-c1-50 border-neutral-grayscale-200 rounded-[10px] h-[48px] py-[12px] focus:outline-none focus:border-vermilion-300 focus:ring-2 focus:ring-offset-2 focus:ring-vermilion-400
+                bg-white shadow-custom focus:ring-offset-2 transition duration-300 ease-out disabled:cursor-not-allowed disabled:placeholder:text-grayscale-500 readOnly:cursor-not-allowed
+                text-[16px] leading-[24px] font-[400]  placeholder:text-primary-black-leg-400
+                ${leftIcon ? "pl-[48px] pr-[12px]" : rightIcon ? "pr-[48px] pl-[12px]" : "px-[12px]"}
+            `}
+              {...props}
+            />
+          }
+
           {rightIcon && (
             <div className="absolute h-[48px] w-[48px] right-0 top-0 flex items-center justify-center">
               {rightIcon}

@@ -17,22 +17,25 @@ import BaseInput from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
-import { Department, Section, useData, User } from "@/context/data.context";
+import { Department, Section, useData, User } from "@/contexts/data.context";
 import Image from "next/image";
 import MenuDropdown from "@/components/ui/dropdown/MenuDropdown";
 import useActiveState from "@/lib/hooks/useActiveState";
 import ComboboxMultiSelect from "@/components/ui/select/comboBoxMultiSelect";
 import { createUser, deleteUser, updateUser } from "@/services/users";
-import { useToast } from "@/context/toast.context";
+import { useToast } from "@/contexts/toast.context";
 import { UserEntry } from "@/services/users";
 import { formatTime } from "@/lib/utils/timestamp";
+import { Spinner } from "@/components/ui/loader/spinner";
+import { TableSkeleton } from "@/components/ui/loader/Skeleton";
+import { motion } from "framer-motion";
 export const Users: FC<{}> = ({ }) => {
   const userSchema = z.object({
     name: z.string(),
     departments: z.array(z.number()),
     sections: z.array(z.number()),
     email: z.string(),
-    password: z.string(),
+    password: z.string().min(8, "Password must be at least 8 characters"),
   });
   const form = useForm({ schema: userSchema });
   const {
@@ -64,7 +67,7 @@ export const Users: FC<{}> = ({ }) => {
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
   const [currentEntry, setCurrentEntry] = useState<number>();
-
+  const [loading, setLoading] = useState<boolean>(false)
   const { showToast } = useToast();
   const reset = () => {
     form.setValue('name', '');
@@ -77,6 +80,7 @@ export const Users: FC<{}> = ({ }) => {
     setDepartments([]);
   }
   const onSubmit = async (data: z.infer<typeof userSchema>) => {
+    setLoading(true);
     let { name, departments, sections, email, password } = data;
     name = name.trim();
     email = email.trim();
@@ -90,24 +94,27 @@ export const Users: FC<{}> = ({ }) => {
     });
     if (success) {
       showToast({
-        message: "Utilisateur a été crée",
+        message: "Crée avec succès",
         type: "success",
-        position: "bottom-left",
+        position: "top-center",
       });
       dispatchUsers((tmp) => {
         createdUser.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep)
         createdUser.sections = allDepartments.filter((sec) => sections.includes(sec.id) && sec)
-        tmp.unshift(createdUser);
-        return [...tmp];
+        tmp?.unshift(createdUser);
+
+        if (tmp) return [...tmp];
       });
       reset();
       setCreationModal(false);
     } else {
       console.log("error");
     }
+    setLoading(false);
   };
 
   const onSubmitUpdate = async (data: z.infer<typeof userSchema>) => {
+    setLoading(true);
     let { name, departments, sections, email, password } = data;
     name = name.trim();
     email = email.trim();
@@ -142,42 +149,45 @@ export const Users: FC<{}> = ({ }) => {
       entry?.password?.length === 0
     )
       delete entry.password;
-
     const { data: updatedUser, success } = await updateUser(
       currentEntry as number,
       entry
     );
-
     if (success) {
       showToast({
-        message: "Utilisateur a été crée",
+        message: "Crée avec succès",
         type: "success",
-        position: "bottom-left",
+        position: "top-center",
       });
       dispatchUsers((users): User[] => {
-        updatedUser.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep)
-        updatedUser.sections = allDepartments.filter((sec) => sections.includes(sec.id) && sec)
-        return users.map((user: User) => user.id === currentEntry ? ({ ...updatedUser }) : user)
+        updatedUser.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep);
+        updatedUser.sections = allDepartments.filter((sec) => sections.includes(sec.id) && sec);
+        return users?.map((user: User) => user.id === currentEntry ? ({ ...updatedUser }) : user) as any
       })
       setOpenEditionModal(false);
     } else {
+      showToast({
+        message: "L'opération à échouée",
+        type: "danger",
+        position: "top-center",
+      });
       console.log("error");
     }
+    setLoading(false);
   };
 
   const { box, handleClick } = useActiveState();
   const userInEntry = useMemo(() => {
-    const user: User | undefined = users.find(
+    const user: User | undefined = users?.find(
       (user: User) => user.id === currentEntry
     );
     return user;
   }, [currentEntry]);
 
   useEffect(() => {
-    const user: User | undefined = users.find(
+    const user: User | undefined = users?.find(
       (user: User) => user.id === currentEntry
     );
-
     if (user) {
       form.setValue('name', user?.name as string);
       form.setValue('email', user?.email as string);
@@ -218,7 +228,7 @@ export const Users: FC<{}> = ({ }) => {
     const { success } = await deleteUser(id);
     if (!success) return;
     dispatchUsers((users) => {
-      return users.filter((user: User) => user.id !== id && user);
+      return users?.filter((user: User) => user.id !== id && user) as any;
     });
     setDelationModal(false);
   };
@@ -227,6 +237,7 @@ export const Users: FC<{}> = ({ }) => {
     <div className="w-full h-full">
       <div className="w-full flex py-[10px] justify-end">
         <button
+          disabled={!users}
           type="button"
           onClick={(e) => {
             e.stopPropagation();
@@ -240,109 +251,127 @@ export const Users: FC<{}> = ({ }) => {
         </button>
       </div>
       {/* overflow-auto  */}
-      <div className="w-full bg-white/80 rounded-t-xl h-[60px] flex items-center justify-center border-b"></div>
-      <div className="relative w-full scrollbar-hide">
-        <table className="w-full relative">
-          <thead className="bg-white/50">
-            <tr className="">
-              {tableHead.map((head, index) => (
-                <th
-                  key={index}
-                  className={`font-poppins  ${head === "options" ? "w-auto" : "min-w-[150px]"
-                    } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
-                    }  text-[#2f2f2f]`}
-                >
-                  <div
-                    className={`h-full relative flex items-center  px-[20px] ${head === "Options"
-                      ? "justify-end text-end"
-                      : "justify-start text-start"
-                      } `}
-                  >
-                    {head}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white/80">
-            {users.map((row, index) => (
-              <tr key={index} className="border-b">
-                <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                  {renderAvatar(row?.avatar)}
-                </td>
-                <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                  {row.name}
-                </td>
-                <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                  {row?.email}
-                </td>
-                <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                  {formatTime(new Date(row?.["created_at"]).getTime(), "d:mo:y", "short")}
-                </td>
-                <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                  {formatTime(new Date(row?.["updated_at"]).getTime(), "d:mo:y", "short")}
-                </td>
-                <td className="text-[#2f2f2f] w-auto p-[10px] text-start font-poppins text-[13px]">
-                  <div className="w-full h-full flex items-center justify-end">
-                    <div ref={box}>
-                      <MenuDropdown
-                        dropdownOrigin="bottom-right"
-                        otherStyles={"w-auto"}
-                        buttonContent={
-                          <div>
-                            <div
-                              onClick={() => {
-                                handleClick();
-                                setCurrentEntry(row.id);
-                              }}
-                              className={`h-[44px] flex items-center justify-center`}
-                            >
-                              <OptionsIcon color={""} />
-                            </div>
-                          </div>
-                        }
+
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{
+          duration: 1,
+          ease: [0.36, 0.01, 0, 0.99],
+          delay: 0.2,
+        }}
+        className="rounded-[16px] bg-white p-[12px] block mt-[1.6rem]"
+      >
+        <div className="mb-8">
+          <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-center border-b"></div>
+          <div className="relative w-full scrollbar-hide">
+            {
+              users ? <table className="w-full relative">
+                <thead className="bg-white/50">
+                  <tr className="">
+                    {tableHead.map((head, index) => (
+                      <th
+                        key={index}
+                        className={`font-poppins  ${head === "options" ? "w-auto" : "min-w-[150px]"
+                          } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
+                          }  text-[#2f2f2f]`}
                       >
-                        <div className="bg-white shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-                          <div className="flex flex-col items-center w-full">
-                            <button
-                              type="button"
-                              onClick={() => setOpenEditionModal(true)}
-                              className="flex items-center w-full gap-[8px] py-[4px] px-[10px] rounded-t-[12px] cursor-pointer"
+                        <div
+                          className={`h-full relative flex items-center  px-[20px] ${head === "Options"
+                            ? "justify-end text-end"
+                            : "justify-start text-start"
+                            } `}
+                        >
+                          {head}
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white/80">
+                  {users?.map((row, index) => (
+                    <tr key={index} className="border-b">
+                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                        {renderAvatar(row?.avatar)}
+                      </td>
+                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                        {row.name}
+                      </td>
+                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                        {row?.email}
+                      </td>
+                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                        {formatTime(new Date(row?.["created_at"]).getTime(), "d:mo:y", "short")}
+                      </td>
+                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                        {formatTime(new Date(row?.["updated_at"]).getTime(), "d:mo:y", "short")}
+                      </td>
+                      <td className="text-[#2f2f2f] w-auto p-[10px] text-start font-poppins text-[13px]">
+                        <div className="w-full h-full flex items-center justify-end">
+                          <div ref={box}>
+                            <MenuDropdown
+                              dropdownOrigin="bottom-right"
+                              otherStyles={"w-auto"}
+                              buttonContent={
+                                <div>
+                                  <div
+                                    onClick={() => {
+                                      handleClick();
+                                      setCurrentEntry(row.id);
+                                    }}
+                                    className={`h-[44px] flex items-center justify-center`}
+                                  >
+                                    <OptionsIcon color={""} />
+                                  </div>
+                                </div>
+                              }
                             >
-                              <UpdateIcon color={""} />
-                              <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                Modifier
-                              </span>
-                            </button>
-                            <button type="button" onClick={() => { }} className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer">
-                              <DetailsIcon color={""} />
-                              <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                Détails
-                              </span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDelationModal(true);
-                              }}
-                              className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                            >
-                              <DeleteUserIcon className={""} />
-                              <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                Supprimer
-                              </span>
-                            </button>
+                              <div className="bg-white shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                                <div className="flex flex-col items-center w-full">
+                                  <button
+                                    type="button"
+                                    onClick={() => setOpenEditionModal(true)}
+                                    className="flex items-center w-full gap-[8px] py-[4px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                  >
+                                    <UpdateIcon color={""} />
+                                    <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                      Modifier
+                                    </span>
+                                  </button>
+                                  <button type="button" onClick={() => { }} className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer">
+                                    <DetailsIcon color={""} />
+                                    <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                      Détails
+                                    </span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setDelationModal(true);
+                                    }}
+                                    className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                  >
+                                    <DeleteUserIcon className={""} />
+                                    <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                      Supprimer
+                                    </span>
+                                  </button>
+                                </div>
+                              </div>
+                            </MenuDropdown>
                           </div>
                         </div>
-                      </MenuDropdown>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table> : <TableSkeleton head={tableHead} />
+            }
+          </div>
+          <div className="w-full bg-white/80 rounded-b-xl h-[50px]"></div>
+        </div>
+      </motion.div>
+
       {/* CREATION MODAL */}
       <BaseModal open={openCreationModal} classname={""}>
         <Form form={form} onSubmit={onSubmit}>
@@ -563,7 +592,7 @@ export const Users: FC<{}> = ({ }) => {
                 // onClick={() => setCreationModal((tmp) => !tmp)}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
-                Mettre à jour
+                {loading ? <Spinner color={"#fff"} size={20} /> : "Mettre à jour"}
               </button>
             </div>
           </div>
@@ -591,13 +620,13 @@ export const Users: FC<{}> = ({ }) => {
             </button>
           </div>
           <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-            <button
+            {/* <button
               type="button"
               onClick={() => setDelationModal((tmp) => !tmp)}
               className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
             >
               Annuler
-            </button>
+            </button> */}
             <button
               type="button"
               onClick={() => {
@@ -605,12 +634,12 @@ export const Users: FC<{}> = ({ }) => {
               }}
               className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
             >
-              Supprimer
+              {loading ? <Spinner color={"#fff"} size={20} /> : "Supprimer"}
             </button>
           </div>
         </div>
       </BaseModal>
-      <div className="w-full bg-white/80 rounded-b-xl h-[60px]"></div>
+
     </div>
   );
 };

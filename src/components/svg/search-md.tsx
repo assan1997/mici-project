@@ -1,6 +1,6 @@
 import { Icon } from '@/lib/types/icon';
 
-export const SearchMdIcon = ({ color = '#4F4D55', size = 20 }: Icon) => {
+export const SearchMdIcon = ({ color, size = 20 }: Icon) => {
   return (
     <svg
       width={size}

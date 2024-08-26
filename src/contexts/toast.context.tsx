@@ -6,6 +6,7 @@ import { FiCheckCircle, FiInfo, FiX } from 'react-icons/fi';
 import { MdOutlineDangerous } from 'react-icons/md';
 import Link from 'next/link';
 import { CloseIcon } from '@/components/svg';
+import { twMerge } from 'tailwind-merge';
 
 const typeVariants = ['success', 'danger', 'warning', 'info'] as const;
 const positionVariants = [
@@ -31,7 +32,7 @@ type ToastContextType = {
 };
 
 const ToastContext = createContext<ToastContextType>({
-  showToast: () => {},
+  showToast: () => { },
 });
 
 export const useToast = () => useContext(ToastContext);
@@ -48,7 +49,6 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
-
     const newTimeoutId = setTimeout(() => {
       setToast(null);
     }, toastTimeoutDuration);
@@ -156,6 +156,8 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+
+  console.log('backgroundColor', backgroundColor)
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
@@ -170,17 +172,16 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
             transition={{ duration: 0.4, ease: 'easeInOut' }}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className={`
-            ${backgroundColor} 
-            ${toast?.className} 
-            inline-flex w-auto items-center justify-between gap-[1.6rem] 
-            rounded-[8px] px-[2rem] py-[1.2rem]
-            shadow-sm transition-all duration-500 ease-out sm:gap-[2rem]`}
+            className={twMerge(` 
+              inline-flex w-auto items-center justify-between gap-[1.6rem] 
+              rounded-[8px] px-[2rem] py-[1.2rem]
+              shadow-sm transition-all duration-500 bg-success-500 ease-out sm:gap-[2rem]` , toast?.className, backgroundColor)
+            }
           >
             <div className="flex items-center gap-[1.4rem]">
               {/* {icon && <div className="flex items-center gap-3.5">{icon}</div>} */}
               <div>
-                <span  className={`${textColor} text-[1.4rem] font-[500] leading-[2rem]`}>
+                <span className={`${textColor} text-[14px] font-[500] leading-[16px]`}>
                   {toast.message}
                 </span>
                 <div>
@@ -191,7 +192,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
                       target="_blank"
                     >
                       <span
-                        className={`${textColor} mt-4 text-[1.4rem] font-[500] leading-[2rem] underline`}
+                        className={`${textColor} mt-4 text-[14px] font-[500] leading-[16px] underline`}
                       >
                         {toast.urlText}
                       </span>

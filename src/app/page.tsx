@@ -5,8 +5,10 @@ import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
 import { useRouter } from "next/navigation";
 import { login } from "../services/auth";
-import { useToast } from "@/context/toast.context";
-import { useData } from "@/context/data.context";
+import { useToast } from "@/contexts/toast.context";
+import { useData } from "@/contexts/data.context";
+import { useState } from "react";
+import { Spinner } from "@/components/ui/loader/spinner";
 // import { User } from "@/context/data.context";
 export default function Home() {
   const authSchema = z.object({
@@ -18,15 +20,20 @@ export default function Home() {
   const { showToast } = useToast();
   const { dispatchUser } = useData();
 
+  const [loading, setLoading] = useState<boolean>(false);
+  const [connected, setConnected] = useState<boolean>(false);
+
   const onSubmit = async (data: z.infer<typeof authSchema>) => {
     let { email, password } = data;
     email = email.trim();
     password = password.trim();
+    setLoading(true);
     if (email.length > 0 && password.length > 0) {
       const { success, data } = await login({ email, password });
       if (success) {
         console.log("success", success);
         console.log("data", data);
+        setConnected(true);
         dispatchUser(data);
         showToast({
           message: "Connecté",
@@ -36,19 +43,23 @@ export default function Home() {
         Router.push("/workspace/folder");
       } else {
         showToast({
-          message: "Echec de l'authentification",
+          message: "Echec de l'authentification vérifier vos cordonneés oubien la connexion internet",
           type: "danger",
           position: "top-center",
         });
+        setLoading(false);
       }
     }
+    // setLoading(false)
   };
+
   return (
     <div className="w-full h-screen bg-gray-100 flex items-center justify-center">
       <div className="w-[420px] bg-white rounded-xl px-[20px] py-[40px]">
         <h1 className="text-[26px] text-center text-[#060606] mb-[10px] font-medium font-poppins">
           Connectez vous
         </h1>
+
         <Form form={form} onSubmit={onSubmit}>
           <div className="w-full flex flex-col gap-y-[10px]">
             <BaseInput
@@ -106,14 +117,23 @@ export default function Home() {
 
           <div className="w-full flex justify-center mt-[20px]">
             <button
+              disabled={loading}
               type="submit"
               className={`w-full h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
             >
-              Connexion
+              {
+                loading && !connected ? <>
+                  <Spinner color={"#fff"} size={20} />
+                  {"Connexion en cours"}
+                </> : loading && connected ? <>
+                  <Spinner color={"#fff"} size={20} />
+                  {"Redirection"}
+                </> : "Connexion"
+              }
             </button>
           </div>
         </Form>
       </div>
-    </div>
+    </div >
   );
 }

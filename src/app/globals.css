@@ -28,3 +28,52 @@ body {
     text-wrap: balance;
   }
 }
+
+.spinner {
+  transform-origin: center center;
+  animation: spin-animation linear infinite 1s;
+}
+
+.spinner > * {
+  transform-origin: center center;
+}
+
+.spinner .s-1 {
+  transform: rotate(90deg);
+  animation: offset-1 cubic-bezier(0.46, 0.03, 0.52, 0.96) infinite alternate 1s;
+}
+
+.spinner .s-3 {
+  transform: rotate(-90deg);
+  animation: offset-3 cubic-bezier(0.46, 0.03, 0.52, 0.96) infinite alternate 1s;
+}
+
+@keyframes offset-1 {
+  0% {
+    transform: rotate(90deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes offset-3 {
+  0% {
+    transform: rotate(-90deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes spin-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
