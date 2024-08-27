@@ -15,7 +15,7 @@ export function TableSkeleton({ head }: {
                         {tableHead.map((head, index) => (
                             <th
                                 key={index}
-                                className={`font-poppins ${head === "options" ? "w-auto" : "min-w-[150px]"
+                                className={`font-poppins ${head === "options" ? "w-auto" : "min-w-[250px]"
                                     } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
                                     }  text-[#2f2f2f]`}
                             >

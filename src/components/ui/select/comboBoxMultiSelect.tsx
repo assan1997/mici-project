@@ -124,7 +124,22 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
     if (value.length > 0) setSelectDropdown(id);
     else setSelectDropdown("");
   }
-  const inputRef = useRef<any>(null)
+  const inputRef = useRef<any>(null);
+  const handleOpenSearch = (e: any) => {
+    e.stopPropagation();
+    setCanSearch(tmp => {
+      setTimeout(() => {
+        console.log('tmp', tmp)
+        if (inputRef.current) {
+          if (tmp) inputRef.current.focus();
+          // else inputRef.current.blur()
+        }
+      })
+      return !tmp
+    });
+
+
+  }
   return (
     <>
       <section ref={selectDropdownBox} className={`relative inline-block  ${className}`}>
@@ -155,23 +170,9 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
             'border-danger-600 focus:border-danger-600 focus:ring-1 focus:ring-offset-2 focus:ring-danger-700'
           )}
         >
-          <button className='mr-[10px]' type='button' onClick={(e) => {
-            e.stopPropagation();
-            setCanSearch(tmp => {
-              setTimeout(() => {
-                console.log('tmp', tmp)
-                if (inputRef.current) {
-                  if (tmp) inputRef.current.focus();
-                  // else inputRef.current.blur()
-                }
-              })
-
-              return !tmp
-            });
-
-          }}
+          <button className='mr-[10px]' type='button' onClick={handleOpenSearch}
           >
-            <SearchMdIcon color={canSearch ? '#FD8D65' : '#000'} />
+            <SearchMdIcon color={canSearch ? '#FD8D65' : '#636363'} />
           </button>
           {
             <>

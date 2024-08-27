@@ -77,7 +77,13 @@ export interface DataContextType {
   dispatchClients: React.Dispatch<React.SetStateAction<Client[] | undefined>>;
   dispatchDepartment: React.Dispatch<React.SetStateAction<Department[]>>;
   dispatchOffsetShapes: React.Dispatch<React.SetStateAction<OffsetShape[] | undefined>>;
-  loadUsers: LoadUsers
+  loadUsers: LoadUsers;
+  status: Status[]
+}
+
+export interface Status {
+  id: number,
+  name: string
 }
 
 export interface OffsetShape {
@@ -98,6 +104,7 @@ export interface OffsetShape {
   code: string;
   user: User;
   logs: any[];
+  status_id: number
 }
 
 const DataContext = createContext<DataContextType>({
@@ -118,6 +125,7 @@ const DataContext = createContext<DataContextType>({
     isLoadDepartments: false,
   },
   dispatchOffsetShapes: () => { },
+  status: []
 });
 
 export const useData = () => useContext(DataContext);
@@ -130,6 +138,20 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [departments, setDepartments] = useState<Department[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [offsetShapes, setOffsetShapes] = useState<OffsetShape[] | undefined>();
+  const status: Status[] = useMemo(() => [
+    {
+      name: "En cours",
+      id: 1
+    },
+    {
+      name: "En standby",
+      id: 2
+    },
+    {
+      name: "Bloqué",
+      id: 3
+    }
+  ], [])
 
   const Router = useRouter();
   const dispatchUser = useMemo(() => setUser, []);
@@ -203,7 +225,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
   }, [users]);
 
-  const commercials = useMemo(() => { }, [])
+  // const commercials = useMemo(() => { }, [])
 
   return (
     <DataContext.Provider
@@ -220,6 +242,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         dispatchClients,
         dispatchDepartment,
         dispatchOffsetShapes,
+        status,
       }}
     >
       {children}

@@ -154,7 +154,7 @@ const SideBar: FC<{ resize: boolean }> = ({ resize }) => {
                       key={subNavId}
                     >
                       <div
-                        className={`absolute w-[6px] h-[6px] shrink-0 -left-[18px] ${subNavActive ? "bg-[#E65F2B]" : "bg-[#2a2a2a]"
+                        className={`absolute w-[8px] h-[8px] shrink-0 -left-[19px] ${subNavActive ? "bg-[#E65F2B]" : "bg-[#2a2a2a]"
                           } rounded-full transition-all duration-200`}
                       ></div>
                       <div className="shrink-0">

@@ -105,6 +105,7 @@ export async function standbyShape(
   entry: {
     type: string;
     reason: string;
+    status_id: number;
   }
 ) {
   const token = await getToken();

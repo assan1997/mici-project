@@ -37,15 +37,17 @@ import { Spinner } from "@/components/ui/loader/spinner";
 import { TableSkeleton, ButtonSkeleton } from "@/components/ui/loader/Skeleton";
 import { useToast } from "@/contexts/toast.context";
 import { motion } from "framer-motion";
+import { ChevronRight } from "@/components/icons";
 
 export const ImprimerieOffset: FC<{}> = ({ }) => {
   const {
     users,
     clients,
     departments,
-    offsetShapes,
+    offsetShapes: allOffsetShapes,
     user,
     dispatchOffsetShapes,
+    status
   } = useData();
   const shapeSchema = z.object({
     client: z.number(),
@@ -75,7 +77,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
   const observationForm = useForm({ schema: shapeObservationSchema });
   const assignForm = useForm({ schema: shapeAssignSchema });
   const tableHead = [
-    // "",
+    "Status",
     "Code",
     "Client",
     "Reference",
@@ -108,6 +110,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
     setClient([]);
   };
   const { box, handleClick } = useActiveState();
+  const [offsetShapes, setOffsetShapes] = useState<OffsetShape[] | undefined>([]);
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
@@ -383,21 +386,31 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
     setLoading(true);
     let { reason } = data;
     reason = reason.trim();
+    const status_id = shapeInEntry?.status_id !== 2 ? 2 : 1
     const { data: standByShape, success } = await standbyShape(
       currentEntry as number,
       {
         type: "STANDBY",
-        reason
+        reason,
+        status_id
       }
     );
     if (success) {
-      console.log('standByShape', standByShape)
+      standByShape.status_id = status_id;
+      dispatchOffsetShapes((tmp: any) => {
+        let tmpDatas;
+        let tmpData;
+        if (tmp) {
+          tmpData = tmp.find((t: any) => t.id === standByShape.id);
+          tmpDatas = tmp.filter((t: any) => t.id !== standByShape.id);
+          return [{ ...tmpData, status_id }, ...tmpDatas]
+        }
+      });
       standByform.setValue('reason', '');
       setOpenStandByModal(false);
-
       showToast({
         type: "success",
-        message: "Mis en standBy avec succès",
+        message: `${status_id === 2 ? "Mis" : "Enlevé"} en standby avec succès`,
         position: "top-center"
       })
     }
@@ -408,7 +421,8 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
         position: "top-center"
       })
     }
-    setLoading(false)
+    setLoading(false);
+    reset();
   }
   const onSubmitOservation = async (data: z.infer<typeof shapeObservationSchema>) => {
     let { observation } = data;
@@ -437,7 +451,8 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
         position: "top-center"
       })
     }
-    setLoading(false)
+    setLoading(false);
+    reset();
   }
   const onSubmitAssign = async (data: z.infer<typeof shapeAssignSchema>) => {
     setLoading(true);
@@ -491,11 +506,36 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
       })
     }
     setLoading(false);
+    reset();
   }
 
   useEffect(() => {
     assignForm.setValue("user_id", assignUser[0]?.value as unknown as number);
   }, [assignUser]);
+
+  const [currentEnd, setCurrentEnd] = useState<number>(0);
+
+  function next(start: number, end: number) {
+    const offsetShapes = allOffsetShapes?.slice(start, end);
+    setCurrentEnd(() => {
+      setOffsetShapes(offsetShapes);
+      return end
+    });
+
+  }
+  function prev(start: number, end: number) {
+    console.log('currentEnd', currentEnd);
+    const offsetShapes = allOffsetShapes?.slice(end, start);
+    setCurrentEnd(() => {
+      setOffsetShapes(offsetShapes);
+      return end
+    });
+  }
+
+  useEffect(() => {
+    next(0, 10)
+  }, [allOffsetShapes?.length])
+
 
   return (
     <div className="w-full h-full">
@@ -503,7 +543,10 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
         <button
           disabled={!offsetShapes}
           type="button"
-          onClick={() => setCreationModal((tmp) => !tmp)}
+          onClick={() => {
+            setCreationModal((tmp) => !tmp);
+            reset()
+          }}
           className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
         >
           Créer
@@ -518,22 +561,22 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
           ease: [0.36, 0.01, 0, 0.99],
           delay: 0.2,
         }}
-        className="rounded-[16px] bg-white p-[12px] block mt-[1.6rem]"
+        className="rounded-[16px]"
       >
         <div className="w-full bg-white/80  rounded-t-xl h-[60px] flex items-center justify-center border-b"></div>
         <div className="relative w-full overflow-auto scrollbar-hide">
           {!offsetShapes ?
             <TableSkeleton head={tableHead} /> : <table className="w-full relative">
               <thead className="bg-white/50">
-                <tr className="">
+                <tr className="border-b">
                   {tableHead.map((head, index) => (
                     <th
                       key={index}
-                      className={` w-fit  ${index === 0 ? "w-0" : "min-w-[200px]"
-                        } text-[15px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
-                        }  text-[#2f2f2f]`}
+                      className={`w-fit ${index === 0 ? "w-0" : "min-w-[250px]"
+                        } text-[14px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
+                        }  text-[#000000]`}
                     >
-                      <div className={`h-full font-poppins relative flex items-center text-start px-[20px] ${head === "Options" ? " justify-end" : " justify-start"}`}>
+                      <div className={`h-full font-inter relative flex items-center text-start px-[20px] ${head === "Options" ? " justify-end" : " justify-start"}`}>
                         {head}
                       </div>
                     </th>
@@ -542,51 +585,47 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
               </thead>
               <tbody className="bg-white/80">
                 {offsetShapes?.map((row, index) => {
-                  return <tr key={index} className="border-b">
-                    {/* <td className="text-[#2f2f2f] relative p-[20px] text-start font-poppins text-[13px]">
-                    <div className="absolute top-0 left-0 right-0 bottom-0 flex">
-                      <div className="w-[6px] bg-orange-400" />
-                      <div className="w-[6px] bg-blue-400" />
-                      <div className="w-[6px] bg-red-400" />
-                      <div className="w-[6px] bg-red-400" />
-                      <div className="w-[6px] bg-red-400" />
-                      <div className="w-[6px] bg-red-400" />
-                    </div>
-                  </td> */}
-                    <td className="text-[#2f2f2f] relative min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                  const statut = status.find((st) => st.id === row?.status_id)
+                  return <tr key={index} className={`border-b`}>
+                    <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                      <div className={`flex w-fit justify-center py-[4px] px-[10px] font-medium rounded-lg ${row?.status_id === 2 ? "bg-orange-100 text-orange-600" : row?.status_id === 3 ? "bg-danger-200" : "bg-gray-100 text-gray-900"}`}>
+                        {statut?.name}
+                      </div>
+                    </td>
+                    <td className="text-[#636363] relative min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row.code}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row?.client?.name}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row.reference}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                      {row.commercial.name}
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                      {row.commercial?.name}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row.department.name}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row.dim_lx_lh}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row.dim_square}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row.dim_plate}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row.paper_type}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row.pose_number}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {row.part}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {formatTime(
                         new Date(row?.["created_at"]).getTime(),
                         "d:mo:y",
@@ -599,7 +638,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                         "short"
                       )}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                       {formatTime(
                         new Date(row?.["updated_at"]).getTime(),
                         "d:mo:y",
@@ -612,7 +651,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                         "short"
                       )}
                     </td>
-                    <td className="text-[#2f2f2f] w-auto p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] w-auto px-[20px] text-start font-poppins text-[13px]">
                       <div className="w-full h-full flex items-center justify-end">
                         <div ref={box}>
                           <MenuDropdown
@@ -627,7 +666,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                                   }}
                                   className={`h-[44px] flex items-center justify-center`}
                                 >
-                                  <OptionsIcon color={""} />
+                                  <OptionsIcon color={"#636363"} />
                                 </div>
                               </div>
                             }
@@ -640,7 +679,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                                   className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
                                 >
                                   {/* <UpdateIcon color={""} /> */}
-                                  <span className="text-[15px] text-[#2f2f2f] font-poppins font-medium leading-[20px]">
+                                  <span className="text-[15px] text-[#000] font-poppins font-medium leading-[20px]">
                                     Modifier les entrées
                                   </span>
                                 </button>
@@ -650,7 +689,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                                   className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
                                 >
                                   {/* <DetailsIcon color={""} /> */}
-                                  <span className="text-[15px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                  <span className="text-[15px] text-[#000] font-poppins text-grayscale-900 font-medium leading-[20px] ">
                                     Voir les détails
                                   </span>
                                 </button>
@@ -662,7 +701,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                                   className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
                                 >
                                   {/* <DetailsIcon color={""} /> */}
-                                  <span className="text-[15px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                  <span className="text-[15px] text-[#000] font-poppins text-grayscale-900 font-medium leading-[20px] ">
                                     Assigner à un utilisateur
                                   </span>
                                 </button>
@@ -674,7 +713,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                                   className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                 >
                                   {/* <LogIcon color={""} /> */}
-                                  <span className="text-[15px] text-[#2f2f2f] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                  <span className="text-[15px] text-[#000] text-grayscale-900 font-medium font-poppins leading-[20px] ">
                                     Voir les logs
                                   </span>
                                 </button>
@@ -687,8 +726,8 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                                   className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                 >
                                   {/* <DeleteShapeIcon color={""} /> */}
-                                  <span className="text-[15px] text-[#2f2f2f] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    Mettre en standby
+                                  <span className="text-[15px] text-[#000] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    {"Standby"}
                                   </span>
                                 </button>
                                 <button
@@ -699,7 +738,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                                   className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                 >
                                   {/* <DeleteShapeIcon color={""} /> */}
-                                  <span className="text-[15px] text-[#2f2f2f] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                  <span className="text-[15px] text-[#000] text-grayscale-900 font-medium font-poppins leading-[20px] ">
                                     Faire une observation
                                   </span>
                                 </button>
@@ -723,14 +762,23 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                     </td>
                   </tr>
                 }
-
                 )}
               </tbody>
             </table>
           }
-
         </div>
-        <div className="w-full bg-white/80 rounded-b-xl h-[60px]"></div>
+        <div className="w-full bg-white/80 flex justify-end items-center px-[20px] rounded-b-xl h-[60px]">
+          {/* <button onClick={() => {
+            prev(currentEnd, currentEnd - 10);
+          }}>
+            <ChevronRight size={20} color="#636363" />
+          </button>
+          <button onClick={() => {
+            next(currentEnd, currentEnd + 10);
+          }} className="rotate-[180deg]">
+            <ChevronRight size={20} color="#636363" />
+          </button> */}
+        </div>
       </motion.div>
 
       <BaseModal open={openCreationModal} classname={""}>
@@ -926,6 +974,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
           </div>
         </Form>
       </BaseModal>
+
       {/* EDITION MODAL */}
       <BaseModal open={openEditionModal} classname={""}>
         <Form form={form} onSubmit={onSubmitUpdate}>
@@ -1119,6 +1168,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
           </div>
         </Form>
       </BaseModal>
+
       {/* DELATION MODAL */}
       <BaseModal open={openDelationModal} classname={""}>
         <div className="w-[calc(80vh)] h-auto overflow-auto">
@@ -1161,6 +1211,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
           </div>
         </div>
       </BaseModal>
+
       {/* LOGS MODAL */}
       <BaseModal open={openLogsModal} classname={""}>
         <div className="w-[calc(150vh)] h-auto ">
@@ -1194,7 +1245,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                       key={index}
                       className={`  ${head === "options" ? "w-auto" : "min-w-[150px]"
                         } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
-                        }  text-[#2f2f2f]`}
+                        }  text-[#636363]`}
                     >
                       <div className="h-full font-poppins relative flex items-center text-start py-[10px] px-[20px] justify-start">
                         {head}
@@ -1205,16 +1256,16 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
               </thead> <tbody className="bg-white/80">
                 {shapeInEntry?.logs?.map((row, index) => (
                   <tr key={index} className="border-b">
-                    <td className="text-[#2f2f2f] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
                       {row?.title}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
                       {row?.description}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
                       {row?.type}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
                       {formatTime(
                         new Date(row?.["created_at"]).getTime(),
                         "d:mo:y",
@@ -1227,7 +1278,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                         "short"
                       )}
                     </td>
-                    <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                    <td className="text-[#636363] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
                       {users?.find((user: User) => user.id === row.user_treating_id)?.name}
                     </td>
                   </tr>
@@ -1238,6 +1289,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
           </div>
         </div>
       </BaseModal>
+
       {/* standBy MODAL */}
       <BaseModal open={openStandByModal} classname={""}>
         <Form form={standByform} onSubmit={onSubmitStandBy}>
@@ -1245,10 +1297,10 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[18px] font-poppins text-[#060606]">
-                  Mettre en standBy
+                  {shapeInEntry?.status_id !== 2 ? "Mettre en standby" : "Enlever en standby"}
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                  Vous êtes sur point de mettre une forme en standBy
+                  {`Vous êtes sur point ${shapeInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "} une forme en standby`}
                 </span>
               </div>
               <button
@@ -1264,7 +1316,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
               <BaseInput
                 label="Raison"
                 id="reason"
-                placeholder="Dites pourquoi, vous mettez en standBy"
+                placeholder={` Dites pourquoi vous ${shapeInEntry?.status_id !== 2 ? "mettez en standBy" : "enlevez en standby"} `}
                 // leftIcon={<RulerIcon color={""} size={20} />}
                 type="text"
                 {...standByform.register("reason")}
@@ -1282,12 +1334,13 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
                 type="submit"
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : "Mettre en standBy"}
+                {loading ? <Spinner color={"#fff"} size={20} /> : shapeInEntry?.status_id !== 2 ? "Mettre en standBy" : "Enlever en standby"}
               </button>
             </div>
           </div>
         </Form>
       </BaseModal>
+
       {/* assign to user MODAL */}
       <BaseModal open={openAssignToUserModal} classname={""}>
         <Form form={assignForm} onSubmit={onSubmitAssign}>
@@ -1355,6 +1408,7 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
           </div>
         </Form>
       </BaseModal>
+
       {/* observation MODAL */}
       <BaseModal open={openObservationModal} classname={""}>
         <Form form={observationForm} onSubmit={onSubmitOservation}>
@@ -1363,6 +1417,59 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
               <div className="flex flex-col">
                 <span className="text-[18px] font-poppins text-[#060606]">
                   Observation
+                </span>
+                <span className="text-[14px] font-poppins text-primary-black-leg-600">
+                  Faites une observation
+                </span>
+              </div>
+              <button
+                disabled={loading}
+                type="button"
+                onClick={() => setOpenObservationModal(false)}
+                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="p-[20px]">
+              <BaseInput
+                label="Observation"
+                id="observation"
+                placeholder="observation"
+                // leftIcon={<FolderIcon size={18} color={""} />}
+                type="text"
+                field="text-area"
+                {...observationForm.register("observation")}
+              />
+            </div>
+            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
+              {/* <button
+                type="button"
+                onClick={() => setOpenObservationModal((tmp) => !tmp)}
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+              >
+                Annuler
+              </button> */}
+              <button
+                type="submit"
+
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
+              >
+                {loading ? <Spinner color={"#fff"} size={20} /> : "Enregistrer cette observation"}
+              </button>
+            </div>
+          </div>
+        </Form>
+      </BaseModal>
+
+      {/* lock MODAL */}
+      <BaseModal open={openObservationModal} classname={""}>
+        <Form form={observationForm} onSubmit={onSubmitOservation}>
+          <div className="w-[calc(80vh)] h-auto overflow-auto">
+            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
+              <div className="flex flex-col">
+                <span className="text-[18px] font-poppins text-[#060606]">
+                  Bloquer
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
                   Faites une observation
