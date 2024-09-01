@@ -11,7 +11,6 @@ import { useData } from "@/contexts/data.context";
 import { logout } from "@/services/auth";
 import { ProfillSkeleton } from "@/components/ui/loader/Skeleton";
 
-
 const MainContainer: FC<{ children: any; title: string }> = ({
   children,
   title,
@@ -217,7 +216,7 @@ const TopBar: FC<{
               <span className="text-[#292D32] text-[14px] font-poppins">
                 {user?.name}
               </span>
-              <span className="text-[#292d3244] text-[12px] font-poppins">
+              <span className="text-[#636363] text-[12px] font-poppins">
                 {section?.name}
               </span>
             </div>

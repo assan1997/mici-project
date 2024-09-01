@@ -13,7 +13,7 @@ import {
   RulerIcon,
   UpdateIcon,
 } from "@/components/svg";
-import BaseInput from "@/components/ui/forms/BaseInput";
+import { BaseInput } from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";

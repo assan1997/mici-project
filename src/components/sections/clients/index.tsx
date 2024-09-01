@@ -13,7 +13,7 @@ import {
   RulerIcon,
   UpdateIcon,
 } from "@/components/svg";
-import BaseInput from "@/components/ui/forms/BaseInput";
+import { BaseInput, BaseTextArea } from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
@@ -201,8 +201,8 @@ export const Clients: FC<{}> = ({ }) => {
   };
 
   const handleDeleteClient = async (id: number) => {
-    const { success } = await deleteClient(id);
-    if (!success) return;
+    // const { success } = await deleteClient(id);
+    // if (!success) return;
     dispatchClients((clients: Client[] | undefined) => {
       return clients?.filter((client: Client) => client.id !== id && client);
     });

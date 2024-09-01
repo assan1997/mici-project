@@ -55,7 +55,6 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
     one: { value: string; label: string }
   ) {
     if (isUniq) {
-
       setSelectedUniqElementInDropdown(JSON.stringify([one]) !== JSON.stringify(selectedElementInDropdown) ? [one] : [])
       if (otherActions) {
         otherActions()
@@ -137,15 +136,13 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
       })
       return !tmp
     });
-
-
   }
   return (
     <>
       <section ref={selectDropdownBox} className={`relative inline-block  ${className}`}>
         {mainText && (
           <label
-            className="block text-[14px] leading-[20px] text-grayscale-900  font-[500] mb-[4px]"
+            className="block text-[14px] font-poppins leading-[20px] text-grayscale-900  font-[500] mb-[4px]"
           >
             <span className="text-grayscale-900">{mainText}</span>
             {asterisk && <span className="text-danger-500">{asterisk}</span>}

@@ -1,5 +1,5 @@
 "use client";
-import BaseInput from "@/components/ui/forms/BaseInput";
+import { BaseInput } from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
@@ -59,7 +59,6 @@ export default function Home() {
         <h1 className="text-[26px] text-center text-[#060606] mb-[10px] font-medium font-poppins">
           Connectez vous
         </h1>
-
         <Form form={form} onSubmit={onSubmit}>
           <div className="w-full flex flex-col gap-y-[10px]">
             <BaseInput

@@ -18,6 +18,7 @@ export interface OffsetShapeEntry {
   reference?: string;
 }
 
+// OFFSET
 export async function createOffsetShape(entry: OffsetShapeEntry) {
   const token = await getToken();
   try {
@@ -100,7 +101,7 @@ export async function updateOffsetShape(id: number, entry: OffsetShapeEntry) {
     return { success: false };
   }
 }
-export async function standbyShape(
+export async function standbyOffsetShape(
   id: number,
   entry: {
     type: string;
@@ -127,8 +128,7 @@ export async function standbyShape(
     return { success: false };
   }
 }
-
-export async function observationShape(
+export async function observationOffsetShape(
   id: number,
   entry: {
     type: string;
@@ -154,8 +154,169 @@ export async function observationShape(
     return { success: false };
   }
 }
-
-export async function assignToAnUserShape(
+export async function assignToAnUserOffsetShape(
+  id: number,
+  entry: {
+    type: string;
+    user_id: number;
+  }
+) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}/assign`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
+// FLEXO
+export async function createFlexoShape(entry: OffsetShapeEntry) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    return { success: false };
+  }
+}
+export async function getAllFlexoShapes() {
+  const token = await getToken();
+  try {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    return { success: false };
+  }
+}
+export async function deleteFlexoShape(id: number) {
+  const token = await getToken();
+  console.log("id", id);
+  console.log("token", token);
+  try {
+    const {
+      data: { message },
+    } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/clients/${id}/delete`,
+      null,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
+export async function updateFlexoShape(id: number, entry: OffsetShapeEntry) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}/update`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("updatedUser", data);
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
+export async function standbyFlexoShape(
+  id: number,
+  entry: {
+    type: string;
+    reason: string;
+    status_id: number;
+  }
+) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}/standby`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
+export async function observationFlexoShape(
+  id: number,
+  entry: {
+    type: string;
+    observation: string;
+  }
+) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}/observation`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
+export async function assignToAnUserFlexoShape(
   id: number,
   entry: {
     type: string;

@@ -156,8 +156,6 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-
-  console.log('backgroundColor', backgroundColor)
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}

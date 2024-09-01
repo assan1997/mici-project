@@ -4,7 +4,7 @@ import BaseDropdown from "@/components/ui/dropdown/BaseDropdown";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import Link from "next/link";
 import { EditIcon, FolderIcon, RulerIcon } from "@/components/svg";
-import BaseInput from "@/components/ui/forms/BaseInput";
+import {BaseInput} from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";

@@ -60,13 +60,13 @@ const SibeBarContext = createContext<SideBarContextType>({
   nav: [],
   subNav: [],
   resize: false,
-  handleActiveNav: () => {},
-  handleResetNavState: () => {},
-  handleUpdateSubNavId: () => {},
+  handleActiveNav: () => { },
+  handleResetNavState: () => { },
+  handleUpdateSubNavId: () => { },
   getSubnavs: () => [],
-  setNav: () => {},
-  setSubNav: () => {},
-  setResize: () => {},
+  setNav: () => { },
+  setSubNav: () => { },
+  setResize: () => { },
 });
 
 export const useSideBar = () => useContext(SibeBarContext);
@@ -126,14 +126,14 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       navId: ["nav-1", "nav-3"],
       icon: (color: string) => <PrintIcon2 color={color} size={22} />,
     },
-    {
-      link: "/cartonnerie",
-      slug: "Cartonnerie",
-      active: false,
-      id: "subNav-1",
-      navId: ["nav-1", "nav-2", "nav-3"],
-      icon: (color: string) => <CardBoardIcon color={color} size={22} />,
-    },
+    // {
+    //   link: "/cartonnerie",
+    //   slug: "Cartonnerie",
+    //   active: false,
+    //   id: "subNav-1",
+    //   navId: ["nav-1", "nav-2", "nav-3"],
+    //   icon: (color: string) => <CardBoardIcon color={color} size={22} />,
+    // },
     {
       link: "/imprimerie-offset",
       slug: "Imprimerie Offset",
