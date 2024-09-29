@@ -123,7 +123,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       slug: "Imprimerie Flexo - offset",
       active: false,
       id: "subNav-0",
-      navId: ["nav-1", "nav-3"],
+      navId: ["nav-1"],
       icon: (color: string) => <PrintIcon2 color={color} size={22} />,
     },
     // {

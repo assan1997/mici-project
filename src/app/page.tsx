@@ -30,9 +30,10 @@ export default function Home() {
     setLoading(true);
     if (email.length > 0 && password.length > 0) {
       const { success, data } = await login({ email, password });
+      console.log("data", data);
       if (success) {
         console.log("success", success);
-        console.log("data", data);
+
         setConnected(true);
         dispatchUser(data);
         showToast({

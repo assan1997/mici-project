@@ -71,7 +71,6 @@ export function ProfillSkeleton() {
 
 export function ButtonSkeleton() {
     return (
-
         <Skeleton className="rounded-[12px]">
             <button
                 type="button"
@@ -81,4 +80,11 @@ export function ButtonSkeleton() {
         </Skeleton>
 
     );
+}
+
+export function ColumnSkeleton() {
+    return <Skeleton className="rounded-[12px]">
+        <div className={`w-fit h-[30px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}>
+        </div>
+    </Skeleton>
 }

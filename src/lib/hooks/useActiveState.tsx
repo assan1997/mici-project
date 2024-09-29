@@ -5,8 +5,9 @@ const useActiveState = () => {
   const box = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
 
-  const handleClick = () => {
+  const handleClick = (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     setIsActive(!isActive);
+    // e?.stopPropagation();
   };
 
   const handleOutsideClick = useCallback((event: { target: any }) => {
@@ -17,11 +18,12 @@ const useActiveState = () => {
 
   useEffect(() => {
     document.addEventListener('click', handleOutsideClick);
-
     return () => {
       document.removeEventListener('click', handleOutsideClick);
     };
   }, [handleOutsideClick]);
+
+
   return { isActive, box, handleClick };
 };
 

@@ -30,7 +30,7 @@ const MenuDropdown = ({
   return (
     <div ref={box} className={`relative inline-block`}>
       <button
-        onClick={handleClick}
+        onClick={handleClick as any}
         className="focus:outline-none cursor-pointer w-full "
       >
         {buttonContent}
@@ -44,22 +44,18 @@ const MenuDropdown = ({
             transition={{ duration: 0.5, ease: [0.36, 0.01, 0, 0.99] }}
             className={`
                   absolute z-[500]
-                  ${
-                    dropdownOrigin === 'bottom-left' &&
-                    `bottom-[-${buttonContentHeight}] left-0 `
-                  }
-                  ${
-                    dropdownOrigin === 'bottom-right' &&
-                    `bottom-[-${buttonContentHeight}] right-0`
-                  }
-                  ${
-                    dropdownOrigin === 'top-left' &&
-                    `top-[-${buttonContentHeight}] left-0`
-                  }
-                  ${
-                    dropdownOrigin === 'top-right' &&
-                    `top-[-${buttonContentHeight}] right-0`
-                  }
+                  ${dropdownOrigin === 'bottom-left' &&
+              `bottom-[-${buttonContentHeight}] left-0 `
+              }
+                  ${dropdownOrigin === 'bottom-right' &&
+              `bottom-[-${buttonContentHeight}] right-0`
+              }
+                  ${dropdownOrigin === 'top-left' &&
+              `top-[-${buttonContentHeight}] left-0`
+              }
+                  ${dropdownOrigin === 'top-right' &&
+              `top-[-${buttonContentHeight}] right-0`
+              }
                   ${otherStyles}
                   bg-white rounded-[8px] 
               `}

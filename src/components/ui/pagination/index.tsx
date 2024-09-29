@@ -44,7 +44,7 @@ export const Pagination: FC<{
             init()
     }, [datas])
 
-    return <div className="w-full bg-white/80 flex justify-end items-center px-[20px] rounded-b-xl h-[60px]">
+    return <div className="w-full bg-white/80 border-t border-gray-100 flex justify-end items-center px-[20px] h-[60px]">
         <div className="flex gap-x-[4px]">
             <span className="text-[12px] text-[#636363] text-grayscale-900 font-medium font-poppins leading-[20px]">{currentPage}</span>
             <span className="text-[12px] text-[#636363] text-grayscale-900 font-medium font-poppins leading-[20px]">{` - `}</span>

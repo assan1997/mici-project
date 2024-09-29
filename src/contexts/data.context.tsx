@@ -151,6 +151,7 @@ export interface OffsetShape {
   part: string;
   reference: string;
   observation: string;
+  observations: any[];
   created_at: string;
   updated_at: string;
   code: string;
@@ -221,6 +222,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     {
       name: "Bloqué",
       id: 3
+    },
+    {
+      name: "Terminé",
+      id: 4
     }
   ], [])
 
@@ -291,8 +296,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     if (users && users?.length > 0) {
       (async () => {
         let { data, success } = await getAllOffsetShapes();
+        console.log('data', data);
         if (!success) return;
-        dispatchOffsetShapes(data.map((dat: any) => ({ ...dat, commercial: users?.find((use) => use.id === dat.commercial_id) })));
+        dispatchOffsetShapes(data?.map((dat: any) => ({ ...dat, commercial: users?.find((use) => use.id === dat.commercial_id) })));
       })();
     }
 

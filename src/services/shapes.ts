@@ -12,12 +12,52 @@ export interface OffsetShapeEntry {
   paper_type?: string;
   pose_number?: string;
   part?: string;
+  observations?: string[];
   observation?: string;
   user_id?: number;
   code?: string;
   reference?: string;
 }
 
+export async function getShapeDetails(shapeId: string) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${shapeId}`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    return { success: false };
+  }
+}
+
+export async function endShape(shapeId: number) {
+  console.log("shapeId", shapeId);
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${shapeId}/close`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
 // OFFSET
 export async function createOffsetShape(entry: OffsetShapeEntry) {
   const token = await getToken();
@@ -158,7 +198,8 @@ export async function assignToAnUserOffsetShape(
   id: number,
   entry: {
     type: string;
-    user_id: number;
+    user_assignated_id: number;
+    task_description: string;
   }
 ) {
   const token = await getToken();

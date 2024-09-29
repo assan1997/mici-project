@@ -522,8 +522,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
             list={status}
             filterDatas={allBats ? allBats : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setBats} /> : null}
-
+            filterHandler={setBats} type={"status"} /> : null}
         </div>
         <div className="relative w-full overflow-x-auto scrollbar-hide bg-white">
           {!allBats ?

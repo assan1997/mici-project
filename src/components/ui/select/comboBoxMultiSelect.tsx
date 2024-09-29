@@ -245,8 +245,8 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
                     localOptions.map((item: {
                       value: string;
                       label: string;
-                    }) => (
-                      <>
+                    }, index: number) => (
+                      <Fragment key={index}>
                         <BaseCheckbox
                           value={item.value}
                           label={item.label}
@@ -260,7 +260,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
                           checked={selectedElementInDropdown?.find(x => x.value === item.value) ? true : false}
                           {...rest}
                         />
-                      </>
+                      </Fragment>
                     ))
                   }
                 </ul>
