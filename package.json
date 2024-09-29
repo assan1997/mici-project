@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@types/lodash.get": "^4.4.9",
+    "@types/node": "^22.7.4",
     "@types/react": "^18",
     "@types/react-csv": "^1.1.10",
     "@types/uniqid": "^5.3.4",
