@@ -1,4 +1,4 @@
-"use server";
+"use client";
 import axios from "axios";
 import { getToken } from "@/lib/data/token";
 
@@ -18,11 +18,11 @@ export interface TaskEntry {
   reference?: string;
 }
 
-export async function getTasks(taskId: string) {
+export async function getTasks() {
   const token = await getToken();
   try {
     const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/tasks/`,
+      `${process.env.NEXT_PUBLIC_API_URL}/tasks`,
       {
         headers: {
           accept: "application/json",
@@ -37,12 +37,13 @@ export async function getTasks(taskId: string) {
   }
 }
 
-export async function endTask(taskId: number) {
-  console.log("shapeId", taskId);
+export async function endTask(taskId: number, reason: string) {
+  console.log("taskId", taskId);
   const token = await getToken();
   try {
     const { data } = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/task/${taskId}/complete`,
+      `${process.env.NEXT_PUBLIC_API_URL}/tasks/${taskId}/complete`,
+      { reason },
       {
         headers: {
           accept: "application/json",

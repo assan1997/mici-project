@@ -611,7 +611,7 @@ export const Folder: FC<{}> = ({ }) => {
             filterDatas={allOffsetShapes ? allOffsetShapes : []}
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes} />
-          <Export title="Exporter en csv" type="csv" entry={{
+          {/* <Export title="Exporter en csv" type="csv" entry={{
             headers: Object.keys(allOffsetShapes ? allOffsetShapes[0] : {}).flatMap((shapeKey) => shapeKey).filter((shapeKey) => {
               if (!["logs", "id", "client_id", "commercial_id", "status_id", "department_id"].includes(shapeKey)) return shapeKey
             }).flatMap((shapeKey) => ({
@@ -642,8 +642,8 @@ export const Folder: FC<{}> = ({ }) => {
                 "short"
               )}`
             })) : []
-          }} />
-          <Export title="Télécharger le pdf" type="pdf" entry={{ headers: [], data: [] }} />
+          }} /> */}
+          {/* <Export title="Télécharger le pdf" type="pdf" entry={{ headers: [], data: [] }} /> */}
         </div>
         <div className="relative w-full overflow-auto scrollbar-hide bg-white">
           {!allOffsetShapes ?

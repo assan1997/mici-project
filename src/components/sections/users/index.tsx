@@ -56,7 +56,6 @@ export const Users: FC<{}> = ({ }) => {
     // "Sections",
     "Options",
   ];
-
   const [sections, setSections] = useState<{ label: string; value: string }[]>(
     []
   );
@@ -191,6 +190,7 @@ export const Users: FC<{}> = ({ }) => {
     if (user) {
       form.setValue('name', user?.name as string);
       form.setValue('email', user?.email as string);
+      form.setValue('password', user?.password as string);
       const dep = user?.departments?.map((department: Department) => ({
         value: department.id,
         label: department.name,

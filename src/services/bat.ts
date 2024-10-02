@@ -1,7 +1,6 @@
-"use server";
+"use client";
 import axios from "axios";
 import { getToken } from "@/lib/data/token";
-
 export interface BatEntry {
   client_id?: number;
   department_id?: number;

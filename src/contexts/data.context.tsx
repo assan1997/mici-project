@@ -18,6 +18,7 @@ import { getAllClients } from "@/services/clients";
 import { getAllOffsetShapes } from "@/services/shapes";
 import { getAllFolders } from "@/services/folder";
 import { getAllBats } from "@/services/bat";
+import { getTasks } from "@/services/task";
 
 export interface FolderInterface {
   file_number: string;
@@ -37,7 +38,7 @@ export interface FolderInterface {
   created_at: string;
   id: number;
   status_id: number;
-  logs: any[]
+  logs: any[];
 }
 
 export interface BatInterface {
@@ -98,8 +99,19 @@ export interface LoadUsers {
   isLoadCurrentUser: boolean;
   isLoadAllUsers: boolean;
   isloadSections: boolean;
-  isLoadDepartments: boolean
+  isLoadDepartments: boolean;
 }
+
+export interface TaskInterface {
+  completed_at: string | null;
+  created_at: string;
+  description: string;
+  id: number;
+  started_at: string | null;
+  status: string;
+  updated_at: string | null;
+}
+
 export interface User {
   id: number;
   role_id: number;
@@ -129,14 +141,23 @@ export interface DataContextType {
   dispatchUsers: React.Dispatch<React.SetStateAction<User[] | undefined>>;
   dispatchClients: React.Dispatch<React.SetStateAction<Client[] | undefined>>;
   dispatchDepartment: React.Dispatch<React.SetStateAction<Department[]>>;
-  dispatchOffsetShapes: React.Dispatch<React.SetStateAction<OffsetShape[] | undefined>>;
-  dispatchBats: React.Dispatch<React.SetStateAction<BatInterface[] | undefined>>;
+  dispatchOffsetShapes: React.Dispatch<
+    React.SetStateAction<OffsetShape[] | undefined>
+  >;
+  dispatchBats: React.Dispatch<
+    React.SetStateAction<BatInterface[] | undefined>
+  >;
+  dispatchTasks: React.Dispatch<
+    React.SetStateAction<TaskInterface[] | undefined>
+  >;
   loadUsers: LoadUsers;
-  status: Status[]
+  status: Status[];
+  tasks: TaskInterface[] | undefined;
+  rules: number[];
 }
 export interface Status {
-  id: number,
-  name: string
+  id: number;
+  name: string;
 }
 export interface OffsetShape {
   id: number;
@@ -157,7 +178,8 @@ export interface OffsetShape {
   code: string;
   user: User;
   logs: any[];
-  status_id: number
+  status_id: number;
+  rule_id: number;
 }
 export interface FlexoShape {
   id: number;
@@ -171,7 +193,7 @@ export interface FlexoShape {
   code: string;
   user: User;
   logs: any[];
-  status_id: number
+  status_id: number;
 }
 const DataContext = createContext<DataContextType>({
   folders: [],
@@ -183,19 +205,22 @@ const DataContext = createContext<DataContextType>({
   departments: [],
   offsetShapes: [],
   flexoShapes: [],
-  dispatchUser: () => { },
-  dispatchUsers: () => { },
-  dispatchClients: () => { },
-  dispatchDepartment: () => { },
+  dispatchUser: () => {},
+  dispatchUsers: () => {},
+  dispatchClients: () => {},
+  dispatchDepartment: () => {},
   loadUsers: {
     isLoadCurrentUser: false,
     isLoadAllUsers: false,
     isloadSections: false,
     isLoadDepartments: false,
   },
-  dispatchOffsetShapes: () => { },
-  dispatchBats: () => { },
-  status: []
+  dispatchOffsetShapes: () => {},
+  dispatchBats: () => {},
+  dispatchTasks: () => {},
+  status: [],
+  tasks: [],
+  rules: [],
 });
 export const useData = () => useContext(DataContext);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({
@@ -210,24 +235,31 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [offsetShapes, setOffsetShapes] = useState<OffsetShape[] | undefined>();
   const [flexoShapes, setFlexoShapes] = useState<FlexoShape[] | undefined>();
   const [bats, setBats] = useState<BatInterface[] | undefined>();
-  const status: Status[] = useMemo(() => [
-    {
-      name: "En cours",
-      id: 1
-    },
-    {
-      name: "En standby",
-      id: 2
-    },
-    {
-      name: "Bloqué",
-      id: 3
-    },
-    {
-      name: "Terminé",
-      id: 4
-    }
-  ], [])
+  const [tasks, setTasks] = useState<TaskInterface[] | undefined>();
+
+  const status: Status[] = useMemo(
+    () => [
+      {
+        name: "En cours",
+        id: 1,
+      },
+      {
+        name: "En standby",
+        id: 2,
+      },
+      {
+        name: "Bloqué",
+        id: 3,
+      },
+      {
+        name: "Terminé",
+        id: 4,
+      },
+    ],
+    []
+  );
+
+  const rules: number[] = useMemo(() => [1, 2, 3], []);
 
   const Router = useRouter();
   const dispatchUser = useMemo(() => setUser, []);
@@ -238,18 +270,19 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const dispatchOffsetShapes = useMemo(() => setOffsetShapes, []);
   const dispatchFolders = useMemo(() => setFolders, []);
   const dispatchBats = useMemo(() => setBats, []);
+  const dispatchTasks = useMemo(() => setTasks, []);
 
   const [loadUsers, setLoadUsers] = useState<LoadUsers>({
     isLoadCurrentUser: false,
     isLoadAllUsers: false,
     isloadSections: false,
     isLoadDepartments: false,
-  })
+  });
 
   useEffect(() => {
     (async () => {
       const { data, success } = await refreshUser();
-      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadCurrentUser: true }))
+      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadCurrentUser: true }));
       if (!success) {
         Router.push("/");
       }
@@ -260,7 +293,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     (async () => {
       const { data, success } = await getAllDepartments();
-      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadDepartments: true }))
+      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadDepartments: true }));
       if (!success) return;
       dispatchDepartment(data);
     })();
@@ -269,7 +302,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     (async () => {
       const { data, success } = await getAllSections();
-      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isloadSections: true }))
+      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isloadSections: true }));
       if (!success) return;
       dispatchSection(data);
     })();
@@ -278,7 +311,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     (async () => {
       const { data, success } = await getAllUsers();
-      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadAllUsers: true }))
+      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadAllUsers: true }));
       if (!success) return;
       dispatchUsers(data);
     })();
@@ -296,12 +329,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     if (users && users?.length > 0) {
       (async () => {
         let { data, success } = await getAllOffsetShapes();
-        console.log('data', data);
+        console.log("data", data);
         if (!success) return;
-        dispatchOffsetShapes(data?.map((dat: any) => ({ ...dat, commercial: users?.find((use) => use.id === dat.commercial_id) })));
+        dispatchOffsetShapes(
+          data?.map((dat: any) => ({
+            ...dat,
+            commercial: users?.find((use) => use.id === dat.commercial_id),
+          }))
+        );
       })();
     }
-
   }, [users]);
 
   useEffect(() => {
@@ -309,25 +346,41 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       (async () => {
         let { data, success } = await getAllFolders();
         if (!success) return;
-        dispatchFolders(data.map((dat: any) => ({ ...dat, commercial: users?.find((use) => use.id === dat.commercial_id) })));
+        dispatchFolders(
+          data.map((dat: any) => ({
+            ...dat,
+            commercial: users?.find((use) => use.id === dat.commercial_id),
+          }))
+        );
       })();
     }
-
   }, [users]);
-
 
   useEffect(() => {
     if (users && users?.length > 0 && departments && departments.length > 0) {
       (async () => {
         let { data, success } = await getAllBats();
         if (!success) return;
-        dispatchBats(data.map((dat: any) => ({ ...dat, department: departments?.find((dep) => dep.id === dat.department_id), commercial: users?.find((use) => use.id === dat.commercial_id) })));
+        dispatchBats(
+          data.map((dat: any) => ({
+            ...dat,
+            department: departments?.find(
+              (dep) => dep.id === dat.department_id
+            ),
+            commercial: users?.find((use) => use.id === dat.commercial_id),
+          }))
+        );
       })();
     }
   }, [users, departments]);
 
+  useEffect(() => {
+    (async () => {
+      let { data } = await getTasks();
+      dispatchTasks(data);
+    })();
+  }, [user]);
 
-  // const commercials = useMemo(() => { }, [])
   return (
     <DataContext.Provider
       value={{
@@ -347,7 +400,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         dispatchDepartment,
         dispatchOffsetShapes,
         dispatchBats,
+        dispatchTasks,
         status,
+        tasks,
+        rules,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-"use server";
+"use client";
 import axios from "axios";
 import { getToken } from "@/lib/data/token";
 
@@ -17,6 +17,7 @@ export interface OffsetShapeEntry {
   user_id?: number;
   code?: string;
   reference?: string;
+  rule_id?: number;
 }
 
 export async function getShapeDetails(shapeId: string) {
@@ -44,6 +45,7 @@ export async function endShape(shapeId: number) {
   try {
     const { data } = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/shapes/${shapeId}/close`,
+      null,
       {
         headers: {
           accept: "application/json",
@@ -259,15 +261,13 @@ export async function getAllFlexoShapes() {
     return { success: false };
   }
 }
-export async function deleteFlexoShape(id: number) {
+export async function deleteShape(id: number) {
   const token = await getToken();
   console.log("id", id);
   console.log("token", token);
   try {
-    const {
-      data: { message },
-    } = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/clients/${id}/delete`,
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}/delete`,
       null,
       {
         headers: {
@@ -277,7 +277,7 @@ export async function deleteFlexoShape(id: number) {
         },
       }
     );
-    return { success: true };
+    return { success: true, data };
   } catch (error) {
     console.log("error", error);
     return { success: false };

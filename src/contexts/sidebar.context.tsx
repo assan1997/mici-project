@@ -60,13 +60,13 @@ const SibeBarContext = createContext<SideBarContextType>({
   nav: [],
   subNav: [],
   resize: false,
-  handleActiveNav: () => { },
-  handleResetNavState: () => { },
-  handleUpdateSubNavId: () => { },
+  handleActiveNav: () => {},
+  handleResetNavState: () => {},
+  handleUpdateSubNavId: () => {},
   getSubnavs: () => [],
-  setNav: () => { },
-  setSubNav: () => { },
-  setResize: () => { },
+  setNav: () => {},
+  setSubNav: () => {},
+  setResize: () => {},
 });
 
 export const useSideBar = () => useContext(SibeBarContext);
@@ -139,7 +139,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       slug: "Imprimerie Offset",
       active: false,
       id: "subNav-2",
-      navId: ["nav-2"],
+      navId: [""],
       icon: (color: string) => <PrintIcon2 color={color} size={22} />,
     },
     {

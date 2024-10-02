@@ -13,7 +13,7 @@ import {
   RulerIcon,
   UpdateIcon,
   DeleteShapeIcon,
-  LogIcon
+  LogIcon,
 } from "@/components/svg";
 import { BaseInput, BaseTextArea } from "@/components/ui/forms/BaseInput";
 import { array, z } from "zod";
@@ -32,7 +32,14 @@ import { createOffsetShape } from "@/services/shapes";
 import { formatTime } from "@/lib/utils/timestamp";
 import MenuDropdown from "@/components/ui/dropdown/MenuDropdown";
 import useActiveState from "@/lib/hooks/useActiveState";
-import { OffsetShapeEntry, updateOffsetShape, standbyOffsetShape, observationOffsetShape, assignToAnUserOffsetShape, endShape } from "@/services/shapes";
+import {
+  OffsetShapeEntry,
+  updateOffsetShape,
+  standbyOffsetShape,
+  observationOffsetShape,
+  assignToAnUserOffsetShape,
+  endShape,
+} from "@/services/shapes";
 import { Spinner } from "@/components/ui/loader/spinner";
 import { TableSkeleton, ButtonSkeleton } from "@/components/ui/loader/Skeleton";
 import { useToast } from "@/contexts/toast.context";
@@ -41,8 +48,9 @@ import { Pagination } from "@/components/ui/pagination";
 import { Filter } from "@/components/ui/filter";
 import { Export } from "@/components/ui/export";
 import { useRouter } from "next/navigation";
+import { deleteShape } from "@/services/shapes";
 
-export const ImprimerieFlexo: FC<{}> = ({ }) => {
+export const ImprimerieFlexo: FC<{}> = ({}) => {
   const {
     users,
     clients,
@@ -50,13 +58,13 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
     offsetShapes: allOffsetShapes,
     user,
     dispatchOffsetShapes,
-    status
+    status,
+    rules,
   } = useData();
   const shapeSchema = z.object({
     client: z.number(),
     commercial: z.number(),
     department: z.number(),
-    // rules: z.string(),
     part: z.string(),
     code: z.string(),
     dim_lx_lh: z.string(),
@@ -65,6 +73,7 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
     paper_type: z.string(),
     pose_number: z.string(),
     reference: z.string(),
+    rule: z.number(),
   });
   const shapeStandBySchema = z.object({
     reason: z.string(),
@@ -74,7 +83,7 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
   });
   const shapeAssignSchema = z.object({
     user_id: z.number(),
-    description: z.string()
+    description: z.string(),
   });
   const form = useForm({ schema: shapeSchema });
   const standByform = useForm({ schema: shapeStandBySchema });
@@ -114,26 +123,31 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
     setClient([]);
   };
   const { box, handleClick } = useActiveState();
-  const [offsetShapes, setOffsetShapes] = useState<OffsetShape[] | undefined>([]);
+  const [offsetShapes, setOffsetShapes] = useState<OffsetShape[] | undefined>(
+    []
+  );
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
-
-  const [observationList, setObservationList] = useState<{
-    id: number;
-    text: string;
-  }[]>([{
-    id: 0,
-    text: "",
-  }])
-
+  const [openEndModal, setEndModal] = useState<boolean>(false);
+  const [observationList, setObservationList] = useState<
+    {
+      id: number;
+      text: string;
+    }[]
+  >([
+    {
+      id: 0,
+      text: "",
+    },
+  ]);
   const onSubmit = async (data: z.infer<typeof shapeSchema>) => {
     setLoading(true);
     let {
       client,
       commercial,
       department,
-      // rules,
+      rule,
       code,
       dim_lx_lh,
       dim_square,
@@ -144,9 +158,10 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
       part,
     } = data;
     reference = reference.trim();
-    // rules = rules.trim();
     part = part.trim();
     code = code.trim();
+
+    console.log("department", department);
 
     const { data: createdOffsetShape, success } = await createOffsetShape({
       client_id: client,
@@ -160,13 +175,15 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
       pose_number,
       reference,
       part,
+      rule_id: rule,
       user_id: user?.id as unknown as number,
-      observations: observationList.map((obs) => obs.text)
+      observations: observationList.map((obs) => obs.text),
     });
     if (success) {
       reset();
       setCreationModal(false);
-      createdOffsetShape.department = departments.filter(
+      createdOffsetShape.dim_plate = dim_plate;
+      createdOffsetShape.department = departments.find(
         (dep) => dep.id === department && dep
       );
       createdOffsetShape.commercial = users?.find(
@@ -174,21 +191,20 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
       );
       createdOffsetShape.client = clients?.find((cli) => cli?.id === client);
       dispatchOffsetShapes((tmp) => {
-        if (tmp) return [createdOffsetShape, ...tmp]
+        if (tmp) return [createdOffsetShape, ...tmp];
       });
 
       showToast({
         type: "success",
         message: "Crée avec succès",
-        position: "top-center"
-      })
-    }
-    else {
+        position: "top-center",
+      });
+    } else {
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
     setLoading(false);
     console.log("createdOffsetShape", createdOffsetShape);
@@ -203,10 +219,13 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
   const [department, setDepartment] = useState<ComboSelect[]>([]);
   const [currentEntry, setCurrentEntry] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [currentDatas, setCurrentDatas] = useState<any[]>(allOffsetShapes ? allOffsetShapes : []);
+  const [currentDatas, setCurrentDatas] = useState<any[]>(
+    allOffsetShapes ? allOffsetShapes : []
+  );
+  const [selectedRule, setSelectedRule] = useState<ComboSelect[]>([]);
 
   useEffect(() => {
-    setCurrentDatas(allOffsetShapes ? allOffsetShapes : [])
+    setCurrentDatas(allOffsetShapes ? allOffsetShapes : []);
   }, [allOffsetShapes]);
 
   const { showToast } = useToast();
@@ -231,9 +250,15 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
       label: shape?.client?.name,
     };
 
-    if (dep) setDepartment([dep as any]);
-    if (comm) setCommercial([comm as any]);
-    if (cli) setClient([cli as any]);
+    const rule = {
+      value: shape?.rule_id,
+      label: `Règle ${shape?.rule_id}`,
+    };
+
+    if (dep?.value) setDepartment([dep as any]);
+    if (comm?.value) setCommercial([comm as any]);
+    if (cli?.value) setClient([cli as any]);
+    if (rule?.value) setSelectedRule([rule as any]);
 
     form.setValue("code", shape.code);
     form.setValue("dim_lx_lh", shape.dim_lx_lh);
@@ -243,6 +268,7 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
     form.setValue("pose_number", shape.pose_number);
     form.setValue("reference", shape.reference);
     form.setValue("part", shape.part);
+
     // setObservationList(shape?.observations?.map((observation) => ({ id: observation.id, text: observation.observation })))
     return shape;
   }, [currentEntry]);
@@ -259,13 +285,16 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
     form.setValue("client", client[0]?.value as unknown as number);
   }, [client]);
 
+  useEffect(() => {
+    form.setValue("rule", selectedRule[0]?.value as unknown as number);
+  }, [selectedRule]);
+
   const onSubmitUpdate = async (data: z.infer<typeof shapeSchema>) => {
     setLoading(true);
     let {
       client,
       commercial,
       department,
-      // rules,
       code,
       dim_lx_lh,
       dim_square,
@@ -274,9 +303,9 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
       pose_number,
       reference,
       part,
+      rule,
     } = data;
     reference = reference.trim();
-    // rules = rules.trim();
     part = part.trim();
     code = code.trim();
     const entry: OffsetShapeEntry = {
@@ -291,123 +320,173 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
       part,
       code,
       reference,
-      observations: observationList.map((obs) => obs.text)
+      rule_id: rule,
+      observations: observationList.map((obs) => obs.text),
     };
-    if (!entry.client_id || JSON.stringify(entry.client_id) === JSON.stringify(shapeInEntry?.client?.id)) delete entry.client_id;
+
+    if (
+      !entry.rule_id ||
+      JSON.stringify(entry.rule_id) === JSON.stringify(shapeInEntry?.rule_id)
+    )
+      delete entry.client_id;
+    if (
+      !entry.client_id ||
+      JSON.stringify(entry.client_id) ===
+        JSON.stringify(shapeInEntry?.client?.id)
+    )
+      delete entry.client_id;
     if (
       !entry.department_id ||
       JSON.stringify(entry.department_id) ===
-      JSON.stringify(shapeInEntry?.department.id)
-    ) delete entry.department_id;
+        JSON.stringify(shapeInEntry?.department.id)
+    )
+      delete entry.department_id;
 
     if (
       !entry.commercial_id ||
       JSON.stringify(entry?.commercial_id) ===
-      JSON.stringify(shapeInEntry?.commercial?.id)
-    ) delete entry.commercial_id;
+        JSON.stringify(shapeInEntry?.commercial?.id)
+    )
+      delete entry.commercial_id;
 
     if (
       !entry.dim_lx_lh ||
       JSON.stringify(entry.dim_lx_lh) ===
-      JSON.stringify(shapeInEntry?.dim_lx_lh)
-    ) delete entry.dim_lx_lh;
+        JSON.stringify(shapeInEntry?.dim_lx_lh)
+    )
+      delete entry.dim_lx_lh;
 
     if (
       !entry.dim_square ||
       JSON.stringify(entry.dim_square) ===
-      JSON.stringify(shapeInEntry?.dim_square)
-    ) delete entry.dim_square;
+        JSON.stringify(shapeInEntry?.dim_square)
+    )
+      delete entry.dim_square;
 
     if (
       !entry.dim_plate ||
       JSON.stringify(entry.dim_plate) ===
-      JSON.stringify(shapeInEntry?.dim_plate)
-    ) delete entry.dim_plate;
+        JSON.stringify(shapeInEntry?.dim_plate)
+    )
+      delete entry.dim_plate;
 
     if (
       !entry.paper_type ||
       JSON.stringify(entry.paper_type) ===
-      JSON.stringify(shapeInEntry?.paper_type)
-    ) delete entry.paper_type;
+        JSON.stringify(shapeInEntry?.paper_type)
+    )
+      delete entry.paper_type;
 
     if (
       !entry.pose_number ||
       JSON.stringify(entry.pose_number) ===
-      JSON.stringify(shapeInEntry?.pose_number)
-    ) delete entry.pose_number;
+        JSON.stringify(shapeInEntry?.pose_number)
+    )
+      delete entry.pose_number;
 
     if (
       !entry.reference ||
       JSON.stringify(entry.reference) ===
-      JSON.stringify(shapeInEntry?.reference)
-    ) delete entry.reference;
+        JSON.stringify(shapeInEntry?.reference)
+    )
+      delete entry.reference;
 
     if (
       !entry.part ||
-      JSON.stringify(entry.part) ===
-      JSON.stringify(shapeInEntry?.part)
-    ) delete entry.part;
+      JSON.stringify(entry.part) === JSON.stringify(shapeInEntry?.part)
+    )
+      delete entry.part;
 
     if (
       !entry.code ||
-      JSON.stringify(entry.code) ===
-      JSON.stringify(shapeInEntry?.code)
-    ) delete entry.code;
+      JSON.stringify(entry.code) === JSON.stringify(shapeInEntry?.code)
+    )
+      delete entry.code;
 
     const { data: updatedShape, success } = await updateOffsetShape(
       currentEntry as number,
       entry
     );
+
     if (success) {
       updatedShape.department = departments.find(
         (dep) => dep.id === department && dep
       );
-      updatedShape.commercial = users?.find(
-        (use) => use.id === commercial
-      );
+      updatedShape.commercial = users?.find((use) => use.id === commercial);
       updatedShape.client = clients?.find((cli) => cli.id === client);
       dispatchOffsetShapes((tmp) => {
         let tmpDatas;
         let tmpData;
         if (tmp) {
-          tmpData = tmp.find(t => t.id === updatedShape.id);
+          tmpData = tmp.find((t) => t.id === updatedShape.id);
           tmpDatas = tmp.filter((t) => t.id !== updatedShape.id);
-          return [{ ...updatedShape, logs: tmpData?.logs }, ...tmpDatas]
+          return [{ ...updatedShape, logs: tmpData?.logs }, ...tmpDatas];
         }
       });
       setOpenEditionModal(false);
       showToast({
         type: "success",
         message: "Modifier avec succès",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     } else {
       console.log("error");
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
-    reset()
-    setLoading(false)
+    reset();
+    setLoading(false);
   };
-  const [openAssignToUserModal, setOpenAssignToUserModal] = useState<boolean>(false);
+  const [openAssignToUserModal, setOpenAssignToUserModal] =
+    useState<boolean>(false);
   const [openLogsModal, setOpenLogsModal] = useState<boolean>(false);
-  const handleDeleteShape = (id: number) => { };
+  const handleDeleteShape = async (id: number) => {
+    setLoading(true);
+    const { data: deletedShape, success } = await deleteShape(
+      currentEntry as number
+    );
+    if (success) {
+      dispatchOffsetShapes((tmp: any) => {
+        let tmpDatas;
+        if (tmp) {
+          tmpDatas = tmp.filter((t: any) => t.id !== currentEntry);
+          return [...tmpDatas];
+        }
+      });
+      setDelationModal(false);
+      showToast({
+        type: "success",
+        message: `Supprimé avec succès`,
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setLoading(false);
+    reset();
+  };
   const [openStandByModal, setOpenStandByModal] = useState<boolean>(false);
-  const [openObservationModal, setOpenObservationModal] = useState<boolean>(false);
+  const [openObservationModal, setOpenObservationModal] =
+    useState<boolean>(false);
+
   const onSubmitStandBy = async (data: z.infer<typeof shapeStandBySchema>) => {
     setLoading(true);
     let { reason } = data;
     reason = reason.trim();
-    const status_id = shapeInEntry?.status_id !== 2 ? 2 : 1
+    const status_id = shapeInEntry?.status_id !== 2 ? 2 : 1;
     const { data: standByShape, success } = await standbyOffsetShape(
       currentEntry as number,
       {
         type: "STANDBY",
         reason,
-        status_id
+        status_id,
       }
     );
     if (success) {
@@ -418,57 +497,57 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
         if (tmp) {
           tmpData = tmp.find((t: any) => t.id === standByShape.id);
           tmpDatas = tmp.filter((t: any) => t.id !== standByShape.id);
-          return [{ ...tmpData, status_id }, ...tmpDatas]
+          return [{ ...tmpData, status_id }, ...tmpDatas];
         }
       });
-      standByform.setValue('reason', '');
+      standByform.setValue("reason", "");
       setOpenStandByModal(false);
       showToast({
         type: "success",
         message: `${status_id === 2 ? "Mis" : "Enlevé"} en standby avec succès`,
-        position: "top-center"
-      })
-    }
-    else {
+        position: "top-center",
+      });
+    } else {
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
     setLoading(false);
     reset();
-  }
-  const onSubmitOservation = async (data: z.infer<typeof shapeObservationSchema>) => {
+  };
+  const onSubmitOservation = async (
+    data: z.infer<typeof shapeObservationSchema>
+  ) => {
     let { observation } = data;
     setLoading(true);
     observation = observation.trim();
-    const { data: observationData, success } = await observationOffsetShape(currentEntry as number,
+    const { data: observationData, success } = await observationOffsetShape(
+      currentEntry as number,
       {
         type: "OBSERVATION",
-        observation
-      })
+        observation,
+      }
+    );
     if (success) {
-      console.log('observationData', observationData);
-      observationForm.setValue('observation', '');
+      observationForm.setValue("observation", "");
       setOpenObservationModal(false);
-
       showToast({
         type: "success",
         message: "Observation crée avec succès",
-        position: "top-center"
-      })
-    }
-    else {
+        position: "top-center",
+      });
+    } else {
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
     setLoading(false);
     reset();
-  }
+  };
   const onSubmitAssign = async (data: z.infer<typeof shapeAssignSchema>) => {
     setLoading(true);
     let { user_id } = data;
@@ -477,83 +556,240 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
       {
         type: "ASSIGNATION",
         user_assignated_id: user_id,
-        task_description: data.description
+        task_description: data.description,
       }
     );
     if (success) {
-      // console.log('assignShape', assignShape);
-      // tmp => {
-      //   return tmp?.map((shape) => {
-      //     return ({ ...shape, logs: [] })
-      //     // shape.id === assignShape.id ? ({
-      //     //   ...shape,
-      //     //   logs: [
-      //     //     {
-      //     //       "id": shape.logs[shape.logs.length - 1].id + 1,
-      //     //       "shape_id": shape.id,
-      //     //       "title": "Assigné à une personne",
-      //     //       "description": null,
-      //     //       "user_treating_id": user?.id,
-      //     //       "type": "ASSIGNATION",
-      //     //       "created_at": new Date(),
-      //     //       "updated_at": new Date(),
-      //     //       "user_assignated_id": user_id,
-      //     //       "bat_id": null,
-      //     //       "folder_id": null
-      //     //     },
-      //     //     ...shape.logs]
-      //     // }) : shape
-      //   })
-      // }
-      // dispatchOffsetShapes([])
-      assignForm.setValue('user_id', 0);
+      assignForm.setValue("user_id", 0);
       setOpenAssignToUserModal(false);
       showToast({
         type: "success",
         message: "Assigné avec succès",
-        position: "top-center"
-      })
-
+        position: "top-center",
+      });
     } else {
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
     setLoading(false);
     reset();
-  }
+  };
   const onSubmitClose = async () => {
     setLoading(true);
-    const { data: closeShapeData, success } = await endShape(shapeInEntry?.id as unknown as number);
+    const { data: closeShapeData, success } = await endShape(
+      shapeInEntry?.id as unknown as number
+    );
     if (success) {
-      console.log('closeShapeData', closeShapeData);
+      dispatchOffsetShapes((tmp: any) => {
+        let tmpDatas;
+        let tmpData;
+        if (tmp) {
+          tmpData = tmp.find((t: any) => t.id === shapeInEntry?.id);
+          tmpDatas = tmp.filter((t: any) => t.id !== shapeInEntry?.id);
+          return [{ ...tmpData, status_id: 4 }, ...tmpDatas];
+        }
+      });
+      showToast({
+        type: "success",
+        message: "Terminé avec succès",
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
     }
     setLoading(false);
-  }
-
+  };
   useEffect(() => {
     assignForm.setValue("user_id", assignUser[0]?.value as unknown as number);
   }, [assignUser]);
 
   const Router = useRouter();
   const goToDetail = (id: any) => {
-    Router.push(`/workspace/details/shapes/imprimerie-flexo/${id}`)
-  }
+    Router.push(`/workspace/details/shapes/imprimerie-flexo/${id}`);
+  };
+  const [sortedBy, setSortedBY] = useState<string>("");
+
   const sort = (key: string) => {
-    setOffsetShapes(tmp => {
-      let sorted = tmp?.sort((a, b) => {
-        if (a.client.name.toUpperCase() > b.client.name.toUpperCase()) {
-          return -1; // Si 'a' est plus grand que 'b', place 'b' avant 'a'
-        }
-        if (a.client.name.toUpperCase() < b.client.name.toUpperCase()) {
-          return 1; // Si 'a' est plus petit que 'b', place 'a' avant 'b'
-        }
-        return 0; // 'a' et 'b' sont égaux
+    setCurrentDatas((tmp) => {
+      let sorted: any = [];
+
+      if (key === "client") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.client.name.toUpperCase() > b.client.name.toUpperCase()) {
+            return sortedBy !== key ? 1 : -1;
+          }
+          if (a.client.name.toUpperCase() < b.client.name.toUpperCase()) {
+            return sortedBy !== key ? -1 : 1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "commercial") {
+        sorted = tmp?.sort((a, b) => {
+          if (
+            a.commercial.name.toUpperCase() > b.commercial.name.toUpperCase()
+          ) {
+            return 1;
+          }
+          if (
+            a.commercial.name.toUpperCase() < b.commercial.name.toUpperCase()
+          ) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "code") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.code.toUpperCase() > b.code.toUpperCase()) {
+            return 1;
+          }
+          if (a.code.toUpperCase() < b.code.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "reference") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.reference.toUpperCase() > b.reference.toUpperCase()) {
+            return 1;
+          }
+          if (a.reference.toUpperCase() < b.reference.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "departement") {
+        sorted = tmp?.sort((a, b) => {
+          if (
+            a.department.name.toUpperCase() > b.department.name.toUpperCase()
+          ) {
+            return 1;
+          }
+          if (
+            a.department.name.toUpperCase() < b.department.name.toUpperCase()
+          ) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "dimension lxlxh") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.dim_lx_lh.toUpperCase() > b.dim_lx_lh.toUpperCase()) {
+            return 1;
+          }
+          if (a.dim_lx_lh.toUpperCase() < b.dim_lx_lh.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "dimensions carré") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.dim_square.toUpperCase() > b.dim_square.toUpperCase()) {
+            return 1;
+          }
+          if (a.dim_square.toUpperCase() < b.dim_square.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "dimensions plaque") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.dim_plate.toUpperCase() > b.dim_plate.toUpperCase()) {
+            return 1;
+          }
+          if (a.dim_plate.toUpperCase() < b.dim_plate.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "type papier") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.paper_type.toUpperCase() > b.paper_type.toUpperCase()) {
+            return 1;
+          }
+          if (a.paper_type.toUpperCase() < b.paper_type.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "n° des poses") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.pose_number.toUpperCase() > b.pose_number.toUpperCase()) {
+            return 1;
+          }
+          if (a.pose_number.toUpperCase() < b.pose_number.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "n° des poses") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.pose_number.toUpperCase() > b.pose_number.toUpperCase()) {
+            return 1;
+          }
+          if (a.pose_number.toUpperCase() < b.pose_number.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "1/3") {
+        sorted = tmp?.sort((a, b) => {
+          if (a.part.toUpperCase() > b.part.toUpperCase()) {
+            return 1;
+          }
+          if (a.part.toUpperCase() < b.part.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      setSortedBY((tmp) => {
+        console.log(
+          "sortedBy",
+          sortedBy,
+          "key",
+          key,
+          "sortedBy===",
+          sortedBy === key
+        );
+        // if (tmp === key) return "";
+        return key;
       });
-      console.log('sorted', sorted)
-      return sorted
+
+      if (key === sortedBy) {
+        return allOffsetShapes ? allOffsetShapes : [];
+      }
+
+      return [...(sorted as unknown as any)];
     });
   };
 
@@ -565,7 +801,7 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
           type="button"
           onClick={() => {
             setCreationModal((tmp) => !tmp);
-            reset()
+            reset();
           }}
           className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
         >
@@ -592,7 +828,8 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
             list={status}
             filterDatas={allOffsetShapes ? allOffsetShapes : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes} />
+            filterHandler={setOffsetShapes}
+          />
           <Filter
             type="date"
             title={"Filtrer par date de mise à jour"}
@@ -601,7 +838,8 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
             list={status}
             filterDatas={allOffsetShapes ? allOffsetShapes : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes} />
+            filterHandler={setOffsetShapes}
+          />
           <Filter
             type="search"
             title={"Rechercher une entrée"}
@@ -610,44 +848,72 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
             list={status}
             filterDatas={allOffsetShapes ? allOffsetShapes : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes} />
-          <Export title="Exporter en csv" type="csv" entry={{
-            headers: Object.keys(allOffsetShapes ? allOffsetShapes[0] : {}).flatMap((shapeKey) => shapeKey).filter((shapeKey) => {
-              if (!["logs", "id", "client_id", "commercial_id", "status_id", "department_id"].includes(shapeKey)) return shapeKey
-            }).flatMap((shapeKey) => ({
-              label: shapeKey.toUpperCase().replaceAll('_', ' '),
-              key: shapeKey.toLocaleLowerCase()
-            })),
-            data: allOffsetShapes ? allOffsetShapes.map((shape) => ({
-              ...shape,
-              department: shape?.department?.name,
-              client: shape?.client?.name,
-              commercial: shape?.commercial?.name,
-              created_at: ` ${formatTime(
-                new Date(shape?.["created_at"]).getTime(),
-                "d:mo:y",
-                "short"
-              )} : ${formatTime(
-                new Date(shape?.["created_at"]).getTime(),
-                "h:m",
-                "short"
-              )}`,
-              updated_at: ` ${formatTime(
-                new Date(shape?.["updated_at"]).getTime(),
-                "d:mo:y",
-                "short"
-              )} : ${formatTime(
-                new Date(shape?.["updated_at"]).getTime(),
-                "h:m",
-                "short"
-              )}`
-            })) : []
-          }} />
-          <Export title="Télécharger le pdf" type="pdf" entry={{ headers: [], data: [] }} />
+            filterHandler={setOffsetShapes}
+          />
+          {allOffsetShapes && allOffsetShapes?.length > 0 ? (
+            <Export
+              title="Exporter en csv"
+              type="csv"
+              entry={{
+                headers: Object.keys(allOffsetShapes ? allOffsetShapes[0] : {})
+                  .flatMap((shapeKey) => shapeKey)
+                  .filter((shapeKey) => {
+                    if (
+                      ![
+                        "logs",
+                        "id",
+                        "client_id",
+                        "commercial_id",
+                        "status_id",
+                        "department_id",
+                      ].includes(shapeKey)
+                    )
+                      return shapeKey;
+                  })
+                  .flatMap((shapeKey) => ({
+                    label: shapeKey.toUpperCase().replaceAll("_", " "),
+                    key: shapeKey.toLocaleLowerCase(),
+                  })),
+                data: allOffsetShapes
+                  ? allOffsetShapes.map((shape) => ({
+                      ...shape,
+                      department: shape?.department?.name,
+                      client: shape?.client?.name,
+                      commercial: shape?.commercial?.name,
+                      created_at: ` ${formatTime(
+                        new Date(shape?.["created_at"]).getTime(),
+                        "d:mo:y",
+                        "short"
+                      )} : ${formatTime(
+                        new Date(shape?.["created_at"]).getTime(),
+                        "h:m",
+                        "short"
+                      )}`,
+                      updated_at: ` ${formatTime(
+                        new Date(shape?.["updated_at"]).getTime(),
+                        "d:mo:y",
+                        "short"
+                      )} : ${formatTime(
+                        new Date(shape?.["updated_at"]).getTime(),
+                        "h:m",
+                        "short"
+                      )}`,
+                    }))
+                  : [],
+              }}
+            />
+          ) : null}
+          {/* <Export
+            title="Télécharger le pdf"
+            type="pdf"
+            entry={{ headers: [], data: [] }}
+          /> */}
         </div>
         <div className="relative w-full overflow-auto scrollbar-hide bg-white">
-          {!allOffsetShapes ?
-            <TableSkeleton head={tableHead} /> : currentDatas.length > 0 ? <motion.div
+          {!allOffsetShapes ? (
+            <TableSkeleton head={tableHead} />
+          ) : currentDatas.length > 0 ? (
+            <motion.div
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{
@@ -658,120 +924,214 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
             >
               <table className="w-full mb-[20rem] relative">
                 <thead className="bg-white/50">
-                  <tr className="border-b">
+                  <tr className="border-b bg-gray-50 cursor-pointer">
                     {tableHead.map((head, index) => (
                       <th
-
+                        onClick={() => {
+                          if (
+                            [
+                              "Options",
+                              "Statut",
+                              "Date & Heure de création",
+                              "Date & Heure de mise à jour",
+                            ].includes(head)
+                          )
+                            return;
+                          sort(head.toLocaleLowerCase());
+                        }}
                         key={index}
-                        className={`w-fit ${index === 0 ? "w-0" : "min-w-[150px]"
-                          } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
-                          }  text-[#000000]`}
+                        className={`w-fit ${
+                          index === 0 ? "w-0" : "min-w-[150px]"
+                        } text-[13px] py-[10px] font-medium  ${
+                          index > 0 && index < tableHead.length
+                        }  text-[#000000]`}
                       >
-                        <div className={`h-full font-poppins  relative flex items-center text-start gap-x-[10px] px-[20px] ${head === "Options" ? " justify-end" : " justify-start"}`}>
+                        <div
+                          className={`h-full font-poppins relative flex items-center text-start gap-x-[10px] px-[20px] ${
+                            head === "Options"
+                              ? " justify-end"
+                              : " justify-start"
+                          }`}
+                        >
                           {head}
-                          {head !== "Options" ? <div onClick={() => {
-                            // sort('code')
-                          }} className="cursor-pointer shrink-0 p-[4px] rounded-lg">
-                            <svg version="1.1" id="fi_690342" xmlns="http://www.w3.org/2000/svg" width={15} height={15} viewBox="0 0 512 512">
-                              <g>
+                          {![
+                            "Options",
+                            "Statut",
+                            "Date & Heure de création",
+                            "Date & Heure de mise à jour",
+                          ].includes(head) ? (
+                            <div
+                              className={`cursor-pointer ${
+                                sortedBy === head.toLowerCase()
+                                  ? "bg-blue-200"
+                                  : ""
+                              } shrink-0 p-[8px] rounded-lg`}
+                            >
+                              <svg
+                                version="1.1"
+                                id="fi_690342"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width={15}
+                                height={15}
+                                viewBox="0 0 512 512"
+                              >
                                 <g>
-                                  <path fill="#94a3b8 " d="M106.23,0H75.86L1.496,212.467h42.273l11.172-31.92h71.37l11.012,31.92h42.207L106.23,0z M68.906,140.647l21.976-62.791
-			l21.664,62.791H68.906z"></path>
+                                  <g>
+                                    <path
+                                      fill={
+                                        sortedBy === head.toLowerCase()
+                                          ? "#3b82f6"
+                                          : "#64748b"
+                                      }
+                                      d="M106.23,0H75.86L1.496,212.467h42.273l11.172-31.92h71.37l11.012,31.92h42.207L106.23,0z M68.906,140.647l21.976-62.791
+			l21.664,62.791H68.906z"
+                                    ></path>
+                                  </g>
                                 </g>
-                              </g>
-                              <g>
                                 <g>
-                                  <polygon fill="#64748b " points="483.288,359.814 407.478,435.624 407.478,0 367.578,0 367.578,435.624 291.768,359.814 263.555,388.027 
-			387.528,512 511.501,388.027 		"></polygon>
+                                  <g>
+                                    <polygon
+                                      fill={
+                                        sortedBy === head.toLowerCase()
+                                          ? "#3b82f6"
+                                          : "#64748b"
+                                      }
+                                      points="483.288,359.814 407.478,435.624 407.478,0 367.578,0 367.578,435.624 291.768,359.814 263.555,388.027 
+			387.528,512 511.501,388.027 		"
+                                    ></polygon>
+                                  </g>
                                 </g>
-                              </g>
-                              <g>
                                 <g>
-                                  <polygon fill="#64748b " points="182.043,299.247 0.499,299.247 0.499,339.147 122.039,339.147 0.499,480.372 0.499,511.717 180.048,511.717 
-			180.048,471.817 60.503,471.817 182.043,330.592 		"></polygon>
+                                  <g>
+                                    <polygon
+                                      fill={
+                                        sortedBy === head.toLowerCase()
+                                          ? "#3b82f6"
+                                          : "#64748b"
+                                      }
+                                      points="182.043,299.247 0.499,299.247 0.499,339.147 122.039,339.147 0.499,480.372 0.499,511.717 180.048,511.717 
+			180.048,471.817 60.503,471.817 182.043,330.592 		"
+                                    ></polygon>
+                                  </g>
                                 </g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                              <g>
-                              </g>
-                            </svg>
-                          </div> : null}
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                                <g></g>
+                              </svg>
+                            </div>
+                          ) : null}
                         </div>
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="bg-white/10">
-                  {
-                    offsetShapes?.map((row, index) => {
-                      const statut = status.find((st) => st.id === row?.status_id)
-                      return <tr key={index} className={`cursor-pointer border-b`}>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
-                          <div className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${row?.status_id === 2 ? "bg-orange-200 text-orange-500" : row?.status_id === 3 ? "bg-danger-200 text-danger-500" : row?.status_id === 4 ? "bg-green-200 text-green-500" : "bg-blue-200 text-blue-900"}`}>
+                  {offsetShapes?.map((row, index) => {
+                    const statut = status.find(
+                      (st) => st.id === row?.status_id
+                    );
+                    return (
+                      <tr
+                        key={index}
+                        className={`cursor-pointer border-b transition-all duration hover:bg-gray-100 checked:hover:bg-gray-100`}
+                      >
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]"
+                        >
+                          <div
+                            className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
+                              row?.status_id === 2
+                                ? "bg-orange-200 text-orange-500"
+                                : row?.status_id === 3
+                                ? "bg-danger-200 text-danger-500"
+                                : row?.status_id === 4
+                                ? "bg-green-200 text-green-500"
+                                : "bg-blue-200 text-blue-900"
+                            }`}
+                          >
                             {statut?.name}
                           </div>
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] relative min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.code}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.client?.name}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.reference}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.commercial?.name}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row.department?.name}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.dim_lx_lh}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.dim_square}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.dim_plate}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.paper_type}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.pose_number}
                         </td>
                         <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
                           {row?.part}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {formatTime(
                             new Date(row?.["created_at"]).getTime(),
                             "d:mo:y",
@@ -784,7 +1144,10 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                             "short"
                           )}
                         </td>
-                        <td onClick={() => goToDetail(row?.id)} className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {formatTime(
                             new Date(row?.["updated_at"]).getTime(),
                             "d:mo:y",
@@ -832,7 +1195,7 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        goToDetail(row?.id)
+                                        goToDetail(row?.id);
                                       }}
                                       className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
                                     >
@@ -844,7 +1207,7 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        setOpenAssignToUserModal(true)
+                                        setOpenAssignToUserModal(true);
                                       }}
                                       className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
                                     >
@@ -880,7 +1243,7 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        setDelationModal(true);
+                                        setEndModal(true);
                                       }}
                                       className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                     >
@@ -921,29 +1284,34 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                           </div>
                         </td>
                       </tr>
-                    })
-                  }
+                    );
+                  })}
                 </tbody>
               </table>
             </motion.div>
-              :
-              <motion.div
-                initial={{ y: 40, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{
-                  duration: 1,
-                  ease: [0.36, 0.01, 0, 0.99],
-                  delay: 0.2,
-                }}
-              >
-                <div className="w-full bg-white/80 flex justify-center items-center font-poppins font-medium leading-[20px] px-[20px] h-[60px]">
-                  Aucune donnée
-                </div>
-              </motion.div>
-          }
+          ) : (
+            <motion.div
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{
+                duration: 1,
+                ease: [0.36, 0.01, 0, 0.99],
+                delay: 0.2,
+              }}
+            >
+              <div className="w-full bg-white/80 flex justify-center items-center font-poppins font-medium leading-[20px] px-[20px] h-[60px]">
+                Aucune donnée
+              </div>
+            </motion.div>
+          )}
         </div>
-        {currentDatas.length > 0 ? <Pagination datas={currentDatas ? currentDatas : []} listHandler={setOffsetShapes} /> : null}
-      </motion.div >
+        {currentDatas.length > 0 ? (
+          <Pagination
+            datas={currentDatas ? currentDatas : []}
+            listHandler={setOffsetShapes}
+          />
+        ) : null}
+      </motion.div>
 
       <BaseModal open={openCreationModal} classname={""}>
         <Form form={form} onSubmit={onSubmit}>
@@ -1018,10 +1386,12 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`client`}
-                  options={clients?.map((client: Client) => ({
-                    value: client.id as unknown as string,
-                    label: client.name,
-                  })) as any}
+                  options={
+                    clients?.map((client: Client) => ({
+                      value: client.id as unknown as string,
+                      label: client.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={client}
@@ -1050,10 +1420,12 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`commercial`}
-                  options={users?.map((commercial: User) => ({
-                    value: commercial.id as unknown as string,
-                    label: commercial.name,
-                  })) as any}
+                  options={
+                    users?.map((commercial: User) => ({
+                      value: commercial.id as unknown as string,
+                      label: commercial.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={commercial}
@@ -1125,68 +1497,126 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                   type="text"
                   {...form.register("part")}
                 />
+                <ComboboxMultiSelect
+                  label={"Règle"}
+                  placeholder="Sélectionnez la règle a appliquer"
+                  className="w-full"
+                  icon={
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                        stroke="black"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  }
+                  id={`rule`}
+                  options={rules?.map((rule) => ({
+                    value: rule as unknown as string,
+                    label: `Règle ${rule}` as unknown as string,
+                  }))}
+                  error={undefined}
+                  isUniq={true}
+                  selectedElementInDropdown={selectedRule}
+                  setSelectedUniqElementInDropdown={setSelectedRule}
+                  borderColor="border-grayscale-200"
+                />
                 <br />
               </div>
-              {observationList.map((observation: {
-                id: number;
-                text: string;
-              }, index: number) =>
-                <motion.div
-                  key={index}
-                  initial={{ y: 40, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{
-                    duration: 1,
-                    ease: [0.36, 0.01, 0, 0.99],
-                    delay: 0.2,
-                  }}
-                >
-                  <div className="flex gap-x-[10px] items-center">
-                    <BaseTextArea
-                      label="Nouvelle observation"
-                      id="observation"
-                      placeholder="Observation"
-                      // leftIcon={<RulerIcon color={""} size={20} />}
-                      type="text"
-                      onChange={(e) => {
-                        setObservationList(tmp => tmp.map((obs) => obs.id === observation.id ? ({ ...obs, text: e.target.value }) : obs))
-                      }}
-
-                      value={observation.text}
-                    />
-                    <div className="flex gap-x-[10px]">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setObservationList(tmp => [...tmp, {
-                            id: observationList[observationList.length - 1].id + 1,
-                            text: "",
-                          }])
+              {observationList.map(
+                (
+                  observation: {
+                    id: number;
+                    text: string;
+                  },
+                  index: number
+                ) => (
+                  <motion.div
+                    key={index}
+                    initial={{ y: 40, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{
+                      duration: 1,
+                      ease: [0.36, 0.01, 0, 0.99],
+                      delay: 0.2,
+                    }}
+                  >
+                    <div className="flex gap-x-[10px] items-center">
+                      <BaseTextArea
+                        label="Nouvelle observation"
+                        id="observation"
+                        placeholder="Observation"
+                        // leftIcon={<RulerIcon color={""} size={20} />}
+                        type="text"
+                        onChange={(e) => {
+                          setObservationList((tmp) =>
+                            tmp.map((obs) =>
+                              obs.id === observation.id
+                                ? { ...obs, text: e.target.value }
+                                : obs
+                            )
+                          );
                         }}
-                        className={`mt-5 w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-                      >
-                        +
-                      </button>
-                      {index !== 0 ? <button
-                        type="button"
-                        onClick={() => {
-                          setObservationList(tmp => tmp.filter((obs) => obs.id !== observation.id && obs))
-                        }}
-                        className={`mt-5 w-fit h-[48px] text-gray-900 transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#dbdbdb8e] hover:bg-[#dbdbdb]/90`}
-                      >
-                        -
-                      </button> : null}
+                        value={observation.text}
+                      />
+                      <div className="flex gap-x-[10px]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setObservationList((tmp) => [
+                              ...tmp,
+                              {
+                                id:
+                                  observationList[observationList.length - 1]
+                                    .id + 1,
+                                text: "",
+                              },
+                            ]);
+                          }}
+                          className={`mt-5 w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+                        >
+                          +
+                        </button>
+                        {index !== 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setObservationList((tmp) =>
+                                tmp.filter(
+                                  (obs) => obs.id !== observation.id && obs
+                                )
+                              );
+                            }}
+                            className={`mt-5 w-fit h-[48px] text-gray-900 transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#dbdbdb8e] hover:bg-[#dbdbdb]/90`}
+                          >
+                            -
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                )
               )}
             </div>
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center px-[20px] py-[10px] h-[80px] border-t">
               <button
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
-                {loading ? <>
-                  <Spinner color={"#fff"} size={20} />  {"En cours"}</> : "Enregistrer"}
+                {loading ? (
+                  <>
+                    <Spinner color={"#fff"} size={20} /> {"En cours"}
+                  </>
+                ) : (
+                  "Enregistrer"
+                )}
               </button>
             </div>
           </div>
@@ -1205,7 +1635,6 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                 onClick={() => setOpenEditionModal(false)}
                 className={`w-[30px] h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
               >
-
                 <span className={``}>
                   <CloseIcon />
                 </span>
@@ -1267,10 +1696,12 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`client`}
-                  options={clients?.map((client: Client) => ({
-                    value: client.id as unknown as string,
-                    label: client.name,
-                  })) as any}
+                  options={
+                    clients?.map((client: Client) => ({
+                      value: client.id as unknown as string,
+                      label: client.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={client}
@@ -1299,10 +1730,12 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`commercial`}
-                  options={users?.map((commercial: User) => ({
-                    value: commercial.id as unknown as string,
-                    label: commercial.name,
-                  })) as any}
+                  options={
+                    users?.map((commercial: User) => ({
+                      value: commercial.id as unknown as string,
+                      label: commercial.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={commercial}
@@ -1373,59 +1806,116 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                   type="text"
                   {...form.register("part")}
                 />
-              </div>
-              {observationList.map((observation: {
-                id: number;
-                text: string;
-              }, index: number) =>
-                <motion.div
-                  key={index}
-                  initial={{ y: 40, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{
-                    duration: 1,
-                    ease: [0.36, 0.01, 0, 0.99],
-                    delay: 0.2,
-                  }}
-                >
-                  <div className="flex gap-x-[10px] items-center">
-                    <BaseTextArea
-                      label="Nouvelle observation"
-                      id="observation"
-                      placeholder="Observation"
-                      // leftIcon={<RulerIcon color={""} size={20} />}
-                      type="text"
-                      onChange={(e) => {
-                        setObservationList(tmp => tmp.map((obs) => obs.id === observation.id ? ({ ...obs, text: e.target.value }) : obs))
-                      }}
 
-                      value={observation.text}
-                    />
-                    <div className="flex gap-x-[10px]">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setObservationList(tmp => [...tmp, {
-                            id: observationList[observationList.length - 1].id + 1,
-                            text: "",
-                          }])
+                <ComboboxMultiSelect
+                  label={"Règle"}
+                  placeholder="Sélectionnez la règle a appliquer"
+                  className="w-full"
+                  icon={
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                        stroke="black"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  }
+                  id={`rule`}
+                  options={rules?.map((rule) => ({
+                    value: rule as unknown as string,
+                    label: `Règle ${rule}` as unknown as string,
+                  }))}
+                  error={undefined}
+                  isUniq={true}
+                  selectedElementInDropdown={selectedRule}
+                  setSelectedUniqElementInDropdown={setSelectedRule}
+                  borderColor="border-grayscale-200"
+                />
+              </div>
+
+              {}
+
+              {observationList.map(
+                (
+                  observation: {
+                    id: number;
+                    text: string;
+                  },
+                  index: number
+                ) => (
+                  <motion.div
+                    key={index}
+                    initial={{ y: 40, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{
+                      duration: 1,
+                      ease: [0.36, 0.01, 0, 0.99],
+                      delay: 0.2,
+                    }}
+                  >
+                    <div className="flex gap-x-[10px] items-center">
+                      <BaseTextArea
+                        label="Nouvelle observation"
+                        id="observation"
+                        placeholder="Observation"
+                        // leftIcon={<RulerIcon color={""} size={20} />}
+                        type="text"
+                        onChange={(e) => {
+                          setObservationList((tmp) =>
+                            tmp.map((obs) =>
+                              obs.id === observation.id
+                                ? { ...obs, text: e.target.value }
+                                : obs
+                            )
+                          );
                         }}
-                        className={`mt-5 w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-                      >
-                        +
-                      </button>
-                      {index !== 0 ? <button
-                        type="button"
-                        onClick={() => {
-                          setObservationList(tmp => tmp.filter((obs) => obs.id !== observation.id && obs))
-                        }}
-                        className={`mt-5 w-fit h-[48px] text-gray-900 transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#dbdbdb8e] hover:bg-[#dbdbdb]/90`}
-                      >
-                        -
-                      </button> : null}
+                        value={observation.text}
+                      />
+                      <div className="flex gap-x-[10px]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setObservationList((tmp) => [
+                              ...tmp,
+                              {
+                                id:
+                                  observationList[observationList.length - 1]
+                                    .id + 1,
+                                text: "",
+                              },
+                            ]);
+                          }}
+                          className={`mt-5 w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+                        >
+                          +
+                        </button>
+                        {index !== 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setObservationList((tmp) =>
+                                tmp.filter(
+                                  (obs) => obs.id !== observation.id && obs
+                                )
+                              );
+                            }}
+                            className={`mt-5 w-fit h-[48px] text-gray-900 transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#dbdbdb8e] hover:bg-[#dbdbdb]/90`}
+                          >
+                            -
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                )
               )}
             </div>
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center px-[20px] py-[10px] h-[80px] border-t">
@@ -1482,7 +1972,7 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
         </div>
       </BaseModal>
       {/* DELATION MODAL */}
-      <BaseModal open={openDelationModal} classname={""}>
+      <BaseModal open={openEndModal} classname={""}>
         <div className="w-[calc(80vh)] h-auto overflow-auto">
           <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
@@ -1496,7 +1986,7 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
             <button
               disabled={loading}
               type="button"
-              onClick={() => setDelationModal(false)}
+              onClick={() => setEndModal(false)}
               className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
             >
               <CloseIcon />
@@ -1522,7 +2012,9 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                 Historique
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                {"Vous consultez ici l'historique des actions menées sur cette forme."}
+                {
+                  "Vous consultez ici l'historique des actions menées sur cette forme."
+                }
               </span>
             </div>
             <button
@@ -1536,61 +2028,76 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
           </div>
           {/* "Utilisateur assigné" */}
           <div className="overflow-auto max-h-[80vh]">
-            {!shapeInEntry?.logs ? <div className="w-full flex justify-center items-center p-[20px]">
-              <span>Aucun log</span>
-            </div> : <table className="w-full relative">
-              <thead className="bg-white/50">
-                <tr className="">
-                  {["Titre", "Description", "Type", "Date de création", "Utilisateur"].map((head, index) => (
-                    <th
-                      key={index}
-                      className={`  ${head === "options" ? "w-auto" : "min-w-[150px]"
-                        } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
+            {!shapeInEntry?.logs ? (
+              <div className="w-full flex justify-center items-center p-[20px]">
+                <span>Aucun log</span>
+              </div>
+            ) : (
+              <table className="w-full relative">
+                <thead className="bg-white/50">
+                  <tr className="">
+                    {[
+                      "Titre",
+                      "Description",
+                      "Type",
+                      "Date de création",
+                      "Utilisateur",
+                    ].map((head, index) => (
+                      <th
+                        key={index}
+                        className={`  ${
+                          head === "options" ? "w-auto" : "min-w-[150px]"
+                        } text-[13px] py-[10px] font-medium  ${
+                          index > 0 && index < tableHead.length
                         }  text-[#636363]`}
-                    >
-                      <div className="h-full font-poppins relative flex items-center text-start py-[10px] px-[20px] justify-start">
-                        {head}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead> <tbody className="bg-white/80">
-                {shapeInEntry?.logs?.map((row, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
-                      {row?.title}
-                    </td>
-                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
-                      {row?.description}
-                    </td>
-                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
-                      {row?.type}
-                    </td>
-                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
-                      {formatTime(
-                        new Date(row?.["created_at"]).getTime(),
-                        "d:mo:y",
-                        "short"
-                      )}
-                      {" à "}
-                      {formatTime(
-                        new Date(row?.["created_at"]).getTime(),
-                        "h:m",
-                        "short"
-                      )}
-                    </td>
-                    <td className="text-[#636363] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                      {users?.find((user: User) => user.id === row.user_treating_id)?.name}
-                    </td>
+                      >
+                        <div className="h-full font-poppins relative flex items-center text-start py-[10px] px-[20px] justify-start">
+                          {head}
+                        </div>
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>}
-
+                </thead>{" "}
+                <tbody className="bg-white/80">
+                  {shapeInEntry?.logs?.map((row, index) => (
+                    <tr key={index} className="border-b">
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                        {row?.title}
+                      </td>
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                        {row?.description}
+                      </td>
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                        {row?.type}
+                      </td>
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                        {formatTime(
+                          new Date(row?.["created_at"]).getTime(),
+                          "d:mo:y",
+                          "short"
+                        )}
+                        {" à "}
+                        {formatTime(
+                          new Date(row?.["created_at"]).getTime(),
+                          "h:m",
+                          "short"
+                        )}
+                      </td>
+                      <td className="text-[#636363] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                        {
+                          users?.find(
+                            (user: User) => user.id === row.user_treating_id
+                          )?.name
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </BaseModal>
-
       {/* standBy MODAL */}
       <BaseModal open={openStandByModal} classname={""}>
         <Form form={standByform} onSubmit={onSubmitStandBy}>
@@ -1598,10 +2105,14 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[18px] font-poppins text-[#060606]">
-                  {shapeInEntry?.status_id !== 2 ? "Mettre en standby" : "Enlever en standby"}
+                  {shapeInEntry?.status_id !== 2
+                    ? "Mettre en standby"
+                    : "Enlever en standby"}
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                  {`Vous êtes sur point ${shapeInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "} une forme en standby`}
+                  {`Vous êtes sur point ${
+                    shapeInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "
+                  } une forme en standby`}
                 </span>
               </div>
               <button
@@ -1617,7 +2128,11 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
               <BaseInput
                 label="Raison"
                 id="reason"
-                placeholder={` Dites pourquoi vous ${shapeInEntry?.status_id !== 2 ? "mettez en standBy" : "enlevez en standby"} `}
+                placeholder={` Dites pourquoi vous ${
+                  shapeInEntry?.status_id !== 2
+                    ? "mettez en standBy"
+                    : "enlevez en standby"
+                } `}
                 // leftIcon={<RulerIcon color={""} size={20} />}
                 type="text"
                 {...standByform.register("reason")}
@@ -1635,13 +2150,18 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                 type="submit"
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : shapeInEntry?.status_id !== 2 ? "Mettre en standBy" : "Enlever en standby"}
+                {loading ? (
+                  <Spinner color={"#fff"} size={20} />
+                ) : shapeInEntry?.status_id !== 2 ? (
+                  "Mettre en standBy"
+                ) : (
+                  "Enlever en standby"
+                )}
               </button>
             </div>
           </div>
         </Form>
       </BaseModal>
-
       {/* assign to user MODAL */}
       <BaseModal open={openAssignToUserModal} classname={""}>
         <Form form={assignForm} onSubmit={onSubmitAssign}>
@@ -1687,10 +2207,12 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
                   </svg>
                 }
                 id={`users`}
-                options={users?.map((user: User) => ({
-                  value: user.id as unknown as string,
-                  label: user.name,
-                })) as any}
+                options={
+                  users?.map((user: User) => ({
+                    value: user.id as unknown as string,
+                    label: user.name,
+                  })) as any
+                }
                 error={undefined}
                 isUniq={true}
                 selectedElementInDropdown={assignUser}
@@ -1720,7 +2242,6 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
           </div>
         </Form>
       </BaseModal>
-
       {/* observation MODAL */}
       <BaseModal open={openObservationModal} classname={""}>
         <Form form={observationForm} onSubmit={onSubmitOservation}>
@@ -1764,10 +2285,69 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
               </button> */}
               <button
                 type="submit"
-
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : "Enregistrer cette observation"}
+                {loading ? (
+                  <Spinner color={"#fff"} size={20} />
+                ) : (
+                  "Enregistrer cette observation"
+                )}
+              </button>
+            </div>
+          </div>
+        </Form>
+      </BaseModal>
+
+      {/* lock MODAL */}
+      <BaseModal open={openObservationModal} classname={""}>
+        <Form form={observationForm} onSubmit={onSubmitOservation}>
+          <div className="w-[calc(80vh)] h-auto overflow-auto">
+            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
+              <div className="flex flex-col">
+                <span className="text-[18px] font-poppins text-[#060606]">
+                  Obervation
+                </span>
+                <span className="text-[14px] font-poppins text-primary-black-leg-600">
+                  Faites une observation
+                </span>
+              </div>
+              <button
+                disabled={loading}
+                type="button"
+                onClick={() => setOpenObservationModal(false)}
+                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="p-[20px]">
+              <BaseTextArea
+                label="Observation"
+                id="observation"
+                placeholder="observation"
+                // leftIcon={<FolderIcon size={18} color={""} />}
+                type="text"
+                field="text-area"
+                {...observationForm.register("observation")}
+              />
+            </div>
+            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
+              {/* <button
+                type="button"
+                onClick={() => setOpenObservationModal((tmp) => !tmp)}
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+              >
+                Annuler
+              </button> */}
+              <button
+                type="submit"
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
+              >
+                {loading ? (
+                  <Spinner color={"#fff"} size={20} />
+                ) : (
+                  "Enregistrer cette observation"
+                )}
               </button>
             </div>
           </div>
@@ -1817,68 +2397,18 @@ export const ImprimerieFlexo: FC<{}> = ({ }) => {
               </button> */}
               <button
                 type="submit"
-
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : "Enregistrer cette observation"}
+                {loading ? (
+                  <Spinner color={"#fff"} size={20} />
+                ) : (
+                  "Enregistrer cette observation"
+                )}
               </button>
             </div>
           </div>
         </Form>
       </BaseModal>
-
-      {/* lock MODAL */}
-      <BaseModal open={openObservationModal} classname={""}>
-        <Form form={observationForm} onSubmit={onSubmitOservation}>
-          <div className="w-[calc(80vh)] h-auto overflow-auto">
-            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
-              <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
-                  Bloquer
-                </span>
-                <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                  Faites une observation
-                </span>
-              </div>
-              <button
-                disabled={loading}
-                type="button"
-                onClick={() => setOpenObservationModal(false)}
-                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-            <div className="p-[20px]">
-              <BaseTextArea
-                label="Observation"
-                id="observation"
-                placeholder="observation"
-                // leftIcon={<FolderIcon size={18} color={""} />}
-                type="text"
-                field="text-area"
-                {...observationForm.register("observation")}
-              />
-            </div>
-            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-              {/* <button
-                type="button"
-                onClick={() => setOpenObservationModal((tmp) => !tmp)}
-                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-              >
-                Annuler
-              </button> */}
-              <button
-                type="submit"
-
-                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
-              >
-                {loading ? <Spinner color={"#fff"} size={20} /> : "Enregistrer cette observation"}
-              </button>
-            </div>
-          </div>
-        </Form>
-      </BaseModal>
-    </div >
+    </div>
   );
 };

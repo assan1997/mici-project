@@ -118,7 +118,6 @@ export const ImprimerieOffset: FC<{}> = ({ }) => {
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
-
   const [observationList, setObservationList] = useState<{
     id: number;
     text: string;
