@@ -159,9 +159,9 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = (
             }
           }}
           className={twMerge(
-            `shadow-field flex items-center justify-between px-[1.2rem] text-grayscale-900 font-[500] w-full text-[1.4rem] border rounded-[12px] bg-white placeholder:text-[1.4rem] placeholder:text-grayscale-600 placeholder:font-[400] ${selectDropdown === id && "border-vermilion-300 ring-2 ring-offset-2 ring-vermilion-400"} transition duration-300 ease-out cursor-pointer`,
+            `shadow-field flex items-center justify-between px-[1.2rem] text-grayscale-900 font-[500] w-full text-[1.4rem] border rounded-full bg-white placeholder:text-[1.4rem] placeholder:text-grayscale-600 placeholder:font-[400] ${selectDropdown === id && "border-vermilion-300 ring-2 ring-offset-2 ring-vermilion-400"} transition duration-300 ease-out cursor-pointer`,
             // hAuto ? 'min-h-[48px] py-[1rem]' : 'h-[4rem]'
-            'min-h-[48px]',
+            'min-h-[40px]',
             borderColor,
             error?.id &&
             'border-danger-600 focus:border-danger-600 focus:ring-1 focus:ring-offset-2 focus:ring-danger-700'

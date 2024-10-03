@@ -53,7 +53,7 @@ const SideBar: FC<{ resize: boolean }> = ({ resize }) => {
   return (
     <div
       className={`h-full justify-between ${
-        resize ? "w-[108px]" : "w-[260px]"
+        resize ? "w-[108px]" : "w-[240px]"
       }  bg-[#060606] transition-all duration-300 overflow-scroll`}
     >
       <div
@@ -61,16 +61,20 @@ const SideBar: FC<{ resize: boolean }> = ({ resize }) => {
           resize ? "justify-center" : "justify-start px-[30px]"
         }  top-0 sticky transition-all w-full duration-300`}
       >
-        <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center relative">
+        <div
+          className={`${
+            resize ? "w-[80px] h-[80px]"  : "w-[100px] h-[100px]"
+          } transition-all duration-300 rounded-full flex items-center justify-center relative`}
+        >
           <Image
             alt="logo"
             fill
             className="object-contain"
-            src="/assets/logo/sig-variant.png"
+            src="/assets/logo/logo-red.png"
           />
         </div>
       </div>
-      <div className="flex flex-col gap-y-[8px] px-[30px] items-start h-[calc(100%-65px)] justify-center w-full">
+      <div className="flex flex-col gap-y-[8px] px-[30px] items-start mt-[100px] justify-start  w-full">
         {nav.map(({ active, slug, id, link, icon }, index) => (
           <div className="" key={index}>
             <button
@@ -190,10 +194,10 @@ const TopBar: FC<{
   const { user, sections } = useData();
   const Router = useRouter();
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
-  const section = useMemo(
-    () => sections.find((sec) => sec.id === user?.role_id),
-    [user, sections]
-  );
+
+  const section = useMemo(() => {
+    return sections.find((sec) => sec.id === user?.role_id);
+  }, [user, sections]);
 
   const pathName = usePathname();
 
@@ -206,7 +210,7 @@ const TopBar: FC<{
     <div className="w-full relative h-[80px] px-[20px] border-b flex items-center justify-between border-[#00000008]">
       <button
         onClick={() => setResize((tmp: boolean) => !tmp)}
-        className={`w-[40px] -left-[20px] h-[40px] top-[58px] absolute  flex items-center justify-center border rounded-xl bg-white transition-all`}
+        className={`w-[35px] -left-[10px] h-[35px] top-[58px] absolute  flex items-center justify-center border rounded-xl bg-white transition-all`}
       >
         <span
           className={`${
@@ -247,9 +251,9 @@ const TopBar: FC<{
         {!user ? (
           <ProfillSkeleton />
         ) : (
-          <div className="w-[195px] h-[50px] bg-white border flex items-center px-[5px] gap-x-[10px] justify-between rounded-full">
+          <div className="w-[195px] h-[50px] bg-white border flex items-center px-[10px] gap-x-[10px] justify-between rounded-full">
             <div className="flex items-center gap-x-2">
-              <div className="w-[34px] h-[34px] bg-slate-100 rounded-full"></div>
+              <div className="w-[34px] h-[34px] bg-gray-300 rounded-full"></div>
               <div className="flex flex-col">
                 <span className="text-[#292D32] text-[14px] font-poppins">
                   {user?.name}
@@ -272,30 +276,21 @@ const TopBar: FC<{
             >
               <div className="">
                 {/* <ul className="border-y border-primary-black-leg-50 ">
-                <li>
-                  <div className="flex items-center gap-[8px] p-[10px] cursor-pointer sm:hover:bg-primary-black-leg-50 ">
-                    <span className="block text-start text-[14px] leading-[20px] font-[500]  ">
-                      {"Rentrée"}
-                    </span>
-                  </div>
-                </li>
-                <li>
-                  <div className="flex items-center gap-[8px] p-[10px] cursor-pointer sm:hover:bg-primary-black-leg-50 ">
-                    <span className="block text-start text-[14px] leading-[20px] font-[500]  ">
-                      {"Terminé"}
-                    </span>
-                  </div>
-                </li>
-                <li>
-                  <Link href={"/developer/api"}>
-                    <div className="flex items-center gap-[8px] p-[10px] cursor-pointer  sm:hover:bg-primary-black-leg-50 ">
+                  <li>
+                    <div className="flex items-center gap-[8px] p-[10px] cursor-pointer sm:hover:bg-primary-black-leg-50 ">
                       <span className="block text-start text-[14px] leading-[20px] font-[500]  ">
-                        {"Validé"}
+                        {"Rentrée"}
                       </span>
                     </div>
-                  </Link>
-                </li>
-              </ul> */}
+                  </li>
+                  <li>
+                    <div className="flex items-center gap-[8px] p-[10px] cursor-pointer sm:hover:bg-primary-black-leg-50 ">
+                      <span className="block text-start text-[14px] leading-[20px] font-[500]  ">
+                        {"Terminé"}
+                      </span>
+                    </div>
+                  </li>
+                </ul> */}
                 <button
                   onClick={async () => {
                     await logout();
@@ -343,7 +338,7 @@ const Content: FC<{
   return (
     <div
       className={`h-full  ${
-        resize ? "w-[calc(100%-108px)]" : "w-[calc(100%-260px)]"
+        resize ? "w-[calc(100%-108px)]" : "w-[calc(100%-240px)]"
       } bg-gray-100 transition-all duration-300`}
     >
       <TopBar

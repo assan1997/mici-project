@@ -8,7 +8,7 @@ import { ColumnSkeleton } from "@/components/ui/loader/Skeleton";
 export const Details = () => {
   const pathname = usePathname();
   const category = useMemo(() => pathname.split("/")[3], [pathname]);
-  const id = useMemo(() => pathname.split("/")[5], [pathname]);
+  const id = useMemo(() => pathname.split("/")[4], [pathname]);
   const [data, setData] = useState<any>(undefined);
 
   useEffect(() => {
@@ -27,79 +27,79 @@ export const Details = () => {
         label: "Informations",
         content: (
           <div className="font-poppins">
-            <div className="w-full h-auto bg-white flex flex-wrap p-[20px] gap-[14px]">
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+            <div className="w-full h-auto flex flex-wrap items-center bg-white p-[20px] gap-[14px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Code</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.code}
                 </div>
               </div>
-              <div className="border-b border-gray-100  w-[300px] h-[50px]">
+              <div className="border-b border-gray-100  w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Dim_lx_lh</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.dim_lx_lh}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Dim_square</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.dim_square}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Dim_plate</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.dim_plate}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Paper_type</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.paper_type}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Pose_number</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.pose_number}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Part</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.part}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Observations</div>
                 <div className="text-[14px]">Infos</div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Départment</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.department?.name}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Commercial</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.commercial?.name}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Client</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.client?.name}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Réference</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.reference}
                 </div>
               </div>
 
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">
                   Date de création
                 </div>
@@ -124,7 +124,7 @@ export const Details = () => {
                 </div>
               </div>
 
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">
                   Date de de mise à jour
                 </div>
@@ -148,7 +148,7 @@ export const Details = () => {
                   )}
                 </div>
               </div>
-              <div className="border-b border-gray-100 w-[300px] h-[50px]">
+              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Règle</div>
                 <div className="text-[14px]">
                   {!data ? <ColumnSkeleton /> : data?.rule_id}
@@ -170,7 +170,7 @@ export const Details = () => {
                   key={index}
                   className="flex gap-[14px] items-center border-b border-gray-100 w-full min-h-[50px] my-[10px] py-[20px] h-auto"
                 >
-                  <div className="w-[calc(100%-102px)]">
+                  <div className="w-[calc(100%-102px)] min-h-[50px]">
                     <div key={obs.id} className="text-[12px] text-gray-500">
                       Observation
                     </div>
@@ -185,7 +185,7 @@ export const Details = () => {
                   {perf?.performance}
                 </div>
               </div> */}
-                  <div className="w-[300px]">
+                  <div className="w-[300px] min-h-[50px]">
                     <div className="text-[12px] text-gray-500">Crée le</div>
                     {obs?.created_at ? (
                       <div className="text-[14px]">
@@ -221,7 +221,7 @@ export const Details = () => {
                   key={index}
                   className="flex gap-[14px] items-center border-b border-gray-100 my-[10px] w-full h-auto"
                 >
-                  <div className="w-[250px]x] w-auto">
+                  <div className="w-[250px]">
                     <div key={perf.id} className="text-[12px] text-gray-500">
                       Utilisateur
                     </div>
@@ -318,30 +318,30 @@ export const Details = () => {
               {data?.loggers?.reverse().map((log: any) => (
                 <div
                   key={log.id}
-                  className="flex gap-[14px] my-[10px] items-center border-b border-gray-100 w-full h-[50px]"
+                  className="flex gap-[14px] my-[10px] items-center border-b border-gray-100 w-full"
                 >
-                  <div className="w-[300px]">
+                  <div className="w-[300px] min-h-[50px] py-[10px]">
                     <div key={log.id} className="text-[12px] text-gray-500">
                       Titre
                     </div>
                     <div className="text-[14px]">{log?.title}</div>
                   </div>
                   <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="min-w-[300px]">
+                  <div className="min-w-[300px] min-h-[50px] py-[10px]">
                     <div key={log.id} className="text-[12px] text-gray-500">
                       Description
                     </div>
                     <div className="text-[14px] ">{log?.description}</div>
                   </div>
                   <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[300px]">
+                  <div className="w-[300px] min-h-[50px] py-[10px]">
                     <div key={log.id} className="text-[12px] text-gray-500">
                       Type
                     </div>
                     <div className="text-[14px]">{log?.type}</div>
                   </div>
                   <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[300px]">
+                  <div className="w-[300px] min-h-[50px] py-[10px]">
                     <div key={log.id} className="text-[12px] text-gray-500">
                       Date de création
                     </div>
@@ -360,7 +360,7 @@ export const Details = () => {
                     </div>
                   </div>
                   <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[300px]">
+                  <div className="w-[300px] min-h-[50px] py-[10px]">
                     <div key={log.id} className="text-[12px] text-gray-500">
                       Crée par
                     </div>
@@ -368,6 +368,16 @@ export const Details = () => {
                       {log?.treating_user?.name}
                     </div>
                   </div>
+                  {log?.assignated_user ? (
+                    <div className="w-[300px] min-h-[50px] py-[10px]">
+                      <div key={log.id} className="text-[12px] text-gray-500">
+                        Assigné à
+                      </div>
+                      <div className="text-[14px]">
+                        {log?.assignated_user?.name}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

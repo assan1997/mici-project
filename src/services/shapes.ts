@@ -223,6 +223,91 @@ export async function assignToAnUserOffsetShape(
     return { success: false };
   }
 }
+
+export async function lockShape(
+  id: number,
+  entry: {
+    type: string;
+    reason: string;
+    status_id: number;
+  }
+) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}/block`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
+
+export async function resumeShape(
+  id: number,
+  entry: {
+    type: string;
+    reason: string;
+    status_id: number;
+  }
+) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}/resume-work`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
+
+export async function unlockShape(
+  id: number,
+  entry: {
+    type: string;
+    reason: number;
+    status_id: string;
+  }
+) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}/block`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
+
 // FLEXO
 export async function createFlexoShape(entry: OffsetShapeEntry) {
   const token = await getToken();

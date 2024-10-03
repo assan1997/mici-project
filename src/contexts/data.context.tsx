@@ -19,6 +19,7 @@ import { getAllOffsetShapes } from "@/services/shapes";
 import { getAllFolders } from "@/services/folder";
 import { getAllBats } from "@/services/bat";
 import { getTasks } from "@/services/task";
+import { useToast } from "@/contexts/toast.context";
 
 export interface FolderInterface {
   file_number: string;
@@ -154,6 +155,10 @@ export interface DataContextType {
   status: Status[];
   tasks: TaskInterface[] | undefined;
   rules: number[];
+  onRefreshingShape: Boolean;
+  onRefreshingTask: Boolean;
+  refreshShapeData: Function;
+  refreshTaskData: Function;
 }
 export interface Status {
   id: number;
@@ -221,6 +226,10 @@ const DataContext = createContext<DataContextType>({
   status: [],
   tasks: [],
   rules: [],
+  onRefreshingShape: false,
+  onRefreshingTask: false,
+  refreshShapeData: () => {},
+  refreshTaskData: () => {},
 });
 export const useData = () => useContext(DataContext);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({
@@ -236,7 +245,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [flexoShapes, setFlexoShapes] = useState<FlexoShape[] | undefined>();
   const [bats, setBats] = useState<BatInterface[] | undefined>();
   const [tasks, setTasks] = useState<TaskInterface[] | undefined>();
-
+  const { showToast } = useToast();
   const status: Status[] = useMemo(
     () => [
       {
@@ -258,9 +267,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     ],
     []
   );
-
   const rules: number[] = useMemo(() => [1, 2, 3], []);
-
   const Router = useRouter();
   const dispatchUser = useMemo(() => setUser, []);
   const dispatchClients = useMemo(() => setClients, []);
@@ -281,6 +288,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     (async () => {
+      if (user) return;
       const { data, success } = await refreshUser();
       setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadCurrentUser: true }));
       if (!success) {
@@ -291,6 +299,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   useEffect(() => {
+    if (departments.length > 0) return;
     (async () => {
       const { data, success } = await getAllDepartments();
       setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadDepartments: true }));
@@ -300,6 +309,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, [user]);
 
   useEffect(() => {
+    if (sections.length > 0) return;
     (async () => {
       const { data, success } = await getAllSections();
       setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isloadSections: true }));
@@ -309,6 +319,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, [user]);
 
   useEffect(() => {
+    if (users) return;
     (async () => {
       const { data, success } = await getAllUsers();
       setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadAllUsers: true }));
@@ -318,6 +329,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, [user]);
 
   useEffect(() => {
+    if (clients) return;
     (async () => {
       const { data, success } = await getAllClients();
       if (!success) return;
@@ -326,10 +338,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, [user]);
 
   useEffect(() => {
+    if (offsetShapes) return;
     if (users && users?.length > 0) {
       (async () => {
         let { data, success } = await getAllOffsetShapes();
-        console.log("data", data);
         if (!success) return;
         dispatchOffsetShapes(
           data?.map((dat: any) => ({
@@ -342,6 +354,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, [users]);
 
   useEffect(() => {
+    if (folders) return;
     if (users && users?.length > 0) {
       (async () => {
         let { data, success } = await getAllFolders();
@@ -357,6 +370,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, [users]);
 
   useEffect(() => {
+    if (bats) return;
     if (users && users?.length > 0 && departments && departments.length > 0) {
       (async () => {
         let { data, success } = await getAllBats();
@@ -375,11 +389,68 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, [users, departments]);
 
   useEffect(() => {
+    if (tasks) return;
     (async () => {
       let { data } = await getTasks();
       dispatchTasks(data);
     })();
   }, [user]);
+
+  const [onRefreshingShape, setOnRefreshingShape] = useState<boolean>(false);
+  const refreshShapeData = async () => {
+    setOnRefreshingShape(true);
+    const { data: departmentsData, success: depSuccess } =
+      await getAllDepartments();
+    dispatchDepartment(departmentsData);
+    const { data: sections, success: secSuccess } = await getAllSections();
+    dispatchSection(sections);
+
+    let { data: shapesData, success: shapesSuccess } =
+      await getAllOffsetShapes();
+    dispatchOffsetShapes(
+      shapesData?.map((dat: any) => ({
+        ...dat,
+        commercial: users?.find((use) => use.id === dat.commercial_id),
+      }))
+    );
+
+    setOnRefreshingShape(false);
+
+    if (depSuccess && secSuccess && shapesSuccess) {
+      showToast({
+        type: "success",
+        message: "Synchronisation terminée",
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "Une erreur est survenue",
+        position: "top-center",
+      });
+    }
+  };
+
+  const [onRefreshingTask, setOnRefreshingTask] = useState<boolean>(false);
+  const refreshTaskData = async () => {
+    setOnRefreshingTask(true);
+    let { data, success } = await getTasks();
+    dispatchTasks(data);
+    setOnRefreshingTask(false);
+    if (success) {
+      showToast({
+        type: "success",
+        message: "Synchronisation terminée",
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "Une erreur est survenue",
+        position: "top-center",
+      });
+    }
+  };
 
   return (
     <DataContext.Provider
@@ -404,6 +475,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         status,
         tasks,
         rules,
+        refreshShapeData,
+        refreshTaskData,
+        onRefreshingShape,
+        onRefreshingTask,
       }}
     >
       {children}

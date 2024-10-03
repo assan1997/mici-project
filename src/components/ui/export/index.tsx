@@ -31,7 +31,7 @@ export const Export: FC<{
   if (type === "csv") {
     return (
       <CSVLink data={entry?.data} headers={entry?.headers}>
-        <div className="h-[40px] text-[14px] bg-white gap-x-[4px] text-[#000] font-poppins font-medium leading-[20px] rounded-[20px] flex items-center justify-center px-[8px] border">
+        <div className="h-[40px] shrink-0 text-[14px] min-w-[150px] shadow-custom bg-white gap-x-[4px] text-[#000] font-poppins leading-[20px] rounded-[20px] flex items-center justify-center px-[8px] border">
           <svg
             fill="none"
             height={16}
@@ -55,7 +55,7 @@ export const Export: FC<{
     return (
       <button
         disabled
-        className="h-[40px] cursor-not-allowed text-[14px] bg-gray-100 gap-x-[4px] text-[#000] font-poppins font-medium leading-[20px] rounded-[20px] flex items-center justify-center px-[8px] border"
+        className="h-[40px] shrink-0 cursor-not-allowed text-[14px] shadow-custom bg-gray-100 gap-x-[4px] text-[#000] font-poppins font-medium leading-[20px] rounded-[20px] flex items-center justify-center px-[8px] border"
       >
         <svg
           id="fi_3022204"

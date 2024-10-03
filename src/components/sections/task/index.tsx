@@ -59,6 +59,8 @@ export const Task: FC<{}> = ({}) => {
     dispatchOffsetShapes,
     status,
     dispatchTasks,
+    refreshTaskData,
+    onRefreshingTask,
   } = useData();
   const shapeSchema = z.object({
     client: z.number(),
@@ -241,6 +243,7 @@ export const Task: FC<{}> = ({}) => {
       });
     }
     setLoading(false);
+    setDelationModal(false);
   };
 
   useEffect(() => {
@@ -616,21 +619,55 @@ export const Task: FC<{}> = ({}) => {
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
           /> */}
+
           <Filter
-            type="date"
-            title={"Filtrer par date de mise à jour"}
-            row={"Status"}
-            index={"status_id"}
+            type="button"
+            title={""}
+            row={""}
+            index={""}
+            list={[]}
+            filterDatas={[]}
+            dataHandler={setCurrentDatas}
+            filterHandler={setOffsetShapes}
+            onClick={() => {
+              refreshTaskData();
+            }}
+          >
+            {onRefreshingTask ? (
+              <Spinner color={"#000"} size={20} />
+            ) : (
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15"
+                  stroke="black"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            )}
+          </Filter>
+          <Filter
+            type="search"
+            title={"Rechercher une entrée"}
+            row={""}
+            indexs={["code", "reference", "dim_lx_lh", "commercial.name"]}
             list={status}
             filterDatas={allTasks ? allTasks : []}
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
           />
           <Filter
-            type="search"
-            title={"Rechercher une entrée"}
-            row={""}
-            indexs={["code", "reference", "dim_lx_lh", "commercial.name"]}
+            type="date"
+            title={"Affichage par date"}
+            row={"Status"}
+            index={"status_id"}
             list={status}
             filterDatas={allTasks ? allTasks : []}
             dataHandler={setCurrentDatas}
