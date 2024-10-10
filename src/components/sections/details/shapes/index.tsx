@@ -14,7 +14,6 @@ export const Details = () => {
   useEffect(() => {
     (async () => {
       const { data } = await getShapeDetails(id);
-      console.log("data", data);
       setData(data);
     })();
   }, [id]);

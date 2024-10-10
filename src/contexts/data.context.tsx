@@ -157,8 +157,10 @@ export interface DataContextType {
   rules: number[];
   onRefreshingShape: Boolean;
   onRefreshingTask: Boolean;
+  onRefreshingUsers: Boolean;
   refreshShapeData: Function;
   refreshTaskData: Function;
+  refreshUsersData: Function;
 }
 export interface Status {
   id: number;
@@ -228,8 +230,10 @@ const DataContext = createContext<DataContextType>({
   rules: [],
   onRefreshingShape: false,
   onRefreshingTask: false,
+  onRefreshingUsers: false,
   refreshShapeData: () => {},
   refreshTaskData: () => {},
+  refreshUsersData: () => {},
 });
 export const useData = () => useContext(DataContext);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({
@@ -432,11 +436,33 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const [onRefreshingTask, setOnRefreshingTask] = useState<boolean>(false);
+  const [onRefreshingUsers, setOnRefreshingUsers] = useState<boolean>(false);
+
   const refreshTaskData = async () => {
     setOnRefreshingTask(true);
     let { data, success } = await getTasks();
     dispatchTasks(data);
     setOnRefreshingTask(false);
+    if (success) {
+      showToast({
+        type: "success",
+        message: "Synchronisation terminée",
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "Une erreur est survenue",
+        position: "top-center",
+      });
+    }
+  };
+
+  const refreshUsersData = async () => {
+    setOnRefreshingUsers(true);
+    let { data, success } = await getAllUsers();
+    dispatchTasks(data);
+    setOnRefreshingUsers(false);
     if (success) {
       showToast({
         type: "success",
@@ -477,6 +503,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         rules,
         refreshShapeData,
         refreshTaskData,
+        refreshUsersData,
+        onRefreshingUsers,
         onRefreshingShape,
         onRefreshingTask,
       }}

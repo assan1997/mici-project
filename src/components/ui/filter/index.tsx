@@ -403,7 +403,7 @@ export const Filter: FC<{
     return (
       <div
         onClick={onClick}
-        className="rounded-full shadow-custom shrink-0 bg-white  border"
+        className="rounded-full cursor-pointer shadow-custom shrink-0 bg-white  border"
       >
         <div
           className={`h-[40px] w-[40px] shrink-0  flex items-center  justify-center`}

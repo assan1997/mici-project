@@ -1,5 +1,12 @@
 "use client";
-import { Dispatch, FC, SetStateAction, useMemo, useState } from "react";
+import {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ChevronDown } from "@/components/icons";
 import { ChevronRigthIcon } from "../../svg";
 
@@ -63,7 +70,7 @@ const SideBar: FC<{ resize: boolean }> = ({ resize }) => {
       >
         <div
           className={`${
-            resize ? "w-[80px] h-[80px]"  : "w-[100px] h-[100px]"
+            resize ? "w-[80px] h-[80px]" : "w-[100px] h-[100px]"
           } transition-all duration-300 rounded-full flex items-center justify-center relative`}
         >
           <Image
@@ -210,7 +217,7 @@ const TopBar: FC<{
     <div className="w-full relative h-[80px] px-[20px] border-b flex items-center justify-between border-[#00000008]">
       <button
         onClick={() => setResize((tmp: boolean) => !tmp)}
-        className={`w-[35px] -left-[10px] h-[35px] top-[58px] absolute  flex items-center justify-center border rounded-xl bg-white transition-all`}
+        className={`w-[35px] -left-[18px] h-[35px] top-[58px] absolute  flex items-center justify-center border rounded-xl bg-white transition-all`}
       >
         <span
           className={`${
@@ -258,8 +265,10 @@ const TopBar: FC<{
                 <span className="text-[#292D32] text-[14px] font-poppins">
                   {user?.name}
                 </span>
-                <span className="text-[#636363] text-[12px] font-poppins">
-                  {section?.name}
+                <span className="text-[#636363] flex gap-x-[6px] text-[12px] truncate font-poppins">
+                  {user.sections.map((section) => (
+                    <span key={section.id}> {section.name}</span>
+                  ))}
                 </span>
               </div>
             </div>

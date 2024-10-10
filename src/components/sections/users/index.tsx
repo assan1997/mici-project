@@ -29,7 +29,10 @@ import { formatTime } from "@/lib/utils/timestamp";
 import { Spinner } from "@/components/ui/loader/spinner";
 import { TableSkeleton } from "@/components/ui/loader/Skeleton";
 import { motion } from "framer-motion";
-export const Users: FC<{}> = ({ }) => {
+import { Filter } from "@/components/ui/filter";
+import { Pagination } from "@/components/ui/pagination";
+import { useRouter } from "next/navigation";
+export const Users: FC<{}> = ({}) => {
   const userSchema = z.object({
     name: z.string(),
     departments: z.array(z.number()),
@@ -43,6 +46,8 @@ export const Users: FC<{}> = ({ }) => {
     sections: allSections,
     departments: allDepartments,
     dispatchUsers,
+    refreshTaskData,
+    onRefreshingUsers,
     loadUsers,
   } = useData();
   const tableHead = [
@@ -67,18 +72,18 @@ export const Users: FC<{}> = ({ }) => {
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
   const [currentEntry, setCurrentEntry] = useState<number>();
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false);
   const { showToast } = useToast();
   const reset = () => {
-    form.setValue('name', '');
-    form.setValue('password', '');
-    form.setValue('email', '');
-    form.setValue('departments', []);
-    form.setValue('sections', []);
+    form.setValue("name", "");
+    form.setValue("password", "");
+    form.setValue("email", "");
+    form.setValue("departments", []);
+    form.setValue("sections", []);
     setCurrentEntry(undefined);
     setSections([]);
     setDepartments([]);
-  }
+  };
   const onSubmit = async (data: z.infer<typeof userSchema>) => {
     setLoading(true);
     let { name, departments, sections, email, password } = data;
@@ -99,8 +104,12 @@ export const Users: FC<{}> = ({ }) => {
         position: "top-center",
       });
       dispatchUsers((tmp) => {
-        createdUser.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep)
-        createdUser.sections = allDepartments.filter((sec) => sections.includes(sec.id) && sec)
+        createdUser.departments = allDepartments.filter(
+          (dep) => departments.includes(dep.id) && dep
+        );
+        createdUser.sections = allDepartments.filter(
+          (sec) => sections.includes(sec.id) && sec
+        );
         tmp?.unshift(createdUser);
 
         if (tmp) return [...tmp];
@@ -145,10 +154,7 @@ export const Users: FC<{}> = ({ }) => {
       JSON.stringify(userInEntry?.sections.map((sec) => sec.id))
     )
       delete entry.section_ids;
-    if (
-      entry?.password?.length === 0
-    )
-      delete entry.password;
+    if (entry?.password?.length === 0) delete entry.password;
     const { data: updatedUser, success } = await updateUser(
       currentEntry as number,
       entry
@@ -160,10 +166,16 @@ export const Users: FC<{}> = ({ }) => {
         position: "top-center",
       });
       dispatchUsers((users): User[] => {
-        updatedUser.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep);
-        updatedUser.sections = allDepartments.filter((sec) => sections.includes(sec.id) && sec);
-        return users?.map((user: User) => user.id === currentEntry ? ({ ...updatedUser }) : user) as any
-      })
+        updatedUser.departments = allDepartments.filter(
+          (dep) => departments.includes(dep.id) && dep
+        );
+        updatedUser.sections = allDepartments.filter(
+          (sec) => sections.includes(sec.id) && sec
+        );
+        return users?.map((user: User) =>
+          user.id === currentEntry ? { ...updatedUser } : user
+        ) as any;
+      });
       setOpenEditionModal(false);
     } else {
       showToast({
@@ -189,8 +201,8 @@ export const Users: FC<{}> = ({ }) => {
       (user: User) => user.id === currentEntry
     );
     if (user) {
-      form.setValue('name', user?.name as string);
-      form.setValue('email', user?.email as string);
+      form.setValue("name", user?.name as string);
+      form.setValue("email", user?.email as string);
       const dep = user?.departments?.map((department: Department) => ({
         value: department.id,
         label: department.name,
@@ -202,7 +214,7 @@ export const Users: FC<{}> = ({ }) => {
       }));
       if (sec) setSections(sec as any);
     }
-  }, [currentEntry])
+  }, [currentEntry]);
 
   useEffect(() => {
     form.setValue(
@@ -220,7 +232,7 @@ export const Users: FC<{}> = ({ }) => {
 
   const renderAvatar = (avatar: string) => {
     return (
-      <div className="w-[40px]  h-[40px] bg-slate-200 rounded-full relative"></div>
+      <div className="w-[30px] h-[30px] bg-slate-200 rounded-full relative"></div>
     );
   };
 
@@ -231,6 +243,18 @@ export const Users: FC<{}> = ({ }) => {
       return users?.filter((user: User) => user.id !== id && user) as any;
     });
     setDelationModal(false);
+  };
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [currentDatas, setCurrentDatas] = useState<any[]>(users ? users : []);
+
+  useEffect(() => {
+    setCurrentDatas(users ? users : []);
+  }, [users]);
+
+  const Router = useRouter();
+
+  const goToDetail = (id: any) => {
+    Router.push(`/workspace/details/users/${id}`);
   };
 
   return (
@@ -260,115 +284,429 @@ export const Users: FC<{}> = ({ }) => {
           ease: [0.36, 0.01, 0, 0.99],
           delay: 0.2,
         }}
-        className="rounded-[16px] bg-white p-[12px] block mt-[1.6rem]"
+        className=""
       >
-        <div className="mb-8">
-          <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-center border-b"></div>
-          <div className="relative w-full scrollbar-hide">
-            {
-              users ? <table className="w-full relative">
-                <thead className="bg-white/50">
-                  <tr className="">
-                    {tableHead.map((head, index) => (
-                      <th
-                        key={index}
-                        className={`font-poppins  ${head === "options" ? "w-auto" : "min-w-[150px]"
-                          } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
-                          }  text-[#2f2f2f]`}
-                      >
-                        <div
-                          className={`h-full relative flex items-center  px-[20px] ${head === "Options"
+        <div className="relative w-full bg-white/10 z-50 gap-x-[4px] flex items-center h-[60px] justify-start">
+          <Filter
+            type="button"
+            title={""}
+            row={""}
+            index={""}
+            list={[]}
+            filterDatas={users ? users : []}
+            dataHandler={setCurrentDatas}
+            filterHandler={setAllUsers}
+            onClick={() => {
+              refreshTaskData();
+            }}
+          >
+            {onRefreshingUsers ? (
+              <Spinner color={"#000"} size={20} />
+            ) : (
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15"
+                  stroke="black"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            )}
+          </Filter>
+          {/* <Filter
+            type="status"
+            title={"Affichage par statut"}
+            row={"Status"}
+            index={"status_id"}
+            list={status}
+            filterDatas={allOffsetShapes ? allOffsetShapes : []}
+            dataHandler={setCurrentDatas}
+            filterHandler={setOffsetShapes}
+          /> */}
+          {/* <Filter
+            type="status"
+            title={"Affichage par statut"}
+            row={"Status"}
+            index={"status_id"}
+            list={status}
+            filterDatas={allOffsetShapes ? allOffsetShapes : []}
+            dataHandler={setCurrentDatas}
+            filterHandler={setOffsetShapes}
+          /> */}
+          {/* <RenderDepartmentFilter /> */}
+
+          <Filter
+            type="search"
+            title={"Recherche"}
+            row={""}
+            indexs={["code", "reference", "dim_lx_lh", "commercial.name"]}
+            list={[]}
+            filterDatas={users ? users : []}
+            dataHandler={setCurrentDatas}
+            filterHandler={setAllUsers}
+          />
+          {/* <Filter
+            type="date"
+            title={"Affichage par date"}
+            row={"Status"}
+            index={"status_id"}
+            list={status}
+            filterDatas={allOffsetShapes ? allOffsetShapes : []}
+            dataHandler={setCurrentDatas}
+            filterHandler={setOffsetShapes}
+          /> */}
+          {/* {allOffsetShapes && allOffsetShapes?.length > 0 ? (
+            <Export
+              title="Exporter en csv"
+              type="csv"
+              entry={{
+                headers: Object.keys(allOffsetShapes ? allOffsetShapes[0] : {})
+                  .flatMap((shapeKey) => shapeKey)
+                  .filter((shapeKey) => {
+                    if (
+                      ![
+                        "logs",
+                        "id",
+                        "client_id",
+                        "commercial_id",
+                        "status_id",
+                        "department_id",
+                        "loggers",
+                        "assignments",
+                        "observations",
+                        "performances",
+                        "rule",
+                      ].includes(shapeKey)
+                    )
+                      return shapeKey;
+                  })
+                  .flatMap((shapeKey) => ({
+                    label: shapeKey.toUpperCase().replaceAll("_", " "),
+                    key: shapeKey.toLocaleLowerCase(),
+                  })),
+                data: allOffsetShapes
+                  ? allOffsetShapes.map((shape) => ({
+                      ...shape,
+                      department: shape?.department?.name,
+                      client: shape?.client?.name,
+                      commercial: shape?.commercial?.name,
+                      created_at: ` ${formatTime(
+                        new Date(shape?.["created_at"]).getTime(),
+                        "d:mo:y",
+                        "short"
+                      )} : ${formatTime(
+                        new Date(shape?.["created_at"]).getTime(),
+                        "h:m",
+                        "short"
+                      )}`,
+                      updated_at: ` ${formatTime(
+                        new Date(shape?.["updated_at"]).getTime(),
+                        "d:mo:y",
+                        "short"
+                      )} : ${formatTime(
+                        new Date(shape?.["updated_at"]).getTime(),
+                        "h:m",
+                        "short"
+                      )}`,
+                    }))
+                  : [],
+              }}
+            />
+          ) : null} */}
+          {/* <Export
+            title="Télécharger le pdf"
+            type="pdf"
+            entry={{ headers: [], data: [] }}
+          /> */}
+        </div>
+        <div className="relative w-full scrollbar-hide bg-white">
+          {allUsers ? (
+            <table className="w-full mb-[15rem] relative">
+              <thead className="bg-white/50 transition">
+                <tr className="border-b bg-gray-50 cursor-pointer">
+                  {tableHead.map((head, index) => (
+                    <th
+                      key={index}
+                      className={`font-poppins  ${
+                        head === "options" ? "w-auto" : "min-w-[150px]"
+                      } text-[13px] py-[10px] font-medium  ${
+                        index > 0 && index < tableHead.length
+                      }  text-[#000000]`}
+                    >
+                      <div
+                        className={`relative flex items-center h-[40px] gap-x-[10px] px-[20px] ${
+                          head === "Options"
                             ? "justify-end text-end"
                             : "justify-start text-start"
-                            } `}
-                        >
-                          {head}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white/80">
-                  {users?.map((row, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                        {renderAvatar(row?.avatar)}
-                      </td>
-                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                        {row.name}
-                      </td>
-                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                        {row?.email}
-                      </td>
-                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                        {formatTime(new Date(row?.["created_at"]).getTime(), "d:mo:y", "short")}
-                      </td>
-                      <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                        {formatTime(new Date(row?.["updated_at"]).getTime(), "d:mo:y", "short")}
-                      </td>
-                      <td className="text-[#2f2f2f] w-auto p-[10px] text-start font-poppins text-[13px]">
-                        <div className="w-full h-full flex items-center justify-end">
-                          <div ref={box}>
-                            <MenuDropdown
-                              dropdownOrigin="bottom-right"
-                              otherStyles={"w-auto"}
-                              buttonContent={
-                                <div>
-                                  <div
-                                    onClick={() => {
-                                      handleClick();
-                                      setCurrentEntry(row.id);
-                                    }}
-                                    className={`h-[44px] flex items-center justify-center`}
-                                  >
-                                    <OptionsIcon color={""} />
-                                  </div>
-                                </div>
-                              }
-                            >
-                              <div className="bg-white shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-                                <div className="flex flex-col items-center w-full">
-                                  <button
-                                    type="button"
-                                    onClick={() => setOpenEditionModal(true)}
-                                    className="flex items-center w-full gap-[8px] py-[4px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                  >
-                                    <UpdateIcon color={""} />
-                                    <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                      Modifier
-                                    </span>
-                                  </button>
-                                  <button type="button" onClick={() => { }} className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer">
-                                    <DetailsIcon color={""} />
-                                    <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                      Détails
-                                    </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setDelationModal(true);
-                                    }}
-                                    className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                  >
-                                    <DeleteUserIcon className={""} />
-                                    <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                      Supprimer
-                                    </span>
-                                  </button>
+                        } `}
+                      >
+                        {head}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white/10">
+                {allUsers?.map((row, index) => (
+                  <tr
+                    key={index}
+                    className={`cursor-pointer border-b transition-all duration hover:bg-gray-100 checked:hover:bg-gray-100`}
+                  >
+                    <td
+                      onClick={() => goToDetail(row?.id)}
+                      className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                    >
+                      {renderAvatar(row?.avatar)}
+                    </td>
+                    <td
+                      onClick={() => goToDetail(row?.id)}
+                      className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                    >
+                      {row.name}
+                    </td>
+                    <td
+                      onClick={() => goToDetail(row?.id)}
+                      className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                    >
+                      {row?.email}
+                    </td>
+                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                      {formatTime(
+                        new Date(row?.["created_at"]).getTime(),
+                        "d:mo:y",
+                        "short"
+                      )}
+                    </td>
+                    <td
+                      onClick={() => goToDetail(row?.id)}
+                      className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                    >
+                      {formatTime(
+                        new Date(row?.["updated_at"]).getTime(),
+                        "d:mo:y",
+                        "short"
+                      )}
+                    </td>
+                    {/* <td className="text-[#636363] w-auto px-[10px] text-start font-poppins text-[13px]">
+                      <div className="w-full h-full flex items-center justify-end">
+                        <div ref={box}>
+                          <MenuDropdown
+                            dropdownOrigin="bottom-right"
+                            otherStyles={"w-auto"}
+                            buttonContent={
+                              <div>
+                                <div
+                                  onClick={() => {
+                                    handleClick();
+                                    setCurrentEntry(row.id);
+                                  }}
+                                  className={`h-[44px] flex items-center justify-center`}
+                                >
+                                  <OptionsIcon color={""} />
                                 </div>
                               </div>
-                            </MenuDropdown>
-                          </div>
+                            }
+                          >
+                            <div className="bg-white shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                              <div className="flex flex-col items-center w-full">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenEditionModal(true)}
+                                  className="flex items-center w-full gap-[8px] py-[4px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                >
+                                  <UpdateIcon color={""} />
+                                  <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                    Modifier
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {}}
+                                  className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                >
+                                  <DetailsIcon color={""} />
+                                  <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                    Détails
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDelationModal(true);
+                                  }}
+                                  className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                >
+                                  <DeleteUserIcon className={""} />
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    Supprimer
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          </MenuDropdown>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table> : <TableSkeleton head={tableHead} />
-            }
-          </div>
-          <div className="w-full bg-white/80 rounded-b-xl h-[50px]"></div>
+                      </div>
+                    </td> */}
+
+                    <td className="text-[#636363] w-auto px-[20px] text-start font-poppins">
+                      <div className="w-full h-full flex items-center justify-end">
+                        <div ref={box}>
+                          <MenuDropdown
+                            dropdownOrigin="bottom-right"
+                            otherStyles={"w-auto"}
+                            buttonContent={
+                              <div>
+                                <div
+                                  onClick={(e) => {
+                                    handleClick(e);
+                                    setCurrentEntry(row.id);
+                                  }}
+                                  className={`h-[44px] w-full flex items-center justify-center`}
+                                >
+                                  <OptionsIcon color={"#636363"} />
+                                </div>
+                              </div>
+                            }
+                          >
+                            <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                              <div className="flex flex-col items-center w-full">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenEditionModal(true)}
+                                  className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                >
+                                  {/* <UpdateIcon color={""} /> */}
+                                  <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                    Modifier les entrées
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    goToDetail(row?.id);
+                                  }}
+                                  className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                >
+                                  {/* <DetailsIcon color={""} /> */}
+                                  <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                    Voir les détails
+                                  </span>
+                                </button>
+                                {/* <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenAssignToUserModal(true);
+                                  }}
+                                  className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                >
+                                 
+                                  <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                    Assigner à un utilisateur
+                                  </span>
+                                </button> */}
+                                {/* <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenLogsModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <LogIcon color={""} />
+                                      <span className="text-[14px]  text-grayscale-900 font-medium font-poppins leading-[20px]">
+                                        Voir les logs
+                                      </span>
+                                    </button> */}
+                                {/* <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenLockModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    {row.status_id === 3
+                                      ? "Débloquer"
+                                      : "Bloquer"}
+                                  </span>
+                                </button> */}
+                                {/* 
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenStandByModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    {row.status_id === 2
+                                      ? "Enlever en standby"
+                                      : "Mettre en standby"}
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEndModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    Terminer
+                                  </span>
+                                </button> */}
+                                {/* <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenObservationModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <DeleteShapeIcon color={""} />
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        Faire une observation
+                                      </span>
+                                    </button> */}
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDelationModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                  <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                    {`Supprimer l'utilisateur`}
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          </MenuDropdown>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <TableSkeleton head={tableHead} />
+          )}
+
+          {currentDatas.length > 0 ? (
+            <Pagination
+              datas={currentDatas ? currentDatas : []}
+              listHandler={setAllUsers}
+            />
+          ) : null}
         </div>
       </motion.div>
 
@@ -592,7 +930,11 @@ export const Users: FC<{}> = ({ }) => {
                 // onClick={() => setCreationModal((tmp) => !tmp)}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : "Mettre à jour"}
+                {loading ? (
+                  <Spinner color={"#fff"} size={20} />
+                ) : (
+                  "Mettre à jour"
+                )}
               </button>
             </div>
           </div>
@@ -639,7 +981,6 @@ export const Users: FC<{}> = ({ }) => {
           </div>
         </div>
       </BaseModal>
-
     </div>
   );
 };

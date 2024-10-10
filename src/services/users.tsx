@@ -47,6 +47,29 @@ export async function getAllUsers() {
     return { success: false };
   }
 }
+
+export async function updateUser(id: number, entry: UserEntry) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/${id}/update`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("updatedUser", data);
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}
+
 export async function deleteUser(id: number) {
   const token = await getToken();
   try {
@@ -69,12 +92,12 @@ export async function deleteUser(id: number) {
     return { success: false };
   }
 }
-export async function updateUser(id: number, entry: UserEntry) {
+export async function getUser(id: string) {
   const token = await getToken();
+  // https://api-mici.vooizo.com/api/users/19/show
   try {
-    const { data } = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/users/${id}/update`,
-      entry,
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/${id}/show`,
       {
         headers: {
           accept: "application/json",

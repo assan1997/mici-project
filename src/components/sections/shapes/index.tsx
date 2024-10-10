@@ -37,6 +37,7 @@ import { Filter } from "@/components/ui/filter";
 import { Export } from "@/components/ui/export";
 import { useRouter } from "next/navigation";
 import { deleteShape } from "@/services/shapes";
+import { SearchMdIcon } from "@/components/svg/search-md";
 
 export const Shape: FC<{}> = ({}) => {
   const {
@@ -763,10 +764,10 @@ export const Shape: FC<{}> = ({}) => {
 
       if (key === "dimensions plaque") {
         sorted = tmp?.sort((a, b) => {
-          if (a.dim_plate.toUpperCase() > b.dim_plate.toUpperCase()) {
+          if (a?.dim_plate?.toUpperCase() > b?.dim_plate?.toUpperCase()) {
             return 1;
           }
-          if (a.dim_plate.toUpperCase() < b.dim_plate.toUpperCase()) {
+          if (a?.dim_plate?.toUpperCase() < b?.dim_plate?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -775,34 +776,34 @@ export const Shape: FC<{}> = ({}) => {
 
       if (key === "type papier") {
         sorted = tmp?.sort((a, b) => {
-          if (a.paper_type.toUpperCase() > b.paper_type.toUpperCase()) {
+          if (a.paper_type?.toUpperCase() > b.paper_type?.toUpperCase()) {
             return 1;
           }
-          if (a.paper_type.toUpperCase() < b.paper_type.toUpperCase()) {
+          if (a.paper_type?.toUpperCase() < b.paper_type?.toUpperCase()) {
             return -1;
           }
           return 0;
         });
       }
 
-      if (key === "n° des poses") {
-        sorted = tmp?.sort((a, b) => {
-          if (a.pose_number.toUpperCase() > b.pose_number.toUpperCase()) {
-            return 1;
-          }
-          if (a.pose_number.toUpperCase() < b.pose_number.toUpperCase()) {
-            return -1;
-          }
-          return 0;
-        });
-      }
+      // if (key === "n° des poses") {
+      //   sorted = tmp?.sort((a, b) => {
+      //     if (a.pose_number.toUpperCase() > b.pose_number.toUpperCase()) {
+      //       return 1;
+      //     }
+      //     if (a.pose_number.toUpperCase() < b.pose_number.toUpperCase()) {
+      //       return -1;
+      //     }
+      //     return 0;
+      //   });
+      // }
 
       if (key === "n° des poses") {
         sorted = tmp?.sort((a, b) => {
-          if (a.pose_number.toUpperCase() > b.pose_number.toUpperCase()) {
+          if (a.pose_number?.toUpperCase() > b.pose_number?.toUpperCase()) {
             return 1;
           }
-          if (a.pose_number.toUpperCase() < b.pose_number.toUpperCase()) {
+          if (a.pose_number?.toUpperCase() < b.pose_number?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -811,10 +812,10 @@ export const Shape: FC<{}> = ({}) => {
 
       if (key === "1/3") {
         sorted = tmp?.sort((a, b) => {
-          if (a.part.toUpperCase() > b.part.toUpperCase()) {
+          if (a.part?.toUpperCase() > b.part?.toUpperCase()) {
             return 1;
           }
-          if (a.part.toUpperCase() < b.part.toUpperCase()) {
+          if (a.part?.toUpperCase() < b.part?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -829,6 +830,90 @@ export const Shape: FC<{}> = ({}) => {
     setCurrentDatas(allOffsetShapes ? [...allOffsetShapes] : []);
     setSortedBY("");
   };
+
+  const [combineSearch, setCombineSearch] = useState<any[]>([]);
+  let combo: any = [];
+
+  const handleCombineSearch = () => {
+    combineSearch.map((item) => {
+      if (item.id === "Code" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) => shape.code === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "Client" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) => shape?.client?.name === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "Reference" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) => shape?.reference === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "Commercial" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) =>
+            shape?.commercial.name === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "Departement" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) =>
+            shape?.department.name === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "Dimensions LxLxH" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) => shape?.dim_lx_lh === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "Dimensions Carré" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) => shape?.dim_square === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "Dimensions Plaque" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) => shape?.dim_plate === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "Type Papier" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) => shape?.paper_type === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "N° des poses" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) => shape?.pose_number === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "1/3" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
+          (shape: any) => shape?.part === item?.selectedValues[0]?.value
+        );
+      }
+    });
+
+    setCurrentDatas(combo);
+    console.log("combo", combo);
+  };
+
+  useEffect(() => {
+    if (combineSearch.some((cmb) => cmb.selectedValues.length > 0)) {
+      handleCombineSearch();
+    } else setCurrentDatas(allOffsetShapes as any);
+  }, [combineSearch]);
 
   const RenderDepartmentFilter = useCallback(
     () => (
@@ -852,6 +937,53 @@ export const Shape: FC<{}> = ({}) => {
     ),
     [departments, allOffsetShapes]
   );
+
+  const createSearchCombinaison = (
+    e: { stopPropagation: () => void },
+    row: string
+  ) => {
+    e.stopPropagation();
+    setCombineSearch((tmp: any) => {
+      const mySet = new Set();
+      const obj = {
+        id: row,
+        searchField: "",
+        fields: [],
+        selectedValues: [],
+      };
+
+      if (allOffsetShapes)
+        allOffsetShapes.forEach((all) => {
+          if (row === "Code") {
+            mySet.add(all.code);
+          }
+          if (row === "Client") mySet.add(all.client.name);
+          if (row === "Reference") mySet.add(all.reference);
+          if (row === "Commercial") mySet.add(all.commercial.name);
+          if (row === "Departement") mySet.add(all.department.name);
+          if (row === "Dimension LxLxH") mySet.add(all.dim_lx_lh);
+          if (row === "Dimensions Carré") mySet.add(all.dim_square);
+          if (row === "Dimensions Plaque") mySet.add(all.dim_plate);
+          if (row === "Type Papier") mySet.add(all.paper_type);
+          if (row === "N° des poses") mySet.add(all.pose_number);
+          if (row === "1/3") mySet.add(all.part);
+        });
+
+      obj.fields = Array.from(mySet) as any;
+      tmp.push(obj);
+      return [...tmp];
+    });
+  };
+
+  const deleteSearchCombinaison = (
+    e: { stopPropagation: () => void },
+    row: string
+  ) => {
+    e.stopPropagation();
+    setCombineSearch((tmp: any) => {
+      return [...tmp.filter((combine: any) => combine.id !== row)];
+    });
+  };
 
   return (
     <div className="w-full h-full">
@@ -879,7 +1011,7 @@ export const Shape: FC<{}> = ({}) => {
         }}
         className="rounded-[16px]"
       >
-        <div className="relative w-full  bg-white/10 z-50 gap-x-[4px] flex items-center h-[60px] justify-start border-b">
+        <div className="relative w-full bg-white/10 z-50 gap-x-[4px] flex items-center h-[60px] justify-start border-b">
           <Filter
             type="button"
             title={""}
@@ -934,7 +1066,6 @@ export const Shape: FC<{}> = ({}) => {
             filterHandler={setOffsetShapes}
           /> */}
           <RenderDepartmentFilter />
-
           <Filter
             type="search"
             title={"Recherche"}
@@ -1022,7 +1153,7 @@ export const Shape: FC<{}> = ({}) => {
         <div className="relative w-full overflow-auto scrollbar-hide bg-white">
           {!allOffsetShapes ? (
             <TableSkeleton head={tableHead} />
-          ) : currentDatas.length > 0 ? (
+          ) : currentDatas?.length > 0 ? (
             <motion.div
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -1033,118 +1164,249 @@ export const Shape: FC<{}> = ({}) => {
               }}
             >
               <table className="w-full mb-[15rem] relative">
-                <thead className="bg-white/50">
+                <thead className="bg-white/50 transition">
                   <tr className="border-b bg-gray-50 cursor-pointer">
                     {tableHead.map((head, index) => (
                       <th
-                        onClick={() => {
-                          if (
-                            [
-                              "Options",
-                              "Statut",
-                              "Date & Heure de création",
-                              "Date & Heure de mise à jour",
-                            ].includes(head)
-                          )
-                            return;
-
-                          if (sortedBy === head.toLowerCase()) resetSortedBy();
-                          else sort(head.toLowerCase());
-                        }}
                         key={index}
                         className={`w-fit ${
-                          index === 0 ? "w-0" : "min-w-[150px]"
+                          index === 0 ? "w-0" : "min-w-[300px]"
                         } text-[13px] py-[10px] font-medium  ${
                           index > 0 && index < tableHead.length
                         }  text-[#000000]`}
                       >
                         <div
-                          className={`h-full font-poppins relative flex items-center text-start gap-x-[10px] px-[20px] ${
+                          className={`h-full font-poppins relative flex flex-1 items-center text-start gap-x-[10px] px-[20px] ${
                             head === "Options"
                               ? " justify-end"
                               : " justify-start"
                           }`}
                         >
-                          {head}
+                          <div
+                            onClick={() => {
+                              if (
+                                [
+                                  "Options",
+                                  "Statut",
+                                  "Date & Heure de création",
+                                  "Date & Heure de mise à jour",
+                                ].includes(head)
+                              )
+                                return;
+
+                              if (sortedBy === head.toLowerCase())
+                                resetSortedBy();
+                              else sort(head.toLowerCase());
+                            }}
+                            className="w-full flex gap-x-[10px]"
+                          >
+                            <div className="w-fit h-[40px] flex items-center">
+                              {head}
+                            </div>
+                            {![
+                              "Options",
+                              "Statut",
+                              "Date & Heure de création",
+                              "Date & Heure de mise à jour",
+                            ].includes(head) ? (
+                              <div className="flex justify-between items-center w-full">
+                                <div
+                                  className={`cursor-pointer ${
+                                    sortedBy === head.toLowerCase()
+                                      ? "bg-blue-200"
+                                      : ""
+                                  } shrink-0 p-[8px] rounded-lg`}
+                                >
+                                  <svg
+                                    version="1.1"
+                                    id="fi_690342"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width={15}
+                                    height={15}
+                                    viewBox="0 0 512 512"
+                                  >
+                                    <g>
+                                      <g>
+                                        <path
+                                          fill={
+                                            sortedBy === head.toLowerCase()
+                                              ? "#3b82f6"
+                                              : "#64748b"
+                                          }
+                                          d="M106.23,0H75.86L1.496,212.467h42.273l11.172-31.92h71.37l11.012,31.92h42.207L106.23,0z M68.906,140.647l21.976-62.791 l21.664,62.791H68.906z"
+                                        ></path>
+                                      </g>
+                                    </g>
+                                    <g>
+                                      <g>
+                                        <polygon
+                                          fill={
+                                            sortedBy === head.toLowerCase()
+                                              ? "#3b82f6"
+                                              : "#64748b"
+                                          }
+                                          points="483.288,359.814 407.478,435.624 407.478,0 367.578,0 367.578,435.624 291.768,359.814 263.555,388.027 387.528,512 511.501,388.027"
+                                        ></polygon>
+                                      </g>
+                                    </g>
+                                    <g>
+                                      <g>
+                                        <polygon
+                                          fill={
+                                            sortedBy === head.toLowerCase()
+                                              ? "#3b82f6"
+                                              : "#64748b"
+                                          }
+                                          points="182.043,299.247 0.499,299.247 0.499,339.147 122.039,339.147 0.499,480.372 0.499,511.717 180.048,511.717 .048,471.817 60.503,471.817 182.043,330.592"
+                                        ></polygon>
+                                      </g>
+                                    </g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                    <g></g>
+                                  </svg>
+                                </div>
+                              </div>
+                            ) : null}
+                          </div>
                           {![
                             "Options",
                             "Statut",
                             "Date & Heure de création",
                             "Date & Heure de mise à jour",
                           ].includes(head) ? (
-                            <div
-                              className={`cursor-pointer ${
-                                sortedBy === head.toLowerCase()
-                                  ? "bg-blue-200"
-                                  : ""
-                              } shrink-0 p-[8px] rounded-lg`}
-                            >
-                              <svg
-                                version="1.1"
-                                id="fi_690342"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width={15}
-                                height={15}
-                                viewBox="0 0 512 512"
+                            <div className="flex justify-end items-center w-full">
+                              <div
+                                className={`cursor-pointer ${
+                                  combineSearch.some((cmb) => {
+                                    return cmb.id === head;
+                                  })
+                                    ? "bg-blue-200"
+                                    : ""
+                                } shrink-0 p-[8px] rounded-lg`}
+                                onClick={(e) => {
+                                  combineSearch.find((cmb) => cmb.id === head)
+                                    ? deleteSearchCombinaison(e, head)
+                                    : createSearchCombinaison(e, head);
+                                }}
                               >
-                                <g>
-                                  <g>
-                                    <path
-                                      fill={
-                                        sortedBy === head.toLowerCase()
-                                          ? "#3b82f6"
-                                          : "#64748b"
-                                      }
-                                      d="M106.23,0H75.86L1.496,212.467h42.273l11.172-31.92h71.37l11.012,31.92h42.207L106.23,0z M68.906,140.647l21.976-62.791
-			l21.664,62.791H68.906z"
-                                    ></path>
-                                  </g>
-                                </g>
-                                <g>
-                                  <g>
-                                    <polygon
-                                      fill={
-                                        sortedBy === head.toLowerCase()
-                                          ? "#3b82f6"
-                                          : "#64748b"
-                                      }
-                                      points="483.288,359.814 407.478,435.624 407.478,0 367.578,0 367.578,435.624 291.768,359.814 263.555,388.027 
-			387.528,512 511.501,388.027 		"
-                                    ></polygon>
-                                  </g>
-                                </g>
-                                <g>
-                                  <g>
-                                    <polygon
-                                      fill={
-                                        sortedBy === head.toLowerCase()
-                                          ? "#3b82f6"
-                                          : "#64748b"
-                                      }
-                                      points="182.043,299.247 0.499,299.247 0.499,339.147 122.039,339.147 0.499,480.372 0.499,511.717 180.048,511.717 
-			180.048,471.817 60.503,471.817 182.043,330.592 		"
-                                    ></polygon>
-                                  </g>
-                                </g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                              </svg>
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M2 4.6C2 4.03995 2 3.75992 2.10899 3.54601C2.20487 3.35785 2.35785 3.20487 2.54601 3.10899C2.75992 3 3.03995 3 3.6 3H20.4C20.9601 3 21.2401 3 21.454 3.10899C21.6422 3.20487 21.7951 3.35785 21.891 3.54601C22 3.75992 22 4.03995 22 4.6V5.26939C22 5.53819 22 5.67259 21.9672 5.79756C21.938 5.90831 21.8901 6.01323 21.8255 6.10776C21.7526 6.21443 21.651 6.30245 21.4479 6.4785L15.0521 12.0215C14.849 12.1975 14.7474 12.2856 14.6745 12.3922C14.6099 12.4868 14.562 12.5917 14.5328 12.7024C14.5 12.8274 14.5 12.9618 14.5 13.2306V18.4584C14.5 18.6539 14.5 18.7517 14.4685 18.8363C14.4406 18.911 14.3953 18.9779 14.3363 19.0315C14.2695 19.0922 14.1787 19.1285 13.9971 19.2012L10.5971 20.5612C10.2296 20.7082 10.0458 20.7817 9.89827 20.751C9.76927 20.7242 9.65605 20.6476 9.58325 20.5377C9.5 20.4122 9.5 20.2142 9.5 19.8184V13.2306C9.5 12.9618 9.5 12.8274 9.46715 12.7024C9.43805 12.5917 9.39014 12.4868 9.32551 12.3922C9.25258 12.2856 9.15102 12.1975 8.94789 12.0215L2.55211 6.4785C2.34898 6.30245 2.24742 6.21443 2.17449 6.10776C2.10986 6.01323 2.06195 5.90831 2.03285 5.79756C2 5.67259 2 5.53819 2 5.26939V4.6Z"
+                                    stroke="black"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                  />
+                                </svg>
+                              </div>
                             </div>
                           ) : null}
                         </div>
+                        {/* <SearchMdIcon /> */}
+                        {![
+                          "Options",
+                          "Statut",
+                          "Date & Heure de création",
+                          "Date & Heure de mise à jour",
+                        ].includes(head) &&
+                        combineSearch.some((cmb) => {
+                          return cmb.id === head;
+                        }) ? (
+                          <motion.div
+                            initial={{ y: 40, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{
+                              duration: 1,
+                              ease: [0.36, 0.01, 0, 0.99],
+                              delay: 0.2,
+                            }}
+                          >
+                            <div className="my-[10px] px-[20px]">
+                              <Form form={form} onSubmit={onSubmit}>
+                                <ComboboxMultiSelect
+                                  placeholder=""
+                                  className="w-full"
+                                  icon={
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 20 20"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                                        stroke="black"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  }
+                                  id={`users`}
+                                  options={
+                                    // users?.map((user: User) => ({
+                                    //   value: user.id as unknown as string,
+                                    //   label: user.name,
+                                    // })) as any
+                                    combineSearch
+                                      .find((opt) => opt.id === head)
+                                      ?.fields.map((field: unknown) => ({
+                                        value: field as unknown as string,
+                                        label: field as unknown as string,
+                                      }))
+                                  }
+                                  error={undefined}
+                                  isUniq={true}
+                                  selectedElementInDropdown={
+                                    combineSearch.find((opt) => opt.id === head)
+                                      ?.selectedValues
+                                  }
+                                  setSelectedUniqElementInDropdown={(
+                                    data: any
+                                  ) => {
+                                    setCombineSearch((tmp) => {
+                                      if (data.length > 0) {
+                                        return tmp.map((cmb) =>
+                                          cmb.id === head
+                                            ? {
+                                                ...cmb,
+                                                selectedValues: [...data],
+                                              }
+                                            : { ...cmb }
+                                        );
+                                      }
+                                      return tmp.filter(
+                                        (cmb) => cmb.id !== head
+                                      );
+                                    });
+                                  }}
+                                  borderColor="border-grayscale-200"
+                                  label={""}
+                                />
+                              </Form>
+                            </div>
+                          </motion.div>
+                        ) : null}
                       </th>
                     ))}
                   </tr>
@@ -1428,20 +1690,37 @@ export const Shape: FC<{}> = ({}) => {
                 delay: 0.2,
               }}
             >
-              <div className="w-full bg-white/80 flex justify-center items-center font-poppins font-medium leading-[20px] px-[20px] h-[60px]">
+              <div className="w-full bg-white/80 flex gap-x-[10px] justify-center items-center font-poppins font-medium leading-[20px] px-[20px] h-[60px]">
                 Aucune donnée
+                <Filter
+                  type="button"
+                  title={""}
+                  row={""}
+                  index={""}
+                  list={[]}
+                  filterDatas={allOffsetShapes ? allOffsetShapes : []}
+                  dataHandler={setCurrentDatas}
+                  filterHandler={setOffsetShapes}
+                  onClick={() => {
+                    setCombineSearch((tmp: any) => {
+                      tmp.pop();
+                      return [...tmp];
+                    });
+                  }}
+                >
+                  <CloseIcon />
+                </Filter>
               </div>
             </motion.div>
           )}
         </div>
-        {currentDatas.length > 0 ? (
+        {currentDatas?.length > 0 ? (
           <Pagination
             datas={currentDatas ? currentDatas : []}
             listHandler={setOffsetShapes}
           />
         ) : null}
       </motion.div>
-
       <BaseModal open={openCreationModal} classname={""}>
         <Form form={form} onSubmit={onSubmit}>
           <div className="w-[calc(150vh)] h-[98vh]">
@@ -1973,8 +2252,6 @@ export const Shape: FC<{}> = ({}) => {
                   borderColor="border-grayscale-200"
                 />
               </div>
-
-              {}
 
               {observationList.map(
                 (

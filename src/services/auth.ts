@@ -89,6 +89,7 @@ export async function refreshUser() {
 export async function logout() {
   try {
     cookies().delete("authToken");
+    return true;
   } catch (error: unknown) {
     return { error: error };
   }
