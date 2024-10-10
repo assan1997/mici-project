@@ -4,7 +4,7 @@ import BaseDropdown from "@/components/ui/dropdown/BaseDropdown";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import Link from "next/link";
 import { EditIcon, FolderIcon, RulerIcon } from "@/components/svg";
-import {BaseInput} from "@/components/ui/forms/BaseInput";
+import { BaseInput } from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
@@ -365,7 +365,7 @@ export const Cartonnerie: FC<{}> = ({}) => {
         <table className="w-full relative">
           <thead className="bg-white/50">
             <tr className="">
-              {tableHead.map((head, index) => (
+              {tableHead?.map((head, index) => (
                 <th
                   key={index}
                   className={`font-poppins  ${
@@ -382,7 +382,7 @@ export const Cartonnerie: FC<{}> = ({}) => {
             </tr>
           </thead>
           <tbody className="bg-white/80">
-            {data.map((row, index) => (
+            {data?.map((row, index) => (
               <tr key={index} className="border-b">
                 <td className="text-[#2f2f2f] min-w-[100px] p-[10px] text-start font-poppins text-[13px]">
                   {row.Code}

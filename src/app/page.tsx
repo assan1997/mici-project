@@ -41,10 +41,11 @@ export default function Home() {
           type: "success",
           position: "top-center",
         });
-        Router.push("/workspace/folder");
+        Router.push("/workspace/shapes");
       } else {
         showToast({
-          message: "Echec de l'authentification vérifier vos cordonneés oubien la connexion internet",
+          message:
+            "Echec de l'authentification vérifier vos cordonneés oubien la connexion internet",
           type: "danger",
           position: "top-center",
         });
@@ -121,19 +122,23 @@ export default function Home() {
               type="submit"
               className={`w-full h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
             >
-              {
-                loading && !connected ? <>
+              {loading && !connected ? (
+                <>
                   <Spinner color={"#fff"} size={20} />
                   {"Connexion en cours"}
-                </> : loading && connected ? <>
+                </>
+              ) : loading && connected ? (
+                <>
                   <Spinner color={"#fff"} size={20} />
                   {"Redirection"}
-                </> : "Connexion"
-              }
+                </>
+              ) : (
+                "Connexion"
+              )}
             </button>
           </div>
         </Form>
       </div>
-    </div >
+    </div>
   );
 }

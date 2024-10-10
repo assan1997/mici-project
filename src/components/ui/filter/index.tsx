@@ -50,7 +50,7 @@ export const Filter: FC<{
 }) => {
   const { box, handleClick } = useActiveState();
   const [list, setList] = useState(
-    entryList.map((l) => ({ ...l, active: false }))
+    entryList?.map((l) => ({ ...l, active: false }))
   );
   const [selected, setSelected] = useState<string | undefined>(undefined);
   const [processSearch, setProcessSearch] = useState<boolean>(false);
@@ -93,7 +93,7 @@ export const Filter: FC<{
           cb(
             indexs
               .filter((item) => item && item)
-              .map((item) => item && item.toString().toLowerCase())
+              ?.map((item) => item && item.toString().toLowerCase())
           );
         }
       }
@@ -265,7 +265,7 @@ export const Filter: FC<{
         >
           <div className="bg-white w-[250px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
             <div className="flex flex-col items-center p-[4px] w-full">
-              {list.map(({ id, name, active }) => (
+              {list?.map(({ id, name, active }) => (
                 <button
                   key={id}
                   type="button"
@@ -294,7 +294,7 @@ export const Filter: FC<{
                     });
 
                     setList((tmp) =>
-                      tmp.map((l) =>
+                      tmp?.map((l) =>
                         l.id === id
                           ? { ...l, active: true }
                           : { ...l, active: false }

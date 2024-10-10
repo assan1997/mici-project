@@ -156,7 +156,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     setNav((navs: Nav[]) =>
-      navs.map((nav: Nav) =>
+      navs?.map((nav: Nav) =>
         pathName.includes(nav.link)
           ? { ...nav, active: true }
           : { ...nav, active: false }
@@ -164,7 +164,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
     );
 
     setSubNav((navs: SubNav[]) =>
-      navs.map((nav: SubNav) =>
+      navs?.map((nav: SubNav) =>
         pathName.includes(nav.link)
           ? { ...nav, active: true }
           : { ...nav, active: false }
@@ -178,7 +178,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
     cb?: Function
   ) => {
     handler((tmp: Nav[]) =>
-      tmp.map((nav: Nav) =>
+      tmp?.map((nav: Nav) =>
         nav.id === id ? { ...nav, active: true } : { ...nav, active: false }
       )
     );
@@ -188,14 +188,16 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
   const handleResetNavState = (
     handler: Dispatch<SetStateAction<SubNav[]> | SetStateAction<Nav[]>>
   ) => {
-    handler((tmp: Nav[]) => tmp.map((nav: Nav) => ({ ...nav, active: false })));
+    handler((tmp: Nav[]) =>
+      tmp?.map((nav: Nav) => ({ ...nav, active: false }))
+    );
   };
 
   const handleUpdateSubNavId = (
     navId: string,
     handler: Dispatch<SetStateAction<SubNav[]> | SetStateAction<Nav[]>>
   ) => {
-    handler((tmp: Nav[]) => tmp.map((nav: Nav) => ({ ...nav, id: uniqid() })));
+    handler((tmp: Nav[]) => tmp?.map((nav: Nav) => ({ ...nav, id: uniqid() })));
   };
 
   const getSubnavs = (navId: string) => {

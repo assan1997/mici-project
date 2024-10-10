@@ -113,3 +113,25 @@ export async function getUser(id: string) {
     return { success: false };
   }
 }
+
+export async function getUserPerformance(id: string, period: string) {
+  const token = await getToken();
+  // https://api-mici.vooizo.com/api/users/19/show
+  try {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/${id}/performance/${period}`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("updatedUser", data);
+    return { success: true, data };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+}

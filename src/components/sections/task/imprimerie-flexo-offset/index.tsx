@@ -8,7 +8,7 @@ import { BaseInput } from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
-export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
+export const ImprimerieFlexoOffset: FC<{}> = ({}) => {
   const meetLink = z.object({
     number: z.number(),
     client: z.string(),
@@ -344,9 +344,9 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
 
   const [openDropdown, setDropdown] = useState<boolean>(false);
 
-  const onSubmit = () => { };
+  const onSubmit = () => {};
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
-  const openModal = () => { };
+  const openModal = () => {};
 
   return (
     <div className="w-full h-full">
@@ -365,12 +365,14 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
         <table className="w-full relative">
           <thead className="bg-white/50">
             <tr className="">
-              {tableHead.map((head, index) => (
+              {tableHead?.map((head, index) => (
                 <th
                   key={index}
-                  className={`font-poppins  ${head === "options" ? "w-auto" : "min-w-[150px]"
-                    } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
-                    }  text-[#2f2f2f]`}
+                  className={`font-poppins  ${
+                    head === "options" ? "w-auto" : "min-w-[150px]"
+                  } text-[13px] py-[10px] font-medium  ${
+                    index > 0 && index < tableHead.length
+                  }  text-[#2f2f2f]`}
                 >
                   <div className="h-full relative flex items-center text-start px-[10px] justify-start">
                     {head}
@@ -380,7 +382,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
             </tr>
           </thead>
           <tbody className="bg-white/80">
-            {data.map((row, index) => (
+            {data?.map((row, index) => (
               <tr key={index} className="border-b">
                 <td className="text-[#2f2f2f] min-w-[100px] p-[10px] text-start font-poppins text-[13px]">
                   {row.Code}

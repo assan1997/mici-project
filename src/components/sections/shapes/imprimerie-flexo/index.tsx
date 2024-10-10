@@ -175,7 +175,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       part,
       rule_id: rule,
       user_id: user?.id as unknown as number,
-      observations: observationList.map((obs) => obs.text),
+      observations: observationList?.map((obs) => obs.text),
     });
     if (success) {
       reset();
@@ -319,7 +319,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       code,
       reference,
       rule_id: rule,
-      observations: observationList.map((obs) => obs.text),
+      observations: observationList?.map((obs) => obs.text),
     };
 
     if (
@@ -868,7 +868,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                     key: shapeKey.toLocaleLowerCase(),
                   })),
                 data: allOffsetShapes
-                  ? allOffsetShapes.map((shape) => ({
+                  ? allOffsetShapes?.map((shape) => ({
                       ...shape,
                       department: shape?.department?.name,
                       client: shape?.client?.name,
@@ -918,7 +918,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
               <table className="w-full mb-[20rem] relative">
                 <thead className="bg-white/50">
                   <tr className="border-b bg-gray-50 cursor-pointer">
-                    {tableHead.map((head, index) => (
+                    {tableHead?.map((head, index) => (
                       <th
                         onClick={() => {
                           if (
@@ -1526,7 +1526,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                 />
                 <br />
               </div>
-              {observationList.map(
+              {observationList?.map(
                 (
                   observation: {
                     id: number;
@@ -1553,7 +1553,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                         type="text"
                         onChange={(e) => {
                           setObservationList((tmp) =>
-                            tmp.map((obs) =>
+                            tmp?.map((obs) =>
                               obs.id === observation.id
                                 ? { ...obs, text: e.target.value }
                                 : obs
@@ -1838,7 +1838,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
               {}
 
-              {observationList.map(
+              {observationList?.map(
                 (
                   observation: {
                     id: number;
@@ -1865,7 +1865,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                         type="text"
                         onChange={(e) => {
                           setObservationList((tmp) =>
-                            tmp.map((obs) =>
+                            tmp?.map((obs) =>
                               obs.id === observation.id
                                 ? { ...obs, text: e.target.value }
                                 : obs
@@ -2037,7 +2037,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                       "Type",
                       "Date de création",
                       "Utilisateur",
-                    ].map((head, index) => (
+                    ]?.map((head, index) => (
                       <th
                         key={index}
                         className={`  ${

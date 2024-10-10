@@ -82,7 +82,7 @@ const SideBar: FC<{ resize: boolean }> = ({ resize }) => {
         </div>
       </div>
       <div className="flex flex-col gap-y-[8px] px-[30px] items-start mt-[100px] justify-start  w-full">
-        {nav.map(({ active, slug, id, link, icon }, index) => (
+        {nav?.map(({ active, slug, id, link, icon }, index) => (
           <div className="" key={index}>
             <button
               onClick={() => {
@@ -266,7 +266,7 @@ const TopBar: FC<{
                   {user?.name}
                 </span>
                 <span className="text-[#636363] flex gap-x-[6px] text-[12px] truncate font-poppins">
-                  {user.sections.map((section) => (
+                  {user.sections?.map((section) => (
                     <span key={section.id}> {section.name}</span>
                   ))}
                 </span>

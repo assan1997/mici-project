@@ -76,10 +76,12 @@ export const Shape: FC<{}> = ({}) => {
     user_id: z.number(),
     description: z.string(),
   });
+  
   const form = useForm({ schema: shapeSchema });
   const standByform = useForm({ schema: shapeStandBySchema });
   const observationForm = useForm({ schema: shapeObservationSchema });
   const assignForm = useForm({ schema: shapeAssignSchema });
+
   const tableHead = [
     "Statut",
     "Code",
@@ -97,6 +99,7 @@ export const Shape: FC<{}> = ({}) => {
     "Date & Heure de mise à jour",
     "Options",
   ];
+
   const reset = () => {
     form.setValue("client", 0);
     form.setValue("commercial", 0);
@@ -169,7 +172,7 @@ export const Shape: FC<{}> = ({}) => {
       part,
       rule_id: rule,
       user_id: user?.id as unknown as number,
-      observations: observationList.map((obs) => obs.text),
+      observations: observationList?.map((obs) => obs.text),
     });
     if (success) {
       reset();
@@ -199,7 +202,6 @@ export const Shape: FC<{}> = ({}) => {
       });
     }
     setLoading(false);
-    console.log("createdOffsetShape", createdOffsetShape);
   };
   interface ComboSelect {
     label: string;
@@ -313,7 +315,7 @@ export const Shape: FC<{}> = ({}) => {
       code,
       reference,
       rule_id: rule,
-      observations: observationList.map((obs) => obs.text),
+      observations: observationList?.map((obs) => obs.text),
     };
 
     if (
@@ -835,7 +837,7 @@ export const Shape: FC<{}> = ({}) => {
   let combo: any = [];
 
   const handleCombineSearch = () => {
-    combineSearch.map((item) => {
+    combineSearch?.map((item) => {
       if (item.id === "Code" && item?.selectedValues.length > 0) {
         combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
           (shape: any) => shape.code === item?.selectedValues[0]?.value
@@ -926,7 +928,7 @@ export const Shape: FC<{}> = ({}) => {
         index={"status_id"}
         list={departments
           .filter((dep) => [1, 2].includes(dep.id))
-          .map((dep) => ({
+          ?.map((dep) => ({
             id: dep.id,
             name: dep.name,
           }))}
@@ -1116,7 +1118,7 @@ export const Shape: FC<{}> = ({}) => {
                     key: shapeKey.toLocaleLowerCase(),
                   })),
                 data: allOffsetShapes
-                  ? allOffsetShapes.map((shape) => ({
+                  ? allOffsetShapes?.map((shape) => ({
                       ...shape,
                       department: shape?.department?.name,
                       client: shape?.client?.name,
@@ -1166,7 +1168,7 @@ export const Shape: FC<{}> = ({}) => {
               <table className="w-full mb-[15rem] relative">
                 <thead className="bg-white/50 transition">
                   <tr className="border-b bg-gray-50 cursor-pointer">
-                    {tableHead.map((head, index) => (
+                    {tableHead?.map((head, index) => (
                       <th
                         key={index}
                         className={`w-fit ${
@@ -1176,10 +1178,8 @@ export const Shape: FC<{}> = ({}) => {
                         }  text-[#000000]`}
                       >
                         <div
-                          className={`h-full font-poppins relative flex flex-1 items-center text-start gap-x-[10px] px-[20px] ${
-                            head === "Options"
-                              ? " justify-end"
-                              : " justify-start"
+                          className={`h-full font-poppins relative flex items-center text-start gap-x-[10px] px-[20px] ${
+                            head === "Options" ? "justify-end" : "justify-start"
                           }`}
                         >
                           <div
@@ -1198,7 +1198,11 @@ export const Shape: FC<{}> = ({}) => {
                                 resetSortedBy();
                               else sort(head.toLowerCase());
                             }}
-                            className="w-full flex gap-x-[10px]"
+                            className={`w-full flex gap-x-[10px] ${
+                              head === "Options"
+                                ? "justify-end"
+                                : "justify-start"
+                            }`}
                           >
                             <div className="w-fit h-[40px] flex items-center">
                               {head}
@@ -1370,7 +1374,7 @@ export const Shape: FC<{}> = ({}) => {
                                     // })) as any
                                     combineSearch
                                       .find((opt) => opt.id === head)
-                                      ?.fields.map((field: unknown) => ({
+                                      ?.fields?.map((field: unknown) => ({
                                         value: field as unknown as string,
                                         label: field as unknown as string,
                                       }))
@@ -1386,7 +1390,7 @@ export const Shape: FC<{}> = ({}) => {
                                   ) => {
                                     setCombineSearch((tmp) => {
                                       if (data.length > 0) {
-                                        return tmp.map((cmb) =>
+                                        return tmp?.map((cmb) =>
                                           cmb.id === head
                                             ? {
                                                 ...cmb,
@@ -1764,7 +1768,7 @@ export const Shape: FC<{}> = ({}) => {
                   id={`departement`}
                   options={departments
                     ?.filter((dep) => [1, 2].includes(dep.id))
-                    .map((department: Department) => ({
+                    ?.map((department: Department) => ({
                       value: department.id as unknown as string,
                       label: department.name,
                     }))}
@@ -1941,7 +1945,7 @@ export const Shape: FC<{}> = ({}) => {
                 />
                 <br />
               </div>
-              {observationList.map(
+              {observationList?.map(
                 (
                   observation: {
                     id: number;
@@ -1968,7 +1972,7 @@ export const Shape: FC<{}> = ({}) => {
                         type="text"
                         onChange={(e) => {
                           setObservationList((tmp) =>
-                            tmp.map((obs) =>
+                            tmp?.map((obs) =>
                               obs.id === observation.id
                                 ? { ...obs, text: e.target.value }
                                 : obs
@@ -2076,7 +2080,7 @@ export const Shape: FC<{}> = ({}) => {
                   id={`departement`}
                   options={departments
                     ?.filter((dep) => [1, 2].includes(dep.id))
-                    .map((department: Department) => ({
+                    ?.map((department: Department) => ({
                       value: department.id as unknown as string,
                       label: department.name,
                     }))}
@@ -2253,7 +2257,7 @@ export const Shape: FC<{}> = ({}) => {
                 />
               </div>
 
-              {observationList.map(
+              {observationList?.map(
                 (
                   observation: {
                     id: number;
@@ -2280,7 +2284,7 @@ export const Shape: FC<{}> = ({}) => {
                         type="text"
                         onChange={(e) => {
                           setObservationList((tmp) =>
-                            tmp.map((obs) =>
+                            tmp?.map((obs) =>
                               obs.id === observation.id
                                 ? { ...obs, text: e.target.value }
                                 : obs
@@ -2452,7 +2456,7 @@ export const Shape: FC<{}> = ({}) => {
                       "Type",
                       "Date de création",
                       "Utilisateur",
-                    ].map((head, index) => (
+                    ]?.map((head, index) => (
                       <th
                         key={index}
                         className={`  ${

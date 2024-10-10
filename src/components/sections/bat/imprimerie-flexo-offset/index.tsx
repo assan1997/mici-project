@@ -13,7 +13,7 @@ import {
   RulerIcon,
   UpdateIcon,
   DeleteShapeIcon,
-  LogIcon
+  LogIcon,
 } from "@/components/svg";
 import { BaseInput, BaseTextArea } from "@/components/ui/forms/BaseInput";
 import { array, string, z } from "zod";
@@ -21,27 +21,36 @@ import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
 import React from "react";
 import ComboboxMultiSelect from "@/components/ui/select/comboBoxMultiSelect";
-import {
-  Client,
-  Department,
-  useData,
-  User,
-} from "@/contexts/data.context";
+import { Client, Department, useData, User } from "@/contexts/data.context";
 import { BatInterface } from "@/contexts/data.context";
 import { createOffsetShape } from "@/services/shapes";
 import { formatTime } from "@/lib/utils/timestamp";
 import MenuDropdown from "@/components/ui/dropdown/MenuDropdown";
 import useActiveState from "@/lib/hooks/useActiveState";
-import { OffsetShapeEntry, updateOffsetShape, standbyOffsetShape, observationOffsetShape, assignToAnUserOffsetShape } from "@/services/shapes";
+import {
+  OffsetShapeEntry,
+  updateOffsetShape,
+  standbyOffsetShape,
+  observationOffsetShape,
+  assignToAnUserOffsetShape,
+} from "@/services/shapes";
 import { Spinner } from "@/components/ui/loader/spinner";
 import { TableSkeleton, ButtonSkeleton } from "@/components/ui/loader/Skeleton";
 import { useToast } from "@/contexts/toast.context";
 import { motion } from "framer-motion";
 import { Pagination } from "@/components/ui/pagination";
 import { Filter } from "@/components/ui/filter";
-import { createBat, BatEntry, updateBat, standbyBat, observationBat, assignToAnUserBat, deleteBat } from "@/services/bat";
+import {
+  createBat,
+  BatEntry,
+  updateBat,
+  standbyBat,
+  observationBat,
+  assignToAnUserBat,
+  deleteBat,
+} from "@/services/bat";
 
-export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
+export const ImprimerieFlexoOffset: FC<{}> = ({}) => {
   const {
     users,
     clients,
@@ -49,7 +58,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
     bats: allBats,
     user,
     dispatchBats,
-    status
+    status,
   } = useData();
   const batSchema = z.object({
     client: z.number(),
@@ -116,12 +125,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
       product,
       fabrication,
       details,
-      reference
+      reference,
     } = data;
     reference = reference.trim();
     details = details.trim();
 
-    console.log('department', department)
+    console.log("department", department);
 
     const { data: createdBat, success } = await createBat({
       client_id: client,
@@ -130,7 +139,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
       product_id: product,
       fabrication_id: fabrication,
       details,
-      reference
+      reference,
     });
     if (success) {
       reset();
@@ -138,26 +147,23 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
       createdBat.department = departments.filter(
         (dep) => dep.id === department && dep
       );
-      createdBat.commercial = users?.find(
-        (use) => use.id === commercial
-      );
+      createdBat.commercial = users?.find((use) => use.id === commercial);
       createdBat.client = clients?.find((cli) => cli?.id === client);
       dispatchBats((tmp) => {
-        if (tmp) return [createdBat, ...tmp]
+        if (tmp) return [createdBat, ...tmp];
       });
 
       showToast({
         type: "success",
         message: "Crée avec succès",
-        position: "top-center"
-      })
-    }
-    else {
+        position: "top-center",
+      });
+    } else {
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
     setLoading(false);
   };
@@ -174,10 +180,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
   const [product, setProduct] = useState<ComboSelect[]>([]);
   const [currentEntry, setCurrentEntry] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [currentDatas, setCurrentDatas] = useState<any[]>(allBats ? allBats : []);
+  const [currentDatas, setCurrentDatas] = useState<any[]>(
+    allBats ? allBats : []
+  );
 
   useEffect(() => {
-    setCurrentDatas(allBats ? allBats : [])
+    setCurrentDatas(allBats ? allBats : []);
   }, [allBats]);
 
   const { showToast } = useToast();
@@ -257,34 +265,42 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
       reference,
       details,
     };
-    if (!entry?.client_id || JSON.stringify(entry?.client_id) === JSON.stringify(batInEntry?.client?.id)) delete entry?.client_id;
+    if (
+      !entry?.client_id ||
+      JSON.stringify(entry?.client_id) ===
+        JSON.stringify(batInEntry?.client?.id)
+    )
+      delete entry?.client_id;
     if (
       !entry.department_id ||
       JSON.stringify(entry?.department_id) ===
-      JSON.stringify(batInEntry?.department?.id)
-    ) delete entry.department_id;
+        JSON.stringify(batInEntry?.department?.id)
+    )
+      delete entry.department_id;
     if (
       !entry.commercial_id ||
       JSON.stringify(entry?.commercial_id) ===
-      JSON.stringify(batInEntry?.commercial?.id)
-    ) delete entry.commercial_id;
+        JSON.stringify(batInEntry?.commercial?.id)
+    )
+      delete entry.commercial_id;
     if (
       !entry.product_id ||
-      JSON.stringify(entry?.product_id) ===
-      JSON.stringify(batInEntry?.product)
-    ) delete entry.product_id;
+      JSON.stringify(entry?.product_id) === JSON.stringify(batInEntry?.product)
+    )
+      delete entry.product_id;
 
     if (
       !entry.fabrication_id ||
       JSON.stringify(entry?.fabrication_id) ===
-      JSON.stringify(batInEntry?.fabrication)
-    ) delete entry.fabrication_id;
+        JSON.stringify(batInEntry?.fabrication)
+    )
+      delete entry.fabrication_id;
 
     if (
       !entry.details ||
-      JSON.stringify(entry?.details) ===
-      JSON.stringify(batInEntry?.details)
-    ) delete entry?.details;
+      JSON.stringify(entry?.details) === JSON.stringify(batInEntry?.details)
+    )
+      delete entry?.details;
 
     // if (
     //   !entry.bat ||
@@ -312,62 +328,62 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
       updatedShape.department = departments.find(
         (dep) => dep.id === department && dep
       );
-      updatedShape.commercial = users?.find(
-        (use) => use.id === commercial
-      );
+      updatedShape.commercial = users?.find((use) => use.id === commercial);
       updatedShape.client = clients?.find((cli) => cli.id === client);
       dispatchBats((tmp) => {
         let tmpDatas;
         let tmpData;
         if (tmp) {
-          tmpData = tmp.find(t => t.id === updatedShape.id);
+          tmpData = tmp.find((t) => t.id === updatedShape.id);
           tmpDatas = tmp.filter((t) => t.id !== updatedShape.id);
-          return [{ ...updatedShape, logs: tmpData?.logs }, ...tmpDatas]
+          return [{ ...updatedShape, logs: tmpData?.logs }, ...tmpDatas];
         }
       });
       setOpenEditionModal(false);
       showToast({
         type: "success",
         message: "Modifier avec succès",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     } else {
       console.log("error");
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
-    reset()
-    setLoading(false)
+    reset();
+    setLoading(false);
   };
-  const [openAssignToUserModal, setOpenAssignToUserModal] = useState<boolean>(false);
+  const [openAssignToUserModal, setOpenAssignToUserModal] =
+    useState<boolean>(false);
   const [openLogsModal, setOpenLogsModal] = useState<boolean>(false);
   const handleDeleteBat = async (id: number) => {
     // const { success } = await deleteBat(id);
     // if (!success) return;
-    alert('ooo');
+    alert("ooo");
     dispatchBats((bats: BatInterface[] | undefined) => {
       return bats?.filter((bat: BatInterface) => bat.id !== id && bat);
     });
     setDelationModal(false);
   };
   const [openStandByModal, setOpenStandByModal] = useState<boolean>(false);
-  const [openObservationModal, setOpenObservationModal] = useState<boolean>(false);
+  const [openObservationModal, setOpenObservationModal] =
+    useState<boolean>(false);
   const [openDetailsModal, setOpenDetailsModal] = useState<boolean>(false);
 
   const onSubmitStandBy = async (data: z.infer<typeof batStandBySchema>) => {
     setLoading(true);
     let { reason } = data;
     reason = reason.trim();
-    const status_id = batInEntry?.status_id !== 2 ? 2 : 1
+    const status_id = batInEntry?.status_id !== 2 ? 2 : 1;
     const { data: standbyedBat, success } = await standbyBat(
       currentEntry as number,
       {
         type: "STANDBY",
         reason,
-        status_id
+        status_id,
       }
     );
     if (success) {
@@ -378,57 +394,59 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
         if (tmp) {
           tmpData = tmp.find((t: any) => t.id === standbyedBat.id);
           tmpDatas = tmp.filter((t: any) => t.id !== standbyedBat.id);
-          return [{ ...tmpData, status_id }, ...tmpDatas]
+          return [{ ...tmpData, status_id }, ...tmpDatas];
         }
       });
-      standByform.setValue('reason', '');
+      standByform.setValue("reason", "");
       setOpenStandByModal(false);
       showToast({
         type: "success",
         message: `${status_id === 2 ? "Mis" : "Enlevé"} en standby avec succès`,
-        position: "top-center"
-      })
-    }
-    else {
+        position: "top-center",
+      });
+    } else {
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
     setLoading(false);
     reset();
-  }
-  const onSubmitOservation = async (data: z.infer<typeof batObservationSchema>) => {
+  };
+  const onSubmitOservation = async (
+    data: z.infer<typeof batObservationSchema>
+  ) => {
     let { observation } = data;
     setLoading(true);
     observation = observation.trim();
-    const { data: observationData, success } = await observationBat(currentEntry as number,
+    const { data: observationData, success } = await observationBat(
+      currentEntry as number,
       {
         type: "OBSERVATION",
-        observation
-      })
+        observation,
+      }
+    );
     if (success) {
-      console.log('observationData', observationData);
-      observationForm.setValue('observation', '');
+      console.log("observationData", observationData);
+      observationForm.setValue("observation", "");
       setOpenObservationModal(false);
 
       showToast({
         type: "success",
         message: "Observation crée avec succès",
-        position: "top-center"
-      })
-    }
-    else {
+        position: "top-center",
+      });
+    } else {
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
     setLoading(false);
     reset();
-  }
+  };
   const onSubmitAssign = async (data: z.infer<typeof batAssignSchema>) => {
     setLoading(true);
     let { user_id } = data;
@@ -465,24 +483,23 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
       //   })
       // }
       // dispatchBats([])
-      assignForm.setValue('user_id', 0);
+      assignForm.setValue("user_id", 0);
       setOpenAssignToUserModal(false);
       showToast({
         type: "success",
         message: "Assigné avec succès",
-        position: "top-center"
-      })
-
+        position: "top-center",
+      });
     } else {
       showToast({
         type: "danger",
         message: "L'opération a échoué",
-        position: "top-center"
-      })
+        position: "top-center",
+      });
     }
     setLoading(false);
     reset();
-  }
+  };
 
   useEffect(() => {
     assignForm.setValue("user_id", assignUser[0]?.value as unknown as number);
@@ -496,7 +513,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
           type="button"
           onClick={() => {
             setCreationModal((tmp) => !tmp);
-            reset()
+            reset();
           }}
           className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
         >
@@ -515,28 +532,40 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
         className="rounded-[16px]"
       >
         <div className="w-full bg-white/80 rounded-t-xl h-[60px] px-[20px] flex items-center justify-start border-b">
-          {allBats ? <Filter
-            title={"Filtrer par le statut"}
-            row={"Status"}
-            index={"status_id"}
-            list={status}
-            filterDatas={allBats ? allBats : []}
-            dataHandler={setCurrentDatas}
-            filterHandler={setBats} type={"status"} /> : null}
+          {allBats ? (
+            <Filter
+              title={"Filtrer par le statut"}
+              row={"Status"}
+              index={"status_id"}
+              list={status}
+              filterDatas={allBats ? allBats : []}
+              dataHandler={setCurrentDatas}
+              filterHandler={setBats}
+              type={"status"}
+            />
+          ) : null}
         </div>
         <div className="relative w-full overflow-x-auto scrollbar-hide bg-white">
-          {!allBats ?
-            <TableSkeleton head={tableHead} /> : currentDatas.length > 0 ? <table className={`transition-all w-full relative`}>
+          {!allBats ? (
+            <TableSkeleton head={tableHead} />
+          ) : currentDatas.length > 0 ? (
+            <table className={`transition-all w-full relative`}>
               <thead className="bg-white/50">
                 <tr className="border-b">
-                  {tableHead.map((head, index) => (
+                  {tableHead?.map((head, index) => (
                     <th
                       key={index}
-                      className={`w-fit ${index === 0 ? "w-0" : "min-w-[150px]"
-                        } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
-                        }  text-[#000000]`}
+                      className={`w-fit ${
+                        index === 0 ? "w-0" : "min-w-[150px]"
+                      } text-[13px] py-[10px] font-medium  ${
+                        index > 0 && index < tableHead.length
+                      }  text-[#000000]`}
                     >
-                      <div className={`h-full font-poppins relative flex items-center text-start px-[20px] ${head === "Options" ? " justify-end" : " justify-start"}`}>
+                      <div
+                        className={`h-full font-poppins relative flex items-center text-start px-[20px] ${
+                          head === "Options" ? " justify-end" : " justify-start"
+                        }`}
+                      >
                         {head}
                       </div>
                     </th>
@@ -544,12 +573,20 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                 </tr>
               </thead>
               <tbody className="bg-white/80">
-                {
-                  bats?.map((row, index) => {
-                    const statut = status.find((st) => st.id === row?.status_id)
-                    return <tr key={index} className={`border-b`}>
+                {bats?.map((row, index) => {
+                  const statut = status.find((st) => st.id === row?.status_id);
+                  return (
+                    <tr key={index} className={`border-b`}>
                       <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
-                        <div className={`flex w-fit justify-center py-[4px] px-[10px] font-medium rounded-lg ${row?.status_id === 2 ? "bg-orange-100 text-orange-600" : row?.status_id === 3 ? "bg-danger-200" : "bg-gray-100 text-gray-900"}`}>
+                        <div
+                          className={`flex w-fit justify-center py-[4px] px-[10px] font-medium rounded-lg ${
+                            row?.status_id === 2
+                              ? "bg-orange-100 text-orange-600"
+                              : row?.status_id === 3
+                              ? "bg-danger-200"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
+                        >
                           {statut?.name}
                         </div>
                       </td>
@@ -655,7 +692,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setOpenAssignToUserModal(true)
+                                      setOpenAssignToUserModal(true);
                                     }}
                                     className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
                                   >
@@ -720,15 +757,22 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                         </div>
                       </td>
                     </tr>
-                  })
-                }
+                  );
+                })}
               </tbody>
-            </table> : <div className="w-full bg-white/80 flex justify-center items-center px-[20px] rounded-b-xl h-[60px]">
+            </table>
+          ) : (
+            <div className="w-full bg-white/80 flex justify-center items-center px-[20px] rounded-b-xl h-[60px]">
               Aucune donnée
             </div>
-          }
+          )}
         </div>
-        {currentDatas.length > 0 ? <Pagination datas={currentDatas ? currentDatas : []} listHandler={setBats} /> : null}
+        {currentDatas.length > 0 ? (
+          <Pagination
+            datas={currentDatas ? currentDatas : []}
+            listHandler={setBats}
+          />
+        ) : null}
       </motion.div>
 
       <BaseModal open={openCreationModal} classname={""}>
@@ -772,10 +816,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`departement`}
-                  options={departments?.filter((dep) => [1, 2].includes(dep.id)).map((department: Department) => ({
-                    value: department.id as unknown as string,
-                    label: department.name,
-                  }))}
+                  options={departments
+                    ?.filter((dep) => [1, 2].includes(dep.id))
+                    ?.map((department: Department) => ({
+                      value: department.id as unknown as string,
+                      label: department.name,
+                    }))}
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={department}
@@ -804,10 +850,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`client`}
-                  options={clients?.map((client: Client) => ({
-                    value: client.id as unknown as string,
-                    label: client.name,
-                  })) as any}
+                  options={
+                    clients?.map((client: Client) => ({
+                      value: client.id as unknown as string,
+                      label: client.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={client}
@@ -836,10 +884,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`commercial`}
-                  options={users?.map((commercial: User) => ({
-                    value: commercial.id as unknown as string,
-                    label: commercial.name,
-                  })) as any}
+                  options={
+                    users?.map((commercial: User) => ({
+                      value: commercial.id as unknown as string,
+                      label: commercial.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={commercial}
@@ -1010,8 +1060,13 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
               <button
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
-                {loading ? <>
-                  <Spinner color={"#fff"} size={20} />  {"En cours"}</> : "Enregistrer"}
+                {loading ? (
+                  <>
+                    <Spinner color={"#fff"} size={20} /> {"En cours"}
+                  </>
+                ) : (
+                  "Enregistrer"
+                )}
               </button>
             </div>
           </div>
@@ -1059,10 +1114,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`departement`}
-                  options={departments?.filter((dep) => [1, 2].includes(dep.id)).map((department: Department) => ({
-                    value: department.id as unknown as string,
-                    label: department.name,
-                  }))}
+                  options={departments
+                    ?.filter((dep) => [1, 2].includes(dep.id))
+                    ?.map((department: Department) => ({
+                      value: department.id as unknown as string,
+                      label: department.name,
+                    }))}
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={department}
@@ -1091,10 +1148,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`client`}
-                  options={clients?.map((client: Client) => ({
-                    value: client.id as unknown as string,
-                    label: client.name,
-                  })) as any}
+                  options={
+                    clients?.map((client: Client) => ({
+                      value: client.id as unknown as string,
+                      label: client.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={client}
@@ -1123,10 +1182,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`commercial`}
-                  options={users?.map((commercial: User) => ({
-                    value: commercial.id as unknown as string,
-                    label: commercial.name,
-                  })) as any}
+                  options={
+                    users?.map((commercial: User) => ({
+                      value: commercial.id as unknown as string,
+                      label: commercial.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={commercial}
@@ -1329,9 +1390,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Département
                   </span>
                   <div className="border text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      department?.[0]?.label
-                    }
+                    {department?.[0]?.label}
                   </div>
                 </div>
                 <div>
@@ -1339,9 +1398,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Client
                   </span>
                   <div className="border text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      client?.[0]?.label
-                    }
+                    {client?.[0]?.label}
                   </div>
                 </div>
                 <div>
@@ -1349,9 +1406,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Commercial
                   </span>
                   <div className="border text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      commercial?.[0]?.label
-                    }
+                    {commercial?.[0]?.label}
                   </div>
                 </div>
                 <div>
@@ -1359,9 +1414,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Produit
                   </span>
                   <div className="border text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      product?.[0]?.label
-                    }
+                    {product?.[0]?.label}
                   </div>
                 </div>
 
@@ -1370,9 +1423,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Fabrication
                   </span>
                   <div className="border text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      fabrication?.[0]?.label
-                    }
+                    {fabrication?.[0]?.label}
                   </div>
                 </div>
 
@@ -1381,9 +1432,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Forme
                   </span>
                   <div className="border text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      shape?.[0]?.label
-                    }
+                    {shape?.[0]?.label}
                   </div>
                 </div>
 
@@ -1398,15 +1447,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                   </div>
                 </div> */}
 
-
                 <div>
                   <span className="font-poppins font-medium text-[14px]">
                     Reference
                   </span>
                   <div className="border rounded-[12px] text-[#636363] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      batInEntry?.reference
-                    }
+                    {batInEntry?.reference}
                   </div>
                 </div>
 
@@ -1415,20 +1461,17 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Date de création
                   </span>
                   <div className="border text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-
-                    {
-                      formatTime(
-                        new Date(batInEntry?.["created_at"] as any).getTime(),
-                        "d:mo:y",
-                        "short"
-                      )}
+                    {formatTime(
+                      new Date(batInEntry?.["created_at"] as any).getTime(),
+                      "d:mo:y",
+                      "short"
+                    )}
                     {" à "}
                     {formatTime(
                       new Date(batInEntry?.["created_at"] as any).getTime(),
                       "h:m",
                       "short"
                     )}
-
                   </div>
                 </div>
 
@@ -1437,19 +1480,17 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Date de modification
                   </span>
                   <div className="border text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      formatTime(
-                        new Date(batInEntry?.["updated_at"] as any).getTime(),
-                        "d:mo:y",
-                        "short"
-                      )}
+                    {formatTime(
+                      new Date(batInEntry?.["updated_at"] as any).getTime(),
+                      "d:mo:y",
+                      "short"
+                    )}
                     {" à "}
                     {formatTime(
                       new Date(batInEntry?.["updated_at"] as any).getTime(),
                       "h:m",
                       "short"
                     )}
-
                   </div>
                 </div>
 
@@ -1458,9 +1499,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Détails
                   </span>
                   <div className="border p-[10px] text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      batInEntry?.details
-                    }
+                    {batInEntry?.details}
                   </div>
                 </div>
 
@@ -1469,9 +1508,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                     Assigner à
                   </span>
                   <div className="border text-[#636363] rounded-[12px] font-medium text-[14px] min-h-[48px] flex items-center justify-center">
-                    {
-                      batInEntry?.assignated_user?.name
-                    }
+                    {batInEntry?.assignated_user?.name}
                   </div>
                 </div>
               </div>
@@ -1523,7 +1560,9 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                 Historique
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                {"Vous consultez ici l'historique des actions menées sur cette forme."}
+                {
+                  "Vous consultez ici l'historique des actions menées sur cette forme."
+                }
               </span>
             </div>
             <button
@@ -1537,57 +1576,73 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
           </div>
           {/* "Utilisateur assigné" */}
           <div className="overflow-auto max-h-[80vh]">
-            {!batInEntry?.logs ? <div className="w-full flex justify-center items-center p-[20px]">
-              <span>Aucun log</span>
-            </div> : <table className="w-full relative">
-              <thead className="bg-white/50">
-                <tr className="">
-                  {["Titre", "Description", "Type", "Date de création", "Utilisateur"].map((head, index) => (
-                    <th
-                      key={index}
-                      className={`  ${head === "options" ? "w-auto" : "min-w-[150px]"
-                        } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
+            {!batInEntry?.logs ? (
+              <div className="w-full flex justify-center items-center p-[20px]">
+                <span>Aucun log</span>
+              </div>
+            ) : (
+              <table className="w-full relative">
+                <thead className="bg-white/50">
+                  <tr className="">
+                    {[
+                      "Titre",
+                      "Description",
+                      "Type",
+                      "Date de création",
+                      "Utilisateur",
+                    ]?.map((head, index) => (
+                      <th
+                        key={index}
+                        className={`  ${
+                          head === "options" ? "w-auto" : "min-w-[150px]"
+                        } text-[13px] py-[10px] font-medium  ${
+                          index > 0 && index < tableHead.length
                         }  text-[#636363]`}
-                    >
-                      <div className="h-full font-poppins relative flex items-center text-start py-[10px] px-[20px] justify-start">
-                        {head}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead> <tbody className="bg-white/80">
-                {batInEntry?.logs?.map((row, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
-                      {row?.title}
-                    </td>
-                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
-                      {row?.description}
-                    </td>
-                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
-                      {row?.type}
-                    </td>
-                    <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
-                      {formatTime(
-                        new Date(row?.["created_at"]).getTime(),
-                        "d:mo:y",
-                        "short"
-                      )}
-                      {" à "}
-                      {formatTime(
-                        new Date(row?.["created_at"]).getTime(),
-                        "h:m",
-                        "short"
-                      )}
-                    </td>
-                    <td className="text-[#636363] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                      {users?.find((user: User) => user.id === row.user_treating_id)?.name}
-                    </td>
+                      >
+                        <div className="h-full font-poppins relative flex items-center text-start py-[10px] px-[20px] justify-start">
+                          {head}
+                        </div>
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>}
-
+                </thead>{" "}
+                <tbody className="bg-white/80">
+                  {batInEntry?.logs?.map((row, index) => (
+                    <tr key={index} className="border-b">
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                        {row?.title}
+                      </td>
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                        {row?.description}
+                      </td>
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                        {row?.type}
+                      </td>
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                        {formatTime(
+                          new Date(row?.["created_at"]).getTime(),
+                          "d:mo:y",
+                          "short"
+                        )}
+                        {" à "}
+                        {formatTime(
+                          new Date(row?.["created_at"]).getTime(),
+                          "h:m",
+                          "short"
+                        )}
+                      </td>
+                      <td className="text-[#636363] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                        {
+                          users?.find(
+                            (user: User) => user.id === row.user_treating_id
+                          )?.name
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </BaseModal>
@@ -1599,10 +1654,14 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[18px] font-poppins text-[#060606]">
-                  {batInEntry?.status_id !== 2 ? "Mettre en standby" : "Enlever en standby"}
+                  {batInEntry?.status_id !== 2
+                    ? "Mettre en standby"
+                    : "Enlever en standby"}
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                  {`Vous êtes sur point ${batInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "} une forme en standby`}
+                  {`Vous êtes sur point ${
+                    batInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "
+                  } une forme en standby`}
                 </span>
               </div>
               <button
@@ -1618,7 +1677,11 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
               <BaseInput
                 label="Raison"
                 id="reason"
-                placeholder={` Dites pourquoi vous ${batInEntry?.status_id !== 2 ? "mettez en standBy" : "enlevez en standby"} `}
+                placeholder={` Dites pourquoi vous ${
+                  batInEntry?.status_id !== 2
+                    ? "mettez en standBy"
+                    : "enlevez en standby"
+                } `}
                 // leftIcon={<RulerIcon color={""} size={20} />}
                 type="text"
                 {...standByform.register("reason")}
@@ -1636,7 +1699,13 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                 type="submit"
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : batInEntry?.status_id !== 2 ? "Mettre en standBy" : "Enlever en standby"}
+                {loading ? (
+                  <Spinner color={"#fff"} size={20} />
+                ) : batInEntry?.status_id !== 2 ? (
+                  "Mettre en standBy"
+                ) : (
+                  "Enlever en standby"
+                )}
               </button>
             </div>
           </div>
@@ -1688,10 +1757,12 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
                   </svg>
                 }
                 id={`users`}
-                options={users?.map((user: User) => ({
-                  value: user.id as unknown as string,
-                  label: user.name,
-                })) as any}
+                options={
+                  users?.map((user: User) => ({
+                    value: user.id as unknown as string,
+                    label: user.name,
+                  })) as any
+                }
                 error={undefined}
                 isUniq={true}
                 selectedElementInDropdown={assignUser}
@@ -1754,10 +1825,13 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
               </button> */}
               <button
                 type="submit"
-
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : "Enregistrer cette observation"}
+                {loading ? (
+                  <Spinner color={"#fff"} size={20} />
+                ) : (
+                  "Enregistrer cette observation"
+                )}
               </button>
             </div>
           </div>
@@ -1807,10 +1881,13 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
               </button> */}
               <button
                 type="submit"
-
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : "Enregistrer cette observation"}
+                {loading ? (
+                  <Spinner color={"#fff"} size={20} />
+                ) : (
+                  "Enregistrer cette observation"
+                )}
               </button>
             </div>
           </div>
@@ -1819,4 +1896,3 @@ export const ImprimerieFlexoOffset: FC<{}> = ({ }) => {
     </div>
   );
 };
-

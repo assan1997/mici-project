@@ -364,7 +364,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         let { data, success } = await getAllFolders();
         if (!success) return;
         dispatchFolders(
-          data.map((dat: any) => ({
+          data?.map((dat: any) => ({
             ...dat,
             commercial: users?.find((use) => use.id === dat.commercial_id),
           }))
@@ -380,7 +380,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         let { data, success } = await getAllBats();
         if (!success) return;
         dispatchBats(
-          data.map((dat: any) => ({
+          data?.map((dat: any) => ({
             ...dat,
             department: departments?.find(
               (dep) => dep.id === dat.department_id

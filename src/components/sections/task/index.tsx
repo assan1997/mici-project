@@ -169,7 +169,7 @@ export const Task: FC<{}> = ({}) => {
       reference,
       part,
       user_id: user?.id as unknown as number,
-      observations: observationList.map((obs) => obs.text),
+      observations: observationList?.map((obs) => obs.text),
     });
     if (success) {
       reset();
@@ -291,7 +291,7 @@ export const Task: FC<{}> = ({}) => {
   //     part,
   //     code,
   //     reference,
-  //     observations: observationList.map((obs) => obs.text),
+  //     observations: observationList?.map((obs) => obs.text),
   //   };
 
   //   const { data: updatedShape, success } = await updateOffsetShape(
@@ -690,7 +690,7 @@ export const Task: FC<{}> = ({}) => {
               <table className="w-full mb-[20rem] relative">
                 <thead className="bg-white/50">
                   <tr className="border-b">
-                    {tableHead.map((head, index) => (
+                    {tableHead?.map((head, index) => (
                       <th
                         onClick={() => {
                           if (["Options", "Statut"].includes(head)) return;
@@ -1206,7 +1206,7 @@ export const Task: FC<{}> = ({}) => {
                 />
                 <br />
               </div>
-              {observationList.map(
+              {observationList?.map(
                 (
                   observation: {
                     id: number;
@@ -1233,7 +1233,7 @@ export const Task: FC<{}> = ({}) => {
                         type="text"
                         onChange={(e) => {
                           setObservationList((tmp) =>
-                            tmp.map((obs) =>
+                            tmp?.map((obs) =>
                               obs.id === observation.id
                                 ? { ...obs, text: e.target.value }
                                 : obs
@@ -1482,7 +1482,7 @@ export const Task: FC<{}> = ({}) => {
                   {...form.register("part")}
                 />
               </div>
-              {observationList.map(
+              {observationList?.map(
                 (
                   observation: {
                     id: number;
@@ -1509,7 +1509,7 @@ export const Task: FC<{}> = ({}) => {
                         type="text"
                         onChange={(e) => {
                           setObservationList((tmp) =>
-                            tmp.map((obs) =>
+                            tmp?.map((obs) =>
                               obs.id === observation.id
                                 ? { ...obs, text: e.target.value }
                                 : obs

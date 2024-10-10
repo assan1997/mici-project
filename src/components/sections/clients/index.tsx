@@ -17,19 +17,30 @@ import { BaseInput, BaseTextArea } from "@/components/ui/forms/BaseInput";
 import { z } from "zod";
 import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
-import { Client, Department, Section, useData, User } from "@/contexts/data.context";
+import {
+  Client,
+  Department,
+  Section,
+  useData,
+  User,
+} from "@/contexts/data.context";
 import Image from "next/image";
 import MenuDropdown from "@/components/ui/dropdown/MenuDropdown";
 import useActiveState from "@/lib/hooks/useActiveState";
 import ComboboxMultiSelect from "@/components/ui/select/comboBoxMultiSelect";
-import { createClient, getAllClients, deleteClient, updateClient } from "@/services/clients";
+import {
+  createClient,
+  getAllClients,
+  deleteClient,
+  updateClient,
+} from "@/services/clients";
 import { useToast } from "@/contexts/toast.context";
 import { ClientEntry } from "@/services/clients";
 import { formatTime } from "@/lib/utils/timestamp";
 import { Spinner } from "@/components/ui/loader/spinner";
 import { TableSkeleton } from "@/components/ui/loader/Skeleton";
 import { motion } from "framer-motion";
-export const Clients: FC<{}> = ({ }) => {
+export const Clients: FC<{}> = ({}) => {
   const userSchema = z.object({
     name: z.string(),
     departments: z.array(z.number()),
@@ -50,11 +61,12 @@ export const Clients: FC<{}> = ({ }) => {
     "Options",
   ];
 
-  interface ComboSelect { label: string; value: string }
+  interface ComboSelect {
+    label: string;
+    value: string;
+  }
   const [user, setUser] = useState<ComboSelect[]>([]);
-  const [departments, setDepartments] = useState<
-    ComboSelect[]
-  >([]);
+  const [departments, setDepartments] = useState<ComboSelect[]>([]);
 
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
@@ -64,22 +76,22 @@ export const Clients: FC<{}> = ({ }) => {
 
   const { showToast } = useToast();
   const reset = () => {
-    form.setValue('name', '');
-    form.setValue('user', 0);
+    form.setValue("name", "");
+    form.setValue("user", 0);
     setCurrentEntry(undefined);
     setUser([]);
     setDepartments([]);
-  }
+  };
   const onSubmit = async (data: z.infer<typeof userSchema>) => {
     setLoading(true);
     let { name, departments, user } = data;
     name = name.trim();
-    let user_id = user
+    let user_id = user;
     let department_ids = departments;
     const { data: createdClient, success } = await createClient({
       name,
       department_ids,
-      user_id
+      user_id,
     });
     if (success) {
       showToast({
@@ -88,7 +100,9 @@ export const Clients: FC<{}> = ({ }) => {
         position: "top-center",
       });
       dispatchClients((tmp) => {
-        createdClient.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep);
+        createdClient.departments = allDepartments.filter(
+          (dep) => departments.includes(dep.id) && dep
+        );
         createdClient.user = users?.find((use) => use.id === user);
         tmp?.unshift(createdClient);
         if (tmp) return [...tmp];
@@ -116,13 +130,19 @@ export const Clients: FC<{}> = ({ }) => {
       user_id,
       department_ids: departments,
     };
-    if (JSON.stringify(entry.name) === JSON.stringify(clientInEntry?.name)) delete entry.name;
-    if (!entry.user_id || JSON.stringify(entry.user_id) === JSON.stringify(clientInEntry?.user?.id)) delete entry.user_id;
+    if (JSON.stringify(entry.name) === JSON.stringify(clientInEntry?.name))
+      delete entry.name;
+    if (
+      !entry.user_id ||
+      JSON.stringify(entry.user_id) === JSON.stringify(clientInEntry?.user?.id)
+    )
+      delete entry.user_id;
     if (
       !entry.department_ids ||
       JSON.stringify(entry.department_ids) ===
-      JSON.stringify(clientInEntry?.departments.map((dep) => dep.id))
-    ) delete entry.department_ids;
+        JSON.stringify(clientInEntry?.departments?.map((dep) => dep.id))
+    )
+      delete entry.department_ids;
 
     const { data: updatedClient, success } = await updateClient(
       currentEntry as number,
@@ -135,10 +155,14 @@ export const Clients: FC<{}> = ({ }) => {
         position: "top-center",
       });
       dispatchClients((clients): Client[] => {
-        updatedClient.departments = allDepartments.filter((dep) => departments.includes(dep.id) && dep)
+        updatedClient.departments = allDepartments.filter(
+          (dep) => departments.includes(dep.id) && dep
+        );
         updatedClient.user = users?.find((user) => user.id === user_id);
-        return clients?.map((client: Client) => client.id === currentEntry ? ({ ...updatedClient }) : client) as any
-      })
+        return clients?.map((client: Client) =>
+          client.id === currentEntry ? { ...updatedClient } : client
+        ) as any;
+      });
       setOpenEditionModal(false);
       setLoading(false);
     } else {
@@ -164,34 +188,32 @@ export const Clients: FC<{}> = ({ }) => {
       (client: Client) => client.id === currentEntry
     );
     if (client) {
-      form.setValue('name', client?.name as string);
+      form.setValue("name", client?.name as string);
       const dep = client?.departments?.map((department: Department) => ({
         value: department.id,
         label: department.name,
       }));
       if (dep) setDepartments(dep as any);
       if (client.user) {
-        const com = ({
+        
+        const com = {
           value: client.user.id,
           label: client.user.name,
-        });
+        };
         if (com) setUser([com as any]);
       }
     }
-  }, [currentEntry])
+  }, [currentEntry]);
 
   useEffect(() => {
     form.setValue(
       "departments",
-      departments.map((department) => department.value as unknown as number)
+      departments?.map((department) => department.value as unknown as number)
     );
   }, [departments]);
 
   useEffect(() => {
-    form.setValue(
-      "user",
-      user[0]?.value as unknown as number
-    );
+    form.setValue("user", user[0]?.value as unknown as number);
   }, [user]);
 
   const renderAvatar = (avatar: string) => {
@@ -238,22 +260,27 @@ export const Clients: FC<{}> = ({ }) => {
       >
         <div className="w-full bg-white/80 rounded-t-xl h-[60px] flex items-center justify-center border-b"></div>
         <div className="relative w-full scrollbar-hide">
-          {
-            !clients ? <TableSkeleton head={tableHead} /> : <table className="w-full relative">
+          {!clients ? (
+            <TableSkeleton head={tableHead} />
+          ) : (
+            <table className="w-full relative">
               <thead className="bg-white/50">
                 <tr className="">
-                  {tableHead.map((head, index) => (
+                  {tableHead?.map((head, index) => (
                     <th
                       key={index}
-                      className={`font-poppins  ${head === "options" ? "w-auto" : "min-w-[150px]"
-                        } text-[13px] py-[10px] font-medium  ${index > 0 && index < tableHead.length
-                        }  text-[#2f2f2f]`}
+                      className={`font-poppins  ${
+                        head === "options" ? "w-auto" : "min-w-[150px]"
+                      } text-[13px] py-[10px] font-medium  ${
+                        index > 0 && index < tableHead.length
+                      }  text-[#2f2f2f]`}
                     >
                       <div
-                        className={`h-full relative flex items-center  px-[20px] ${head === "Options"
-                          ? "justify-end text-end"
-                          : "justify-start text-start"
-                          } `}
+                        className={`h-full relative flex items-center  px-[20px] ${
+                          head === "Options"
+                            ? "justify-end text-end"
+                            : "justify-start text-start"
+                        } `}
                       >
                         {head}
                       </div>
@@ -271,10 +298,18 @@ export const Clients: FC<{}> = ({ }) => {
                       {row?.user?.name}
                     </td>
                     <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                      {formatTime(new Date(row?.["created_at"]).getTime(), "d:mo:y", "short")}
+                      {formatTime(
+                        new Date(row?.["created_at"]).getTime(),
+                        "d:mo:y",
+                        "short"
+                      )}
                     </td>
                     <td className="text-[#2f2f2f] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
-                      {formatTime(new Date(row?.["updated_at"]).getTime(), "d:mo:y", "short")}
+                      {formatTime(
+                        new Date(row?.["updated_at"]).getTime(),
+                        "d:mo:y",
+                        "short"
+                      )}
                     </td>
                     <td className="text-[#2f2f2f] w-auto p-[10px] text-start font-poppins text-[13px]">
                       <div className="w-full h-full flex items-center justify-end">
@@ -308,7 +343,11 @@ export const Clients: FC<{}> = ({ }) => {
                                     Modifier
                                   </span>
                                 </button>
-                                <button type="button" onClick={() => { }} className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer">
+                                <button
+                                  type="button"
+                                  onClick={() => {}}
+                                  className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                >
                                   <DetailsIcon color={""} />
                                   <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
                                     Détails
@@ -336,7 +375,7 @@ export const Clients: FC<{}> = ({ }) => {
                 ))}
               </tbody>
             </table>
-          }
+          )}
         </div>
         <div className="w-full bg-white/80 rounded-b-xl h-[60px]"></div>
       </motion.div>
@@ -388,10 +427,12 @@ export const Clients: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`commercial`}
-                  options={users?.map((user: User) => ({
-                    value: user.id as unknown as string,
-                    label: user.name,
-                  })) as any}
+                  options={
+                    users?.map((user: User) => ({
+                      value: user.id as unknown as string,
+                      label: user.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={user}
@@ -490,10 +531,12 @@ export const Clients: FC<{}> = ({ }) => {
                     </svg>
                   }
                   id={`commercial`}
-                  options={users?.map((user: User) => ({
-                    value: user.id as unknown as string,
-                    label: user.name,
-                  })) as any}
+                  options={
+                    users?.map((user: User) => ({
+                      value: user.id as unknown as string,
+                      label: user.name,
+                    })) as any
+                  }
                   error={undefined}
                   isUniq={true}
                   selectedElementInDropdown={user}
@@ -539,7 +582,11 @@ export const Clients: FC<{}> = ({ }) => {
                 // onClick={() => setCreationModal((tmp) => !tmp)}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : " Mettre à jour"}
+                {loading ? (
+                  <Spinner color={"#fff"} size={20} />
+                ) : (
+                  " Mettre à jour"
+                )}
               </button>
             </div>
           </div>
@@ -554,8 +601,8 @@ export const Clients: FC<{}> = ({ }) => {
                 Confirmer la suppression
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                Vous êtes sur point de supprimer <br /> un client, cette
-                action est definitive !
+                Vous êtes sur point de supprimer <br /> un client, cette action
+                est definitive !
               </span>
             </div>
             <button
@@ -586,7 +633,6 @@ export const Clients: FC<{}> = ({ }) => {
           </div>
         </div>
       </BaseModal>
-
     </div>
   );
 };

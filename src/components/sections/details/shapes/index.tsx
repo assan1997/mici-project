@@ -164,7 +164,7 @@ export const Details = () => {
         content: (
           <div className="font-poppins">
             <div className="w-full h-auto  bg-white p-[20px]">
-              {data?.observations?.reverse().map((obs: any, index: number) => (
+              {data?.observations?.reverse()?.map((obs: any, index: number) => (
                 <div
                   key={index}
                   className="flex gap-[14px] items-center border-b border-gray-100 w-full min-h-[50px] my-[10px] py-[20px] h-auto"
@@ -215,94 +215,102 @@ export const Details = () => {
         content: (
           <div className="font-poppins">
             <div className="w-full h-auto p-[20px] bg-white">
-              {data?.performances?.reverse().map((perf: any, index: number) => (
-                <div
-                  key={index}
-                  className="flex gap-[14px] items-center border-b border-gray-100 my-[10px] w-full h-auto"
-                >
-                  <div className="w-[250px]">
-                    <div key={perf.id} className="text-[12px] text-gray-500">
-                      Utilisateur
+              {data?.performances
+                ?.reverse()
+                ?.map((perf: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex gap-[14px] items-center border-b border-gray-100 my-[10px] w-full h-auto"
+                  >
+                    <div className="w-[250px]">
+                      <div key={perf.id} className="text-[12px] text-gray-500">
+                        Utilisateur
+                      </div>
+                      <div className="text-[14px]">{perf?.user_name}</div>
                     </div>
-                    <div className="text-[14px]">{perf?.user_name}</div>
-                  </div>
-                  {/* <div className="w-[1px] bg-gray-400 h-[16px]" />
+                    {/* <div className="w-[1px] bg-gray-400 h-[16px]" />
                   <div className="w-[250px]">
                     <div className="text-[12px] text-gray-500">Performance</div>
                     <div className="text-[14px] ">{perf?.performance}</div>
                   </div> */}
-                  <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[250px]">
-                    <div className="text-[12px] text-gray-500">
-                      Description de la tâche
+                    <div className="w-[1px] bg-gray-400 h-[16px]" />
+                    <div className="w-[250px]">
+                      <div className="text-[12px] text-gray-500">
+                        Description de la tâche
+                      </div>
+                      <div className="text-[14px] ">{perf?.description}</div>
                     </div>
-                    <div className="text-[14px] ">{perf?.description}</div>
-                  </div>
 
-                  <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[250px]">
-                    <div className="text-[12px] text-gray-500">Commencé le</div>
-                    {perf?.started_at ? (
-                      <div className="text-[14px]">
-                        {formatTime(
-                          new Date(perf?.["started_at"]).getTime(),
-                          "d:mo:y",
-                          "short"
-                        )}
-                        {" à "}
-                        {formatTime(
-                          new Date(perf?.["started_at"]).getTime(),
-                          "h:m",
-                          "short"
-                        )}
+                    <div className="w-[1px] bg-gray-400 h-[16px]" />
+                    <div className="w-[250px]">
+                      <div className="text-[12px] text-gray-500">
+                        Commencé le
                       </div>
-                    ) : null}
-                  </div>
-                  <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[250px]">
-                    <div className="text-[12px] text-gray-500">Terminé le</div>
-                    {perf?.completed_at ? (
-                      <div className="text-[14px]">
-                        {formatTime(
-                          new Date(perf?.["completed_at"]).getTime(),
-                          "d:mo:y",
-                          "short"
-                        )}
-                        {" à "}
-                        {formatTime(
-                          new Date(perf?.["completed_at"]).getTime(),
-                          "h:m",
-                          "short"
-                        )}
+                      {perf?.started_at ? (
+                        <div className="text-[14px]">
+                          {formatTime(
+                            new Date(perf?.["started_at"]).getTime(),
+                            "d:mo:y",
+                            "short"
+                          )}
+                          {" à "}
+                          {formatTime(
+                            new Date(perf?.["started_at"]).getTime(),
+                            "h:m",
+                            "short"
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="w-[1px] bg-gray-400 h-[16px]" />
+                    <div className="w-[250px]">
+                      <div className="text-[12px] text-gray-500">
+                        Terminé le
                       </div>
-                    ) : null}
-                  </div>
-                  <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[250px]">
-                    <div className="text-[12px] text-gray-500">
-                      Temps alloué
+                      {perf?.completed_at ? (
+                        <div className="text-[14px]">
+                          {formatTime(
+                            new Date(perf?.["completed_at"]).getTime(),
+                            "d:mo:y",
+                            "short"
+                          )}
+                          {" à "}
+                          {formatTime(
+                            new Date(perf?.["completed_at"]).getTime(),
+                            "h:m",
+                            "short"
+                          )}
+                        </div>
+                      ) : null}
                     </div>
-                    {perf?.time_allowed}
-                  </div>
-                  <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[250px]">
-                    <div className="text-[12px] text-gray-500">
-                      Temps de réalisation
+                    <div className="w-[1px] bg-gray-400 h-[16px]" />
+                    <div className="w-[250px]">
+                      <div className="text-[12px] text-gray-500">
+                        Temps alloué
+                      </div>
+                      {perf?.time_allowed}
                     </div>
-                    {perf?.time_taken}
+                    <div className="w-[1px] bg-gray-400 h-[16px]" />
+                    <div className="w-[250px]">
+                      <div className="text-[12px] text-gray-500">
+                        Temps de réalisation
+                      </div>
+                      {perf?.time_taken}
+                    </div>
+                    <div className="w-[1px] bg-gray-400 h-[16px]" />
+                    <div className="w-[250px]">
+                      <div className="text-[12px] text-gray-500">
+                        Observation
+                      </div>
+                      {perf?.performance}
+                    </div>
+                    <div className="w-[1px] bg-gray-400 h-[16px]" />
+                    <div className="w-[250px]">
+                      <div className="text-[12px] text-gray-500">Score</div>
+                      {perf?.score}
+                    </div>
                   </div>
-                  <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[250px]">
-                    <div className="text-[12px] text-gray-500">Observation</div>
-                    {perf?.performance}
-                  </div>
-                  <div className="w-[1px] bg-gray-400 h-[16px]" />
-                  <div className="w-[250px]">
-                    <div className="text-[12px] text-gray-500">Score</div>
-                    {perf?.score}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         ),
@@ -314,7 +322,7 @@ export const Details = () => {
         content: (
           <div className="font-poppins">
             <div className="w-full h-auto bg-white p-[20px]">
-              {data?.loggers?.reverse().map((log: any) => (
+              {data?.loggers?.reverse()?.map((log: any) => (
                 <div
                   key={log.id}
                   className="flex gap-[14px] my-[10px] items-center border-b border-gray-100 w-full"

@@ -40,7 +40,16 @@ export const Users: FC<{}> = ({}) => {
     email: z.string(),
     password: z.string().min(8, "Password must be at least 8 characters"),
   });
+  const userEditionSchema = z.object({
+    name: z.string(),
+    departments: z.array(z.number()),
+    sections: z.array(z.number()),
+    email: z.string(),
+    password: z.string(),
+  });
   const form = useForm({ schema: userSchema });
+  const editionForm = useForm({ schema: userEditionSchema });
+
   const {
     users,
     sections: allSections,
@@ -80,6 +89,12 @@ export const Users: FC<{}> = ({}) => {
     form.setValue("email", "");
     form.setValue("departments", []);
     form.setValue("sections", []);
+
+    editionForm.setValue("name", "");
+    editionForm.setValue("password", "");
+    editionForm.setValue("email", "");
+    editionForm.setValue("departments", []);
+    editionForm.setValue("sections", []);
     setCurrentEntry(undefined);
     setSections([]);
     setDepartments([]);
@@ -122,7 +137,8 @@ export const Users: FC<{}> = ({}) => {
     setLoading(false);
   };
 
-  const onSubmitUpdate = async (data: z.infer<typeof userSchema>) => {
+  const onSubmitUpdate = async (data: z.infer<typeof userEditionSchema>) => {
+    alert("pppp");
     setLoading(true);
     let { name, departments, sections, email, password } = data;
     name = name.trim();
@@ -146,12 +162,12 @@ export const Users: FC<{}> = ({}) => {
       delete entry.password;
     if (
       JSON.stringify(entry.department_ids) ===
-      JSON.stringify(userInEntry?.departments.map((dep) => dep.id))
+      JSON.stringify(userInEntry?.departments?.map((dep) => dep.id))
     )
       delete entry.department_ids;
     if (
       JSON.stringify(entry.section_ids) ===
-      JSON.stringify(userInEntry?.sections.map((sec) => sec.id))
+      JSON.stringify(userInEntry?.sections?.map((sec) => sec.id))
     )
       delete entry.section_ids;
     if (entry?.password?.length === 0) delete entry.password;
@@ -200,9 +216,12 @@ export const Users: FC<{}> = ({}) => {
     const user: User | undefined = users?.find(
       (user: User) => user.id === currentEntry
     );
+    console.log("user", user);
     if (user) {
-      form.setValue("name", user?.name as string);
-      form.setValue("email", user?.email as string);
+      editionForm.setValue("name", user?.name as string);
+      editionForm.setValue("email", user?.email as string);
+      editionForm.setValue("password", user?.password as string);
+
       const dep = user?.departments?.map((department: Department) => ({
         value: department.id,
         label: department.name,
@@ -219,14 +238,14 @@ export const Users: FC<{}> = ({}) => {
   useEffect(() => {
     form.setValue(
       "departments",
-      departments.map((department) => department.value as unknown as number)
+      departments?.map((department) => department.value as unknown as number)
     );
   }, [departments]);
 
   useEffect(() => {
     form.setValue(
       "sections",
-      sections.map((section) => section.value as unknown as number)
+      sections?.map((section) => section.value as unknown as number)
     );
   }, [sections]);
 
@@ -238,19 +257,31 @@ export const Users: FC<{}> = ({}) => {
 
   const handleDeleteUser = async (id: number) => {
     const { success } = await deleteUser(id);
-    if (!success) return;
+    if (!success) {
+      showToast({
+        message: "L'opération à échouée",
+        type: "danger",
+        position: "top-center",
+      });
+      return;
+    }
+    showToast({
+      message: "Supprimé avec succès",
+      type: "success",
+      position: "top-center",
+    });
     dispatchUsers((users) => {
       return users?.filter((user: User) => user.id !== id && user) as any;
     });
     setDelationModal(false);
   };
+
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [currentDatas, setCurrentDatas] = useState<any[]>(users ? users : []);
 
   useEffect(() => {
     setCurrentDatas(users ? users : []);
   }, [users]);
-
   const Router = useRouter();
 
   const goToDetail = (id: any) => {
@@ -267,6 +298,8 @@ export const Users: FC<{}> = ({}) => {
             e.stopPropagation();
             setCreationModal((tmp) => !tmp);
             reset();
+
+            alert("ggg")
           }}
           className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
         >
@@ -320,28 +353,6 @@ export const Users: FC<{}> = ({}) => {
               </svg>
             )}
           </Filter>
-          {/* <Filter
-            type="status"
-            title={"Affichage par statut"}
-            row={"Status"}
-            index={"status_id"}
-            list={status}
-            filterDatas={allOffsetShapes ? allOffsetShapes : []}
-            dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
-          /> */}
-          {/* <Filter
-            type="status"
-            title={"Affichage par statut"}
-            row={"Status"}
-            index={"status_id"}
-            list={status}
-            filterDatas={allOffsetShapes ? allOffsetShapes : []}
-            dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
-          /> */}
-          {/* <RenderDepartmentFilter /> */}
-
           <Filter
             type="search"
             title={"Recherche"}
@@ -352,86 +363,13 @@ export const Users: FC<{}> = ({}) => {
             dataHandler={setCurrentDatas}
             filterHandler={setAllUsers}
           />
-          {/* <Filter
-            type="date"
-            title={"Affichage par date"}
-            row={"Status"}
-            index={"status_id"}
-            list={status}
-            filterDatas={allOffsetShapes ? allOffsetShapes : []}
-            dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
-          /> */}
-          {/* {allOffsetShapes && allOffsetShapes?.length > 0 ? (
-            <Export
-              title="Exporter en csv"
-              type="csv"
-              entry={{
-                headers: Object.keys(allOffsetShapes ? allOffsetShapes[0] : {})
-                  .flatMap((shapeKey) => shapeKey)
-                  .filter((shapeKey) => {
-                    if (
-                      ![
-                        "logs",
-                        "id",
-                        "client_id",
-                        "commercial_id",
-                        "status_id",
-                        "department_id",
-                        "loggers",
-                        "assignments",
-                        "observations",
-                        "performances",
-                        "rule",
-                      ].includes(shapeKey)
-                    )
-                      return shapeKey;
-                  })
-                  .flatMap((shapeKey) => ({
-                    label: shapeKey.toUpperCase().replaceAll("_", " "),
-                    key: shapeKey.toLocaleLowerCase(),
-                  })),
-                data: allOffsetShapes
-                  ? allOffsetShapes.map((shape) => ({
-                      ...shape,
-                      department: shape?.department?.name,
-                      client: shape?.client?.name,
-                      commercial: shape?.commercial?.name,
-                      created_at: ` ${formatTime(
-                        new Date(shape?.["created_at"]).getTime(),
-                        "d:mo:y",
-                        "short"
-                      )} : ${formatTime(
-                        new Date(shape?.["created_at"]).getTime(),
-                        "h:m",
-                        "short"
-                      )}`,
-                      updated_at: ` ${formatTime(
-                        new Date(shape?.["updated_at"]).getTime(),
-                        "d:mo:y",
-                        "short"
-                      )} : ${formatTime(
-                        new Date(shape?.["updated_at"]).getTime(),
-                        "h:m",
-                        "short"
-                      )}`,
-                    }))
-                  : [],
-              }}
-            />
-          ) : null} */}
-          {/* <Export
-            title="Télécharger le pdf"
-            type="pdf"
-            entry={{ headers: [], data: [] }}
-          /> */}
         </div>
         <div className="relative w-full scrollbar-hide bg-white">
           {allUsers ? (
             <table className="w-full mb-[15rem] relative">
               <thead className="bg-white/50 transition">
                 <tr className="border-b bg-gray-50 cursor-pointer">
-                  {tableHead.map((head, index) => (
+                  {tableHead?.map((head, index) => (
                     <th
                       key={index}
                       className={`font-poppins  ${
@@ -709,9 +647,8 @@ export const Users: FC<{}> = ({}) => {
           ) : null}
         </div>
       </motion.div>
-
       {/* CREATION MODAL */}
-      <BaseModal open={openCreationModal} classname={""}>
+      {/* <BaseModal open={openCreationModal} classname={""}>
         <Form form={form} onSubmit={onSubmit}>
           <div className="w-[calc(150vh)] h-[500px] overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
@@ -822,10 +759,10 @@ export const Users: FC<{}> = ({}) => {
             </div>
           </div>
         </Form>
-      </BaseModal>
+      </BaseModal> */}
       {/* EDITION MODAL */}
       <BaseModal open={openEditionModal} classname={""}>
-        <Form form={form} onSubmit={onSubmitUpdate}>
+        <Form form={editionForm} onSubmit={onSubmitUpdate}>
           <div className="w-[calc(150vh)] h-[500px] overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
               <span className="text-[18px] font-poppins text-[#060606]">
@@ -843,24 +780,24 @@ export const Users: FC<{}> = ({}) => {
               <div className="w-full grid gap-[8px] grid-cols-3">
                 <BaseInput
                   label="Nom"
-                  id="name"
+                  id="edtion-name"
                   placeholder="Nom de l'utilisateur"
                   type="text"
-                  {...form.register("name")}
+                  {...editionForm.register("name")}
                 />
                 <BaseInput
                   label="Email"
-                  id="email"
+                  id="edtion-email"
                   placeholder="Email"
                   type="text"
-                  {...form.register("email")}
+                  {...editionForm.register("email")}
                 />
                 <BaseInput
                   label="Mot de passe"
-                  id="password"
+                  id="edtion-password"
                   placeholder="Mot de passe"
                   type="text"
-                  {...form.register("password")}
+                  {...editionForm.register("password")}
                 />
                 <ComboboxMultiSelect
                   label={"Départements"}
@@ -927,7 +864,6 @@ export const Users: FC<{}> = ({}) => {
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center px-[20px] py-[10px] h-[80px] border-t">
               <button
                 type="submit"
-                // onClick={() => setCreationModal((tmp) => !tmp)}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
                 {loading ? (

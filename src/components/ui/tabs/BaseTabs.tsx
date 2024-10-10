@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import * as React from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import * as React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export type Tab = {
   id: number;
@@ -21,24 +21,34 @@ type BaseTabsProps = {
   layoutId?: string;
   isSticky?: boolean;
   isStickyValueTop?: string;
-} & React.ComponentPropsWithRef<'div'>;
+} & React.ComponentPropsWithRef<"div">;
 
 const BaseTabs = React.forwardRef<HTMLDivElement, BaseTabsProps>(
-  ({
-    tabs,
-    withLine,
-    headClass,
-    animateButtonTabClass,
-    contentClass, otherWithLine,
-    labelTextColor,
-    isSticky,
-    isStickyValueTop,
-    layoutId = "active_pill"
-  }, ref) => {
+  (
+    {
+      tabs,
+      withLine,
+      headClass,
+      animateButtonTabClass,
+      contentClass,
+      otherWithLine,
+      labelTextColor,
+      isSticky,
+      isStickyValueTop,
+      layoutId = "active_pill",
+    },
+    ref
+  ) => {
     const [activeTab, setActiveTab] = React.useState(1);
     return (
       <div ref={ref}>
-        <div className={`${withLine && 'relative'} ${otherWithLine && 'relative'} ${isSticky ? `sticky ${isStickyValueTop} bg-white z-[123456789]` : ''}`}>
+        <div
+          className={`${withLine && "relative"} ${
+            otherWithLine && "relative"
+          } ${
+            isSticky ? `sticky ${isStickyValueTop} bg-white z-[123456789]` : ""
+          }`}
+        >
           {withLine ? (
             <div
               className={`absolute bottom-0 h-[1px] w-full bg-vermilion-50`}
@@ -53,32 +63,38 @@ const BaseTabs = React.forwardRef<HTMLDivElement, BaseTabsProps>(
             </>
           )}
           <div className={`${headClass} `}>
-            {tabs.map((tab) => (
+            {tabs?.map((tab) => (
               <button
                 key={tab.id}
                 className={
-                  'relative px-[12px] py-[8px] transition focus:outline-none focus-visible:outline'
+                  "relative px-[12px] py-[8px] transition focus:outline-none focus-visible:outline"
                 }
                 onClick={() => setActiveTab(tab.id)}
               >
                 {activeTab === tab.id && (
                   <motion.div
                     layoutId={layoutId}
-                    transition={{ duration: 0.8, type: 'spring' }}
+                    transition={{ duration: 0.8, type: "spring" }}
                     className={animateButtonTabClass}
                   />
                 )}
                 <div
-                  className={`${tab.numberOfElement && 'flex items-center gap-[8px]'
-                    }`}
+                  className={`${
+                    tab.numberOfElement && "flex items-center gap-[8px]"
+                  }`}
                 >
                   <span
-                    className={`${activeTab === tab.id
-                        ? `${labelTextColor ? labelTextColor : "text-grayscale-900"} 
+                    className={`${
+                      activeTab === tab.id
+                        ? `${
+                            labelTextColor
+                              ? labelTextColor
+                              : "text-grayscale-900"
+                          } 
                         font-[500]
                         `
-                        : 'text-grayscale-700 font-[500]'
-                      } relative z-20 text-[14px] leading-[24px] font-poppins whitespace-nowrap transition-all duration-300 ease-out 
+                        : "text-grayscale-700 font-[500]"
+                    } relative z-20 text-[14px] leading-[24px] font-poppins whitespace-nowrap transition-all duration-300 ease-out 
                     ${otherWithLine && "pl-[.4rem]"}`}
                   >
                     {tab.label}
@@ -97,7 +113,7 @@ const BaseTabs = React.forwardRef<HTMLDivElement, BaseTabsProps>(
             transition={{ duration: 0.1, ease: "easeInOut" }}
             className={contentClass}
           >
-            {tabs.map((tab) => {
+            {tabs?.map((tab) => {
               return (
                 activeTab === tab.id && (
                   <React.Fragment key={tab.id}>{tab.content}</React.Fragment>
@@ -111,6 +127,6 @@ const BaseTabs = React.forwardRef<HTMLDivElement, BaseTabsProps>(
   }
 );
 
-BaseTabs.displayName = 'BaseTabs';
+BaseTabs.displayName = "BaseTabs";
 
 export { BaseTabs };
