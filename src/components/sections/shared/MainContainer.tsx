@@ -265,7 +265,7 @@ const TopBar: FC<{
                 <span className="text-[#292D32] text-[14px] font-poppins">
                   {user?.name}
                 </span>
-                <span className="text-[#636363] flex gap-x-[6px] text-[12px] truncate font-poppins">
+                <span className="text-[#636363] w-full flex gap-x-[6px] text-[12px] truncate font-poppins">
                   {user.sections?.map((section) => (
                     <span key={section.id}> {section.name}</span>
                   ))}

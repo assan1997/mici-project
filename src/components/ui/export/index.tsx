@@ -1,16 +1,12 @@
 "use client";
 import { FC, useEffect } from "react";
 import { CSVLink } from "react-csv";
-import dynamic from "next/dynamic";
 
-const PDFViewer = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
-  {
-    ssr: false,
-    loading: () => <p>Loading...</p>,
-  }
-);
-import BaseModal from "../modal/BaseModal";
+/* eslint-disable @next/next/no-img-element */
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { formatTime } from "@/lib/utils/timestamp";
+
 export const Export: FC<{
   title: string;
   type: "csv" | "pdf";
@@ -20,13 +16,28 @@ export const Export: FC<{
   };
 }> = ({ title, type, entry }) => {
   // Create styles
-
   // Create Document Component
+
+  const handleDownloadPDF = async () => {
+    const element: any = document.getElementById("ficheEtude");
+    const canvas = await html2canvas(element);
+    const imgData = canvas.toDataURL("image/png");
+
+    const customWidth = 210; // largeur en mm
+    const customHeight = 297; // hauteur en mm
+
+    const pdf = new jsPDF("portrait", "mm", [customWidth, customHeight]);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("Fiche_etude_prototype.pdf");
+  };
 
   useEffect(() => {
     const embed = document.getElementsByTagName("iframe");
-    console.log("iframe", embed);
-  }, []);
+    console.log("entry.data?.code", entry.data?.code);
+  }, [entry.data?.code]);
 
   if (type === "csv") {
     return (
@@ -53,27 +64,295 @@ export const Export: FC<{
 
   if (type === "pdf") {
     return (
-      <button
-        disabled
-        className="h-[40px] shrink-0 cursor-not-allowed text-[14px] shadow-custom bg-gray-100 gap-x-[4px] text-[#000] font-poppins font-medium leading-[20px] rounded-[20px] flex items-center justify-center px-[8px] border"
-      >
-        <svg
-          id="fi_3022204"
-          enableBackground="new 0 0 512 512"
-          height={16}
-          viewBox="0 0 512 512"
-          width={16}
-          xmlns="http://www.w3.org/2000/svg"
+      <>
+        <button
+          type="button"
+          onClick={handleDownloadPDF}
+          className="flex items-center justify-start w-full text-[14px] text-[#000] font-poppins font-medium leading-[20px gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
         >
-          <g>
-            <path d="m127.741 209h-31.741c-3.986 0-7.809 1.587-10.624 4.41s-4.389 6.651-4.376 10.638l.221 113.945c0 8.284 6.716 15 15 15s15-6.716 15-15v-34.597c6.133-.031 12.685-.058 16.52-.058 26.356 0 47.799-21.16 47.799-47.169s-21.443-47.169-47.799-47.169zm0 64.338c-3.869 0-10.445.027-16.602.059-.032-6.386-.06-13.263-.06-17.228 0-3.393-.017-10.494-.035-17.169h16.696c9.648 0 17.799 7.862 17.799 17.169s-8.15 17.169-17.798 17.169z"></path>
-            <path d="m255.33 209h-31.33c-3.983 0-7.803 1.584-10.617 4.403s-4.391 6.642-4.383 10.625c0 .001.223 110.246.224 110.646.015 3.979 1.609 7.789 4.433 10.592 2.811 2.79 6.609 4.354 10.567 4.354h.057c.947-.004 23.294-.089 32.228-.245 33.894-.592 58.494-30.059 58.494-70.065-.001-42.054-23.981-70.31-59.673-70.31zm.655 110.38c-3.885.068-10.569.123-16.811.163-.042-13.029-.124-67.003-.147-80.543h16.303c27.533 0 29.672 30.854 29.672 40.311 0 19.692-8.972 39.719-29.017 40.069z"></path>
-            <path d="m413.863 237.842c8.284 0 15-6.716 15-15s-6.716-15-15-15h-45.863c-8.284 0-15 6.716-15 15v113.158c0 8.284 6.716 15 15 15s15-6.716 15-15v-42.65h27.22c8.284 0 15-6.716 15-15s-6.716-15-15-15h-27.22v-25.508z"></path>
-            <path d="m458 145h-11v-4.279c0-19.282-7.306-37.607-20.572-51.601l-62.305-65.721c-14.098-14.87-33.936-23.399-54.428-23.399h-199.695c-24.813 0-45 20.187-45 45v100h-11c-24.813 0-45 20.187-45 45v180c0 24.813 20.187 45 45 45h11v52c0 24.813 20.187 45 45 45h292c24.813 0 45-20.187 45-45v-52h11c24.813 0 45-20.187 45-45v-180c0-24.813-20.187-45-45-45zm-363-100c0-8.271 6.729-15 15-15h199.695c12.295 0 24.198 5.117 32.657 14.04l62.305 65.721c7.96 8.396 12.343 19.391 12.343 30.96v4.279h-322zm322 422c0 8.271-6.729 15-15 15h-292c-8.271 0-15-6.729-15-15v-52h322zm56-97c0 8.271-6.729 15-15 15h-404c-8.271 0-15-6.729-15-15v-180c0-8.271 6.729-15 15-15h404c8.271 0 15 6.729 15 15z"></path>
-          </g>
-        </svg>
-        {title}
-      </button>
+          {title}
+        </button>
+        <div className="fixed top-0 left-[500%]">
+          <div
+            className="w-[794px] h-[1123px] bg-white border mx-auto p-[20px] flex flex-col justify-between"
+            id="ficheEtude"
+          >
+            <div>
+              {/* Header */}
+              <div className="border h-[100px] grid grid-cols-4">
+                <div className="flex items-center justify-center">
+                  <div className="h-[80%] w-[80%] relative">
+                    <img
+                      src={`/assets/logo/logo-red.png`}
+                      alt="logo"
+                      className="object-contain h-full w-full"
+                    />
+                  </div>
+                </div>
+                <div className="col-span-2 border-x">
+                  <div className="h-[50px] border-b text-center">
+                    <h2 className="uppercase text-black text-[18px] font-bold">
+                      {`Fiche d'étude prototype`}
+                    </h2>
+                  </div>
+                  <div className="h-[50px] text-center">
+                    <h2 className="uppercase text-black text-[18px] font-bold">
+                      {`Cartonnerie`}
+                    </h2>
+                  </div>
+                </div>
+                <div className="">
+                  <div className="h-[50px] border-b p-2">
+                    <h2 className="text-black text-[14px]">
+                      {`Date: ${formatTime(
+                        new Date().getTime(),
+                        "d:mo:y",
+                        "short"
+                      )}`}
+                    </h2>
+                  </div>
+                  <div className="h-[50px] p-2">
+                    <h2 className="text-black text-[14px]">
+                      {`Code: ${entry.data?.code}`}
+                    </h2>
+                  </div>
+                </div>
+              </div>
+
+              {/* Renseigments généraux */}
+              <div className="mt-[30px] border p-2">
+                <h2 className="uppercase text-center text-black text-[16px] font-semibold mb-[10px]">
+                  {`Renseigments généraux`}
+                </h2>
+                <div className="grid grid-cols-2 gap-[20px] mb-[20px]">
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Client: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {entry.data?.client?.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Commercial: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {entry.data?.commercial?.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Réference: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {entry.data?.reference}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Date: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {formatTime(
+                        new Date(entry.data?.["created_at"]).getTime(),
+                        "d:mo:y",
+                        "short"
+                      )}
+                      {" à "}
+                      {formatTime(
+                        new Date(entry.data?.["created_at"]).getTime(),
+                        "h:m",
+                        "short"
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {`Type d'emballage: `}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`--------------------------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Code: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {entry.data?.code}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Renseigments techniques */}
+              <div className="mt-[20px] border p-2">
+                <h2 className="uppercase text-center text-black text-[16px] font-semibold mb-[10px]">
+                  {`Renseigments techniques`}
+                </h2>
+                <div className="grid grid-cols-2 gap-[20px] mb-[20px]">
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Dimensions intérieures: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {entry.data?.dim_lx_lh}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Jonction du carton: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`----------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Code grammage: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`----------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Format de la plaque: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {entry.data?.dim_plate}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {`Grammage (en g): `}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Surface de la plaque (en m2): "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {entry.data?.dim_square}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {`Box Compression Test (en kg): `}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Poids théorique (en kg): "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* footer */}
+            <div>
+              <div className="border grid grid-cols-3">
+                <div className="p-2 !pb-[20px] space-y-[10px]">
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Réalisé par: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Date: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Visa: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-2 !pb-[20px] space-y-[10px] border-x">
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Vérifié par: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Date: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Visa: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-2 !pb-[20px] space-y-[10px]">
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Réçu par: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Date: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-x-[10px]">
+                    <span className="text-black text-[14px] font-[500] whitespace-nowrap">
+                      {"Visa: "}
+                    </span>
+                    <span className="text-black text-[14px]">
+                      {`---------`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-end justify-end mt-[10px] mb-[35px]">
+                <div className="">
+                  <h2 className="text-black text-[14px] uppercase font-[600]">
+                    {`T.S.V.P`}
+                  </h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 

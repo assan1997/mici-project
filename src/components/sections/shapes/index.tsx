@@ -1177,7 +1177,7 @@ export const Shape: FC<{}> = ({}) => {
                 delay: 0.2,
               }}
             >
-              <table className="w-full mb-[15rem] relative">
+              <table className="w-full mb-[20rem] relative">
                 <thead className="bg-white/50 transition">
                   <tr className="border-b bg-gray-50 cursor-pointer">
                     {tableHead?.map((head, index) => (
@@ -1429,6 +1429,7 @@ export const Shape: FC<{}> = ({}) => {
                 </thead>
                 <tbody className="bg-white/10">
                   {offsetShapes?.map((row, index) => {
+                    console.log("row", row);
                     const statut = status.find(
                       (st) => st.id === row?.status_id
                     );
@@ -1550,6 +1551,7 @@ export const Shape: FC<{}> = ({}) => {
                             "short"
                           )}
                         </td>
+
                         <td className="text-[#636363] w-auto px-[20px] text-start font-poppins">
                           <div className="w-full h-full flex items-center justify-end">
                             <div ref={box}>
@@ -1582,6 +1584,16 @@ export const Shape: FC<{}> = ({}) => {
                                         Modifier les entrées
                                       </span>
                                     </button>
+
+                                    <Export
+                                      title="Télécharger le pdf"
+                                      type="pdf"
+                                      entry={{
+                                        headers: [],
+                                        data: row,
+                                      }}
+                                    />
+
                                     <button
                                       type="button"
                                       onClick={() => {
