@@ -359,7 +359,7 @@ export const Users: FC<{}> = ({}) => {
             filterHandler={setAllUsers}
           />
         </div>
-        <div className="relative w-full scrollbar-hide bg-white">
+        <div className="relative w-full bg-white">
           {allUsers ? (
             <table className="w-full mb-[15rem] relative">
               <thead className="bg-white/50 transition">

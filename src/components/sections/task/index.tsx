@@ -674,7 +674,7 @@ export const Task: FC<{}> = ({}) => {
             filterHandler={setOffsetShapes}
           />
         </div>
-        <div className="relative w-full overflow-auto scrollbar-hide bg-white">
+        <div className="relative w-full overflow-auto bg-white">
           {!allTasks ? (
             <TableSkeleton head={tableHead} />
           ) : currentDatas.length > 0 ? (
