@@ -45,7 +45,7 @@ export const Users: FC<{}> = ({}) => {
     departments: z.array(z.number()),
     sections: z.array(z.number()),
     email: z.string(),
-    password: z.string(),
+    editedPassword: z.string(),
   });
   const form = useForm({ schema: userSchema });
   const editionForm = useForm({ schema: userEditionSchema });
@@ -89,9 +89,8 @@ export const Users: FC<{}> = ({}) => {
     form.setValue("email", "");
     form.setValue("departments", []);
     form.setValue("sections", []);
-
     editionForm.setValue("name", "");
-    editionForm.setValue("password", "");
+    editionForm.setValue("editedPassword", "");
     editionForm.setValue("email", "");
     editionForm.setValue("departments", []);
     editionForm.setValue("sections", []);
@@ -138,17 +137,16 @@ export const Users: FC<{}> = ({}) => {
   };
 
   const onSubmitUpdate = async (data: z.infer<typeof userEditionSchema>) => {
-    alert("pppp");
     setLoading(true);
-    let { name, departments, sections, email, password } = data;
+    let { name, departments, sections, email, editedPassword } = data;
     name = name.trim();
     email = email.trim();
-    password = password.trim();
+    editedPassword = editedPassword.trim();
     const entry: UserEntry = {
       name,
       department_ids: departments,
       email,
-      password,
+      password: editedPassword,
       section_ids: sections,
     };
 
@@ -216,12 +214,10 @@ export const Users: FC<{}> = ({}) => {
     const user: User | undefined = users?.find(
       (user: User) => user.id === currentEntry
     );
-    console.log("user", user);
     if (user) {
       editionForm.setValue("name", user?.name as string);
       editionForm.setValue("email", user?.email as string);
-      editionForm.setValue("password", user?.password as string);
-
+      editionForm.setValue("editedPassword", user?.password as string);
       const dep = user?.departments?.map((department: Department) => ({
         value: department.id,
         label: department.name,
@@ -236,14 +232,14 @@ export const Users: FC<{}> = ({}) => {
   }, [currentEntry]);
 
   useEffect(() => {
-    form.setValue(
+    editionForm.setValue(
       "departments",
       departments?.map((department) => department.value as unknown as number)
     );
   }, [departments]);
 
   useEffect(() => {
-    form.setValue(
+    editionForm.setValue(
       "sections",
       sections?.map((section) => section.value as unknown as number)
     );
@@ -256,6 +252,7 @@ export const Users: FC<{}> = ({}) => {
   };
 
   const handleDeleteUser = async (id: number) => {
+    setLoading(true);
     const { success } = await deleteUser(id);
     if (!success) {
       showToast({
@@ -274,6 +271,7 @@ export const Users: FC<{}> = ({}) => {
       return users?.filter((user: User) => user.id !== id && user) as any;
     });
     setDelationModal(false);
+    setLoading(false);
   };
 
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -298,8 +296,6 @@ export const Users: FC<{}> = ({}) => {
             e.stopPropagation();
             setCreationModal((tmp) => !tmp);
             reset();
-
-            alert("ggg")
           }}
           className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
         >
@@ -308,7 +304,6 @@ export const Users: FC<{}> = ({}) => {
         </button>
       </div>
       {/* overflow-auto  */}
-
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -517,7 +512,9 @@ export const Users: FC<{}> = ({}) => {
                               <div className="flex flex-col items-center w-full">
                                 <button
                                   type="button"
-                                  onClick={() => setOpenEditionModal(true)}
+                                  onClick={() => {
+                                    setOpenEditionModal(true);
+                                  }}
                                   className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
                                 >
                                   {/* <UpdateIcon color={""} /> */}
@@ -648,7 +645,7 @@ export const Users: FC<{}> = ({}) => {
         </div>
       </motion.div>
       {/* CREATION MODAL */}
-      {/* <BaseModal open={openCreationModal} classname={""}>
+      <BaseModal open={openCreationModal} classname={""}>
         <Form form={form} onSubmit={onSubmit}>
           <div className="w-[calc(150vh)] h-[500px] overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
@@ -751,15 +748,16 @@ export const Users: FC<{}> = ({}) => {
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center px-[20px] py-[10px] h-[80px] border-t">
               <button
                 type="submit"
+                disabled={loading}
                 // onClick={() => setCreationModal((tmp) => !tmp)}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
-                Enregistrer
+                {loading ? <Spinner color={"#fff"} size={20} /> : "Enregistrer"}
               </button>
             </div>
           </div>
         </Form>
-      </BaseModal> */}
+      </BaseModal>
       {/* EDITION MODAL */}
       <BaseModal open={openEditionModal} classname={""}>
         <Form form={editionForm} onSubmit={onSubmitUpdate}>
@@ -797,7 +795,7 @@ export const Users: FC<{}> = ({}) => {
                   id="edtion-password"
                   placeholder="Mot de passe"
                   type="text"
-                  {...editionForm.register("password")}
+                  {...editionForm.register("editedPassword")}
                 />
                 <ComboboxMultiSelect
                   label={"Départements"}
@@ -864,6 +862,7 @@ export const Users: FC<{}> = ({}) => {
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center px-[20px] py-[10px] h-[80px] border-t">
               <button
                 type="submit"
+                disabled={loading}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
                 {loading ? (

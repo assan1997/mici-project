@@ -76,7 +76,7 @@ export const Shape: FC<{}> = ({}) => {
     user_id: z.number(),
     description: z.string(),
   });
-  
+
   const form = useForm({ schema: shapeSchema });
   const standByform = useForm({ schema: shapeStandBySchema });
   const observationForm = useForm({ schema: shapeObservationSchema });
@@ -674,10 +674,10 @@ export const Shape: FC<{}> = ({}) => {
 
       if (key === "client") {
         sorted = tmp?.sort((a, b) => {
-          if (a.client.name.toUpperCase() > b.client.name.toUpperCase()) {
+          if (a?.client.name.toUpperCase() > b?.client?.name?.toUpperCase()) {
             return sortedBy !== key ? 1 : -1;
           }
-          if (a.client.name.toUpperCase() < b.client.name.toUpperCase()) {
+          if (a?.client?.name?.toUpperCase() < b?.client?.name?.toUpperCase()) {
             return sortedBy !== key ? -1 : 1;
           }
           return 0;
@@ -687,12 +687,14 @@ export const Shape: FC<{}> = ({}) => {
       if (key === "commercial") {
         sorted = tmp?.sort((a, b) => {
           if (
-            a.commercial.name.toUpperCase() > b.commercial.name.toUpperCase()
+            a?.commercial?.name?.toUpperCase() >
+            b?.commercial?.name?.toUpperCase()
           ) {
             return 1;
           }
           if (
-            a.commercial.name.toUpperCase() < b.commercial.name.toUpperCase()
+            a?.commercial?.name?.toUpperCase() <
+            b?.commercial?.name?.toUpperCase()
           ) {
             return -1;
           }
@@ -702,10 +704,10 @@ export const Shape: FC<{}> = ({}) => {
 
       if (key === "code") {
         sorted = tmp?.sort((a, b) => {
-          if (a.code.toUpperCase() > b.code.toUpperCase()) {
+          if (a?.code?.toUpperCase() > b?.code?.toUpperCase()) {
             return 1;
           }
-          if (a.code.toUpperCase() < b.code.toUpperCase()) {
+          if (a?.code?.toUpperCase() < b?.code?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -714,10 +716,10 @@ export const Shape: FC<{}> = ({}) => {
 
       if (key === "reference") {
         sorted = tmp?.sort((a, b) => {
-          if (a.reference.toUpperCase() > b.reference.toUpperCase()) {
+          if (a?.reference?.toUpperCase() > b?.reference?.toUpperCase()) {
             return 1;
           }
-          if (a.reference.toUpperCase() < b.reference.toUpperCase()) {
+          if (a?.reference?.toUpperCase() < b?.reference?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -727,12 +729,14 @@ export const Shape: FC<{}> = ({}) => {
       if (key === "departement") {
         sorted = tmp?.sort((a, b) => {
           if (
-            a.department.name.toUpperCase() > b.department.name.toUpperCase()
+            a?.department?.name?.toUpperCase() >
+            b?.department?.name?.toUpperCase()
           ) {
             return 1;
           }
           if (
-            a.department.name.toUpperCase() < b.department.name.toUpperCase()
+            a?.department?.name?.toUpperCase() <
+            b?.department?.name?.toUpperCase()
           ) {
             return -1;
           }
@@ -742,10 +746,10 @@ export const Shape: FC<{}> = ({}) => {
 
       if (key === "dimension lxlxh") {
         sorted = tmp?.sort((a, b) => {
-          if (a.dim_lx_lh.toUpperCase() > b.dim_lx_lh.toUpperCase()) {
+          if (a?.dim_lx_lh?.toUpperCase() > b?.dim_lx_lh?.toUpperCase()) {
             return 1;
           }
-          if (a.dim_lx_lh.toUpperCase() < b.dim_lx_lh.toUpperCase()) {
+          if (a?.dim_lx_lh?.toUpperCase() < b?.dim_lx_lh?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -754,10 +758,10 @@ export const Shape: FC<{}> = ({}) => {
 
       if (key === "dimensions carré") {
         sorted = tmp?.sort((a, b) => {
-          if (a.dim_square.toUpperCase() > b.dim_square.toUpperCase()) {
+          if (a?.dim_square?.toUpperCase() > b?.dim_square?.toUpperCase()) {
             return 1;
           }
-          if (a.dim_square.toUpperCase() < b.dim_square.toUpperCase()) {
+          if (a?.dim_square?.toUpperCase() < b?.dim_square?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -859,14 +863,14 @@ export const Shape: FC<{}> = ({}) => {
       if (item.id === "Commercial" && item?.selectedValues.length > 0) {
         combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
           (shape: any) =>
-            shape?.commercial.name === item?.selectedValues[0]?.value
+            shape?.commercial?.name === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "Departement" && item?.selectedValues.length > 0) {
         combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
           (shape: any) =>
-            shape?.department.name === item?.selectedValues[0]?.value
+            shape?.department?.name === item?.selectedValues[0]?.value
         );
       }
 
@@ -959,16 +963,24 @@ export const Shape: FC<{}> = ({}) => {
           if (row === "Code") {
             mySet.add(all.code);
           }
-          if (row === "Client") mySet.add(all.client.name);
-          if (row === "Reference") mySet.add(all.reference);
-          if (row === "Commercial") mySet.add(all.commercial.name);
-          if (row === "Departement") mySet.add(all.department.name);
-          if (row === "Dimension LxLxH") mySet.add(all.dim_lx_lh);
-          if (row === "Dimensions Carré") mySet.add(all.dim_square);
-          if (row === "Dimensions Plaque") mySet.add(all.dim_plate);
-          if (row === "Type Papier") mySet.add(all.paper_type);
-          if (row === "N° des poses") mySet.add(all.pose_number);
-          if (row === "1/3") mySet.add(all.part);
+          if (row === "Client" && all?.client?.name)
+            mySet.add(all?.client?.name);
+          if (row === "Reference" && all?.reference) mySet.add(all?.reference);
+          if (row === "Commercial" && all?.commercial?.name)
+            mySet.add(all?.commercial?.name);
+          if (row === "Departement" && all?.department?.name)
+            mySet.add(all?.department?.name);
+          if (row === "Dimension LxLxH" && all?.dim_lx_lh)
+            mySet.add(all?.dim_lx_lh);
+          if (row === "Dimensions Carré" && all?.dim_square)
+            mySet.add(all?.dim_square);
+          if (row === "Dimensions Plaque" && all?.dim_plate)
+            mySet.add(all?.dim_plate);
+          if (row === "Type Papier" && all?.paper_type)
+            mySet.add(all?.paper_type);
+          if (row === "N° des poses" && all?.pose_number)
+            mySet.add(all?.pose_number);
+          if (row === "1/3" && all?.part) mySet.add(all?.part);
         });
 
       obj.fields = Array.from(mySet) as any;
