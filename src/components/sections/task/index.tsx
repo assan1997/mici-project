@@ -61,6 +61,7 @@ export const Task: FC<{}> = ({}) => {
     dispatchTasks,
     refreshTaskData,
     onRefreshingTask,
+    getAllTasks,
   } = useData();
   const shapeSchema = z.object({
     client: z.number(),
@@ -118,7 +119,7 @@ export const Task: FC<{}> = ({}) => {
     setClient([]);
   };
   const { box, handleClick } = useActiveState();
-  const [tasks, setOffsetShapes] = useState<TaskInterface[] | undefined>([]);
+  const [tasks, setTasks] = useState<TaskInterface[] | undefined>([]);
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
@@ -466,7 +467,6 @@ export const Task: FC<{}> = ({}) => {
   //   reset();
   // };
   const [sortedBy, setSortedBY] = useState<string>("");
-
   const sort = (key: string) => {
     setCurrentDatas((tmp) => {
       let sorted: any = [];
@@ -562,7 +562,7 @@ export const Task: FC<{}> = ({}) => {
   // };
 
   // const sort = (key: string) => {
-  //   setOffsetShapes((tmp) => {
+  //   setTasks((tmp) => {
   //     let sorted = tmp?.sort((a, b) => {
   //       if (a.client.name.toUpperCase() > b.client.name.toUpperCase()) {
   //         return -1; // Si 'a' est plus grand que 'b', place 'b' avant 'a'
@@ -577,6 +577,9 @@ export const Task: FC<{}> = ({}) => {
   //   });
   // };
 
+  useEffect(() => {
+    getAllTasks();
+  }, []);
   return (
     <div className="w-full h-full">
       {/* <div className="w-full flex py-[10px] justify-end">
@@ -617,7 +620,7 @@ export const Task: FC<{}> = ({}) => {
             ]}
             filterDatas={allTasks ? allTasks : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
+            filterHandler={setTasks}
           /> */}
 
           <Filter
@@ -628,7 +631,7 @@ export const Task: FC<{}> = ({}) => {
             list={[]}
             filterDatas={[]}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
+            filterHandler={setTasks}
             onClick={() => {
               refreshTaskData();
             }}
@@ -661,7 +664,7 @@ export const Task: FC<{}> = ({}) => {
             list={status}
             filterDatas={allTasks ? allTasks : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
+            filterHandler={setTasks}
           />
           <Filter
             type="date"
@@ -671,7 +674,7 @@ export const Task: FC<{}> = ({}) => {
             list={status}
             filterDatas={allTasks ? allTasks : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
+            filterHandler={setTasks}
           />
         </div>
         <div className="relative w-full overflow-auto bg-white">
@@ -1015,7 +1018,7 @@ export const Task: FC<{}> = ({}) => {
         {currentDatas.length > 0 ? (
           <Pagination
             datas={currentDatas ? currentDatas : []}
-            listHandler={setOffsetShapes}
+            listHandler={setTasks}
           />
         ) : null}
       </motion.div>

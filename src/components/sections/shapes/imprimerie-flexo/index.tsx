@@ -902,7 +902,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
             entry={{ headers: [], data: [] }}
           /> */}
         </div>
-        <div className="relative w-full overflow-auto scrollbar-hide bg-white">
+        <div className="relative w-full overflow-auto  bg-white">
           {!allOffsetShapes ? (
             <TableSkeleton head={tableHead} />
           ) : currentDatas.length > 0 ? (

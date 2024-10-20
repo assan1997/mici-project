@@ -361,7 +361,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({}) => {
         </button>
       </div>
       <div className="w-full bg-white/80  rounded-t-xl h-[60px] flex items-center justify-center border-b"></div>
-      <div className="relative w-full overflow-auto scrollbar-hide">
+      <div className="relative w-full overflow-auto ">
         <table className="w-full relative">
           <thead className="bg-white/50">
             <tr className="">

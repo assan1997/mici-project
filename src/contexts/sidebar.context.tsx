@@ -8,6 +8,7 @@ import React, {
   SetStateAction,
   Dispatch,
   useEffect,
+  useMemo,
 } from "react";
 
 import {
@@ -22,6 +23,7 @@ import {
 } from "../components/svg";
 import uniqid from "uniqid";
 import { usePathname } from "next/navigation";
+import { useData } from "./data.context";
 
 export type Nav = {
   link: string;
@@ -73,50 +75,55 @@ export const useSideBar = () => useContext(SibeBarContext);
 export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [nav, setNav] = useState<Nav[]>([
-    {
-      link: "/folder",
-      slug: "Dossiers",
-      active: false,
-      id: "nav-0",
-      icon: (color: string) => <FolderIcon color={color} size={22} />,
-    },
-    {
-      link: "/bat",
-      slug: "B.A.T",
-      active: false,
-      id: "nav-1",
-      icon: (color: string) => <PaintIcon color={color} size={24} />,
-    },
-    {
-      link: "/shapes",
-      slug: "Formes",
-      active: false,
-      id: "nav-2",
-      icon: (color: string) => <CompassIcon color={color} size={24} />,
-    },
-    {
-      link: "/task",
-      slug: "Tâches",
-      active: false,
-      id: "nav-3",
-      icon: (color: string) => <TaskIcon color={color} size={20} />,
-    },
-    {
-      link: "/users",
-      slug: "Utilisateurs",
-      active: false,
-      id: "nav-4",
-      icon: (color: string) => <UserIcon color={color} size={24} />,
-    },
-    {
-      link: "/clients",
-      slug: "Clients",
-      active: false,
-      id: "nav-5",
-      icon: (color: string) => <GreetingIcon color={color} size={24} />,
-    },
-  ]);
+  const { user } = useData();
+  const navDatas = useMemo(
+    () => [
+      {
+        link: "/folder",
+        slug: "Dossiers",
+        active: false,
+        id: "nav-0",
+        icon: (color: string) => <FolderIcon color={color} size={22} />,
+      },
+      {
+        link: "/bat",
+        slug: "B.A.T",
+        active: false,
+        id: "nav-1",
+        icon: (color: string) => <PaintIcon color={color} size={24} />,
+      },
+      {
+        link: "/shapes",
+        slug: "Formes",
+        active: false,
+        id: "nav-2",
+        icon: (color: string) => <CompassIcon color={color} size={24} />,
+      },
+      {
+        link: "/task",
+        slug: "Tâches",
+        active: false,
+        id: "nav-3",
+        icon: (color: string) => <TaskIcon color={color} size={20} />,
+      },
+      {
+        link: "/users",
+        slug: "Utilisateurs",
+        active: false,
+        id: "nav-4",
+        icon: (color: string) => <UserIcon color={color} size={24} />,
+      },
+      {
+        link: "/clients",
+        slug: "Clients",
+        active: false,
+        id: "nav-5",
+        icon: (color: string) => <GreetingIcon color={color} size={24} />,
+      },
+    ],
+    []
+  );
+  const [nav, setNav] = useState<Nav[]>([...navDatas]);
   const [subNav, setSubNav] = useState<SubNav[]>([
     {
       link: "/imprimerie-flexo-offset",
@@ -154,23 +161,50 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
   const pathName = usePathname();
   const [resize, setResize] = useState<boolean>(false);
 
-  useEffect(() => {
-    setNav((navs: Nav[]) =>
-      navs?.map((nav: Nav) =>
-        pathName.includes(nav.link)
-          ? { ...nav, active: true }
-          : { ...nav, active: false }
-      )
-    );
+  const roleAdmin = useMemo(() => {
+    const sectionsIds = user?.sections?.map((section) => section.id);
+    if (sectionsIds?.includes(1) || sectionsIds?.includes(2)) return true;
+    else return false;
+  }, [user?.sections]);
 
-    setSubNav((navs: SubNav[]) =>
-      navs?.map((nav: SubNav) =>
-        pathName.includes(nav.link)
-          ? { ...nav, active: true }
-          : { ...nav, active: false }
-      )
-    );
-  }, [pathName]);
+  useEffect(() => {
+    if (!roleAdmin)
+      setNav(
+        navDatas
+          .filter((nav) => !["nav-4", "nav-5"].includes(nav.id))
+          .map((nav: Nav) =>
+            pathName.includes(nav.link)
+              ? { ...nav, active: true }
+              : { ...nav, active: false }
+          )
+      );
+    else
+      setNav(
+        navDatas.map((nav: Nav) =>
+          pathName.includes(nav.link)
+            ? { ...nav, active: true }
+            : { ...nav, active: false }
+        )
+      );
+  }, [roleAdmin, pathName]);
+
+  // useEffect(() => {
+  //   setNav((navs: Nav[]) =>
+  //     navs?.map((nav: Nav) =>
+  //       pathName.includes(nav.link)
+  //         ? { ...nav, active: true }
+  //         : { ...nav, active: false }
+  //     )
+  //   );
+
+  //   setSubNav((navs: SubNav[]) =>
+  //     navs?.map((nav: SubNav) =>
+  //       pathName.includes(nav.link)
+  //         ? { ...nav, active: true }
+  //         : { ...nav, active: false }
+  //     )
+  //   );
+  // }, [pathName]);
 
   const handleActiveNav = (
     id: string,

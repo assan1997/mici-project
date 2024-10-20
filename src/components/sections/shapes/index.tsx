@@ -37,7 +37,8 @@ import { Filter } from "@/components/ui/filter";
 import { Export } from "@/components/ui/export";
 import { useRouter } from "next/navigation";
 import { deleteShape } from "@/services/shapes";
-import { SearchMdIcon } from "@/components/svg/search-md";
+import ReactDOMServer from "react-dom/server";
+import { createRoot } from "react-dom/client";
 
 export const Shape: FC<{}> = ({}) => {
   const {
@@ -51,13 +52,13 @@ export const Shape: FC<{}> = ({}) => {
     rules,
     onRefreshingShape,
     refreshShapeData,
+    getAllShapes,
   } = useData();
   const shapeSchema = z.object({
     client: z.number(),
     commercial: z.number(),
     department: z.number(),
     part: z.string(),
-    code: z.string(),
     dim_lx_lh: z.string(),
     dim_square: z.string(),
     dim_plate: z.string(),
@@ -104,7 +105,6 @@ export const Shape: FC<{}> = ({}) => {
     form.setValue("client", 0);
     form.setValue("commercial", 0);
     form.setValue("department", 0);
-    form.setValue("code", "");
     form.setValue("dim_lx_lh", "");
     form.setValue("dim_square", "");
     form.setValue("dim_plate", "");
@@ -145,7 +145,7 @@ export const Shape: FC<{}> = ({}) => {
       commercial,
       department,
       rule,
-      code,
+      // code,
       dim_lx_lh,
       dim_square,
       dim_plate,
@@ -156,13 +156,13 @@ export const Shape: FC<{}> = ({}) => {
     } = data;
     reference = reference.trim();
     part = part.trim();
-    code = code.trim();
+    // code = code.trim();
 
     const { data: createdOffsetShape, success } = await createOffsetShape({
       client_id: client,
       department_id: department,
       commercial_id: commercial,
-      code,
+      // code,
       dim_lx_lh,
       dim_square,
       dim_plate,
@@ -254,7 +254,7 @@ export const Shape: FC<{}> = ({}) => {
     if (cli?.value) setClient([cli as any]);
     if (rule?.value) setSelectedRule([rule as any]);
 
-    form.setValue("code", shape.code);
+    // form.setValue("code", shape.code);
     form.setValue("dim_lx_lh", shape.dim_lx_lh);
     form.setValue("dim_square", shape.dim_square);
     form.setValue("dim_plate", shape.dim_plate);
@@ -289,7 +289,6 @@ export const Shape: FC<{}> = ({}) => {
       client,
       commercial,
       department,
-      code,
       dim_lx_lh,
       dim_square,
       dim_plate,
@@ -301,7 +300,6 @@ export const Shape: FC<{}> = ({}) => {
     } = data;
     reference = reference.trim();
     part = part.trim();
-    code = code.trim();
     const entry: OffsetShapeEntry = {
       client_id: client,
       department_id: department,
@@ -312,7 +310,6 @@ export const Shape: FC<{}> = ({}) => {
       paper_type,
       pose_number,
       part,
-      code,
       reference,
       rule_id: rule,
       observations: observationList?.map((obs) => obs.text),
@@ -912,7 +909,6 @@ export const Shape: FC<{}> = ({}) => {
     });
 
     setCurrentDatas(combo);
-    console.log("combo", combo);
   };
 
   useEffect(() => {
@@ -998,6 +994,122 @@ export const Shape: FC<{}> = ({}) => {
       return [...tmp.filter((combine: any) => combine.id !== row)];
     });
   };
+
+  useEffect(() => {
+    getAllShapes();
+  }, [getAllShapes]);
+
+  const PopOverDropdown = useCallback(
+    () => (
+      <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+        <div className="flex flex-col items-center w-full">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenEditionModal(true);
+            }}
+            className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+          >
+            {/* <UpdateIcon color={""} /> */}
+            <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+              Modifier les entrées
+            </span>
+          </button>
+
+          <Export
+            title="Télécharger le pdf"
+            type="pdf"
+            entry={{
+              headers: [],
+              data: shapeInEntry,
+            }}
+          />
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              goToDetail(shapeInEntry?.id);
+            }}
+            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+          >
+            {/* <DetailsIcon color={""} /> */}
+            <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+              Voir les détails
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenAssignToUserModal(true);
+            }}
+            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+          >
+            {/* <DetailsIcon color={""} /> */}
+            <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+              Assigner à un utilisateur
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenLockModal(true);
+            }}
+            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+          >
+            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+              {shapeInEntry?.status_id === 3 ? "Débloquer" : "Bloquer"}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenStandByModal(true);
+            }}
+            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+          >
+            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+              {shapeInEntry?.status_id === 2
+                ? "Enlever en standby"
+                : "Mettre en standby"}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEndModal(true);
+            }}
+            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+          >
+            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+              Terminer
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDelationModal(true);
+            }}
+            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+          >
+            <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+              Supprimer la forme
+            </span>
+          </button>
+        </div>
+      </div>
+    ),
+    [shapeInEntry?.id]
+  );
 
   return (
     <div className="w-full h-full">
@@ -1185,7 +1297,7 @@ export const Shape: FC<{}> = ({}) => {
                         key={index}
                         className={`w-fit ${
                           index === 0 ? "w-0" : "min-w-[300px]"
-                        } text-[13px] py-[10px] font-medium  ${
+                        } text-[14px] py-[10px] font-medium  ${
                           index > 0 && index < tableHead.length
                         }  text-[#000000]`}
                       >
@@ -1429,19 +1541,47 @@ export const Shape: FC<{}> = ({}) => {
                 </thead>
                 <tbody className="bg-white/10">
                   {offsetShapes?.map((row, index) => {
-                    console.log("row", row);
                     const statut = status.find(
                       (st) => st.id === row?.status_id
                     );
                     return (
                       <tr
                         key={index}
-                        className={`cursor-pointer border-b transition-all duration hover:bg-gray-100 checked:hover:bg-gray-100`}
+                        onClick={() => goToDetail(row?.id)}
+                        className={`cursor-pointer border-b transition-all relative duration hover:bg-gray-100 checked:hover:bg-gray-100`}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          document.getElementById("dropdown")?.remove();
+                          const dropdown = document.createElement("div");
+                          dropdown.id = "dropdown";
+                          dropdown.style.boxShadow =
+                            "0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)";
+                          dropdown.className =
+                            "w-[200px] h-[200px] absolute z-[500]";
+                          const target = e.target as HTMLElement;
+                          target.appendChild(dropdown);
+                          const root = createRoot(dropdown);
+                          setCurrentEntry(row.id);
+
+                          root.render(<PopOverDropdown />);
+                          const handleClickOutside = (event: any) => {
+                            if (!dropdown.contains(event.target)) {
+                              root.unmount();
+                              dropdown.remove();
+                              document.removeEventListener(
+                                "click",
+                                handleClickOutside
+                              );
+                            }
+                          };
+
+                          document.addEventListener(
+                            "click",
+                            handleClickOutside
+                          );
+                        }}
                       >
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]"
-                        >
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
                           <div
                             className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
                               row?.status_id === 2
@@ -1457,71 +1597,71 @@ export const Shape: FC<{}> = ({}) => {
                           </div>
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] relative min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.code}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.client?.name}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.reference}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.commercial?.name}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row.department?.name}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.dim_lx_lh}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.dim_square}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.dim_plate}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.paper_type}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.pose_number}
                         </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
                           {row?.part}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {formatTime(
                             new Date(row?.["created_at"]).getTime(),
@@ -1536,8 +1676,8 @@ export const Shape: FC<{}> = ({}) => {
                           )}
                         </td>
                         <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {formatTime(
                             new Date(row?.["updated_at"]).getTime(),
@@ -1552,7 +1692,10 @@ export const Shape: FC<{}> = ({}) => {
                           )}
                         </td>
 
-                        <td className="text-[#636363] w-auto px-[20px] text-start font-poppins">
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-[#636363] w-auto px-[20px] text-start font-poppins"
+                        >
                           <div className="w-full h-full flex items-center justify-end">
                             <div ref={box}>
                               <MenuDropdown
@@ -1572,132 +1715,7 @@ export const Shape: FC<{}> = ({}) => {
                                   </div>
                                 }
                               >
-                                <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-                                  <div className="flex flex-col items-center w-full">
-                                    <button
-                                      type="button"
-                                      onClick={() => setOpenEditionModal(true)}
-                                      className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                    >
-                                      {/* <UpdateIcon color={""} /> */}
-                                      <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-                                        Modifier les entrées
-                                      </span>
-                                    </button>
-
-                                    <Export
-                                      title="Télécharger le pdf"
-                                      type="pdf"
-                                      entry={{
-                                        headers: [],
-                                        data: row,
-                                      }}
-                                    />
-
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        goToDetail(row?.id);
-                                      }}
-                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                    >
-                                      {/* <DetailsIcon color={""} /> */}
-                                      <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                        Voir les détails
-                                      </span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenAssignToUserModal(true);
-                                      }}
-                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                    >
-                                      {/* <DetailsIcon color={""} /> */}
-                                      <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                        Assigner à un utilisateur
-                                      </span>
-                                    </button>
-                                    {/* <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenLogsModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <LogIcon color={""} />
-                                      <span className="text-[14px]  text-grayscale-900 font-medium font-poppins leading-[20px]">
-                                        Voir les logs
-                                      </span>
-                                    </button> */}
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenLockModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      {/* <DeleteShapeIcon color={""} /> */}
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        {row.status_id === 3
-                                          ? "Débloquer"
-                                          : "Bloquer"}
-                                      </span>
-                                    </button>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenStandByModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      {/* <DeleteShapeIcon color={""} /> */}
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        {row.status_id === 2
-                                          ? "Enlever en standby"
-                                          : "Mettre en standby"}
-                                      </span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setEndModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      {/* <DeleteShapeIcon color={""} /> */}
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        Terminer
-                                      </span>
-                                    </button>
-                                    {/* <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenObservationModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <DeleteShapeIcon color={""} />
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        Faire une observation
-                                      </span>
-                                    </button> */}
-
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setDelationModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      {/* <DeleteShapeIcon color={""} /> */}
-                                      <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                        Supprimer la forme
-                                      </span>
-                                    </button>
-                                  </div>
-                                </div>
+                                <PopOverDropdown />
                               </MenuDropdown>
                             </div>
                           </div>
@@ -1878,18 +1896,18 @@ export const Shape: FC<{}> = ({}) => {
                   type="text"
                   {...form.register("reference")}
                 />
-                <BaseInput
+                {/* <BaseInput
                   label="Code"
                   id="code"
                   placeholder="Code"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("code")}
-                />
+                /> */}
                 <BaseInput
-                  label="Dimension Lx Lh"
-                  id="dim_lx_lh"
-                  placeholder="Dimension Lx Lh"
+                  label="Dimension LxLxH"
+                  id="dim_lx_lxh"
+                  placeholder="Dimension LxLxH"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("dim_lx_lh")}
@@ -2190,18 +2208,18 @@ export const Shape: FC<{}> = ({}) => {
                   type="text"
                   {...form.register("reference")}
                 />
-                <BaseInput
+                {/* <BaseInput
                   label="Code"
                   id="code"
                   placeholder="Code"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("code")}
-                />
+                /> */}
                 <BaseInput
-                  label="Dimension Lx Lh"
-                  id="dim_lx_lh"
-                  placeholder="Dimension Lx Lh"
+                  label="Dimension LxLxh"
+                  id="dim_lx_lxh"
+                  placeholder="Dimension LxLxh"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("dim_lx_lh")}
@@ -2485,7 +2503,7 @@ export const Shape: FC<{}> = ({}) => {
                         key={index}
                         className={`  ${
                           head === "options" ? "w-auto" : "min-w-[150px]"
-                        } text-[13px] py-[10px] font-medium  ${
+                        } text-[14px] py-[10px] font-medium  ${
                           index > 0 && index < tableHead.length
                         }  text-[#636363]`}
                       >
@@ -2499,16 +2517,16 @@ export const Shape: FC<{}> = ({}) => {
                 <tbody className="bg-white/80">
                   {shapeInEntry?.logs?.map((row, index) => (
                     <tr key={index} className="border-b">
-                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
                         {row?.title}
                       </td>
-                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
                         {row?.description}
                       </td>
-                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
                         {row?.type}
                       </td>
-                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[13px]">
+                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
                         {formatTime(
                           new Date(row?.["created_at"]).getTime(),
                           "d:mo:y",
@@ -2521,7 +2539,7 @@ export const Shape: FC<{}> = ({}) => {
                           "short"
                         )}
                       </td>
-                      <td className="text-[#636363] min-w-[100px] p-[20px] text-start font-poppins text-[13px]">
+                      <td className="text-[#636363] min-w-[100px] p-[20px] text-start font-poppins text-[14px]">
                         {
                           users?.find(
                             (user: User) => user.id === row.user_treating_id

@@ -6746,7 +6746,7 @@ __metadata:
     react-hook-form: ^7.52.2
     react-icons: ^5.3.0
     tailwind-merge: ^2.5.2
-    tailwind-scrollbar-hide: ^1.1.7
+    tailwind-: ^1.1.7
     tailwindcss: ^3.4.1
     typescript: ^5
     uniqid: ^5.4.0
@@ -8391,9 +8391,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwind-scrollbar-hide@npm:^1.1.7":
+"tailwind-@npm:^1.1.7":
   version: 1.1.7
-  resolution: "tailwind-scrollbar-hide@npm:1.1.7"
+  resolution: "tailwind-@npm:1.1.7"
   checksum: 2434a1db7a92fa91952ce4fbef7f80b83f121fa2fae27453cefc6030c06d368768e3172d3640ae6836fe4f813ed89b40c2f44b1f17756593ab4625259ef22a75
   languageName: node
   linkType: hard

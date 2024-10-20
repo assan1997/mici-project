@@ -152,78 +152,82 @@ export const Details = () => {
                 <div className="h-[80px] w-full">
                   <Form form={form} onSubmit={onSubmit}>
                     <div className="flex gap-x-[10px]">
-                      <ComboboxMultiSelect
-                        label={""}
-                        placeholder="Selectionnez une année"
-                        className="w-full"
-                        icon={
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
-                              stroke="black"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        }
-                        id={`commercial`}
-                        options={
-                          years?.map((year) => ({
-                            value: year.name as unknown as string,
-                            label: year.name,
-                          })) as any
-                        }
-                        error={undefined}
-                        isUniq={true}
-                        selectedElementInDropdown={selectedYear}
-                        setSelectedUniqElementInDropdown={setSelectedYear}
-                        borderColor="border-grayscale-200"
-                      />
-                      <ComboboxMultiSelect
-                        label={""}
-                        placeholder="Sélectionnez un mois"
-                        className="w-full"
-                        icon={
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
-                              stroke="black"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        }
-                        id={`commercial`}
-                        options={
-                          months?.map((month) => ({
-                            value: month.number as unknown as string,
-                            label: month.name,
-                          })) as any
-                        }
-                        error={undefined}
-                        isUniq={true}
-                        selectedElementInDropdown={selectedMonth}
-                        setSelectedUniqElementInDropdown={setSelectedMonth}
-                        borderColor="border-grayscale-200"
-                      />
+                      <div className="w-1/2">
+                        <ComboboxMultiSelect
+                          label={""}
+                          placeholder="Année"
+                          className="w-full"
+                          icon={
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                                stroke="black"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          }
+                          id={`commercial`}
+                          options={
+                            years?.map((year) => ({
+                              value: year.name as unknown as string,
+                              label: year.name,
+                            })) as any
+                          }
+                          error={undefined}
+                          isUniq={true}
+                          selectedElementInDropdown={selectedYear}
+                          setSelectedUniqElementInDropdown={setSelectedYear}
+                          borderColor="border-grayscale-200"
+                        />
+                      </div>
+                      <div className="w-1/2">
+                        <ComboboxMultiSelect
+                          label={""}
+                          placeholder="Mois"
+                          className="w-full"
+                          icon={
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                                stroke="black"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          }
+                          id={`commercial`}
+                          options={
+                            months?.map((month) => ({
+                              value: month.number as unknown as string,
+                              label: month.name,
+                            })) as any
+                          }
+                          error={undefined}
+                          isUniq={true}
+                          selectedElementInDropdown={selectedMonth}
+                          setSelectedUniqElementInDropdown={setSelectedMonth}
+                          borderColor="border-grayscale-200"
+                        />
+                      </div>
                     </div>
                   </Form>
                 </div>
-                <div className="h-[calc(100%-80px)] w-full flex items-center">
+                <div className="h-[calc(100%-80px)] w-full flex items-start">
                   {performance?.error ? (
                     <span>
                       Pas de tâches pour cette utilisateur dans ce mois{" "}

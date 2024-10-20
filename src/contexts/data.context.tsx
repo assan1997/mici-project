@@ -80,6 +80,7 @@ export interface Client {
   user: User;
   created_at: string;
   updated_at: string;
+  commercial: User;
   departments: Department[];
 }
 export interface Department {
@@ -151,6 +152,7 @@ export interface DataContextType {
   dispatchTasks: React.Dispatch<
     React.SetStateAction<TaskInterface[] | undefined>
   >;
+
   loadUsers: LoadUsers;
   status: Status[];
   tasks: TaskInterface[] | undefined;
@@ -161,6 +163,17 @@ export interface DataContextType {
   refreshShapeData: Function;
   refreshTaskData: Function;
   refreshUsersData: Function;
+  refreshClientsData: Function;
+  getUser: Function;
+  getSections: Function;
+  getDepartements: Function;
+  getUsers: Function;
+  getClients: Function;
+  getAllShapes: Function;
+  getAllTasks: Function;
+  getFolders: Function;
+  getBats: Function;
+  onRefreshingData: Boolean;
 }
 export interface Status {
   id: number;
@@ -231,9 +244,20 @@ const DataContext = createContext<DataContextType>({
   onRefreshingShape: false,
   onRefreshingTask: false,
   onRefreshingUsers: false,
+  onRefreshingData: false,
   refreshShapeData: () => {},
   refreshTaskData: () => {},
   refreshUsersData: () => {},
+  refreshClientsData: () => {},
+  getUser: () => {},
+  getSections: () => {},
+  getDepartements: () => {},
+  getUsers: () => {},
+  getClients: () => {},
+  getAllShapes: () => {},
+  getAllTasks: () => {},
+  getFolders: () => {},
+  getBats: () => {},
 });
 export const useData = () => useContext(DataContext);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({
@@ -290,115 +314,129 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     isLoadDepartments: false,
   });
 
+  const getUser = async () => {
+    if (user) return;
+    const { data, success } = await refreshUser();
+    setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadCurrentUser: true }));
+    if (!success) {
+      Router.push("/");
+    }
+    dispatchUser(data);
+  };
   useEffect(() => {
-    (async () => {
-      if (user) return;
-      const { data, success } = await refreshUser();
-      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadCurrentUser: true }));
-      if (!success) {
-        Router.push("/");
-      }
-      dispatchUser(data);
-    })();
-  }, []);
+    getUser();
+  }, [getUser]);
 
+  const getDepartements = async () => {
+    const { data, success } = await getAllDepartments();
+    setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadDepartments: true }));
+    if (!success) return;
+    dispatchDepartment(data);
+  };
   useEffect(() => {
     if (departments.length > 0) return;
-    (async () => {
-      const { data, success } = await getAllDepartments();
-      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadDepartments: true }));
-      if (!success) return;
-      dispatchDepartment(data);
-    })();
-  }, [user]);
+    getDepartements();
+  }, [user, getDepartements]);
+
+  const getSections = async () => {
+    const { data, success } = await getAllSections();
+    setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isloadSections: true }));
+    if (!success) return;
+    dispatchSection(data);
+  };
 
   useEffect(() => {
     if (sections.length > 0) return;
-    (async () => {
-      const { data, success } = await getAllSections();
-      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isloadSections: true }));
-      if (!success) return;
-      dispatchSection(data);
-    })();
-  }, [user]);
+    getSections();
+  }, [user, getSections]);
+
+  const getUsers = async () => {
+    const { data, success } = await getAllUsers();
+    setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadAllUsers: true }));
+    if (!success) return;
+    dispatchUsers(data);
+  };
 
   useEffect(() => {
     if (users) return;
-    (async () => {
-      const { data, success } = await getAllUsers();
-      setLoadUsers((tmp: LoadUsers) => ({ ...tmp, isLoadAllUsers: true }));
-      if (!success) return;
-      dispatchUsers(data);
-    })();
-  }, [user]);
+    getUsers();
+  }, [user, getUsers]);
 
-  useEffect(() => {
-    if (clients) return;
-    (async () => {
-      const { data, success } = await getAllClients();
-      if (!success) return;
-      dispatchClients(data);
-    })();
-  }, [user]);
+  const getClients = async () => {
+    const { data, success } = await getAllClients();
+    if (!success) return;
+    dispatchClients(data);
+  };
 
-  useEffect(() => {
-    if (offsetShapes) return;
-    if (users && users?.length > 0) {
-      (async () => {
-        let { data, success } = await getAllOffsetShapes();
-        if (!success) return;
-        dispatchOffsetShapes(
-          data?.map((dat: any) => ({
-            ...dat,
-            commercial: users?.find((use) => use.id === dat.commercial_id),
-          }))
-        );
-      })();
-    }
-  }, [users]);
+  // useEffect(() => {
+  //   if (clients) return;
+  //   getClients();
+  // }, [user, getClients]);
+
+  const getAllShapes = async () => {
+    let { data, success } = await getAllOffsetShapes();
+    if (!success) return;
+    dispatchOffsetShapes(
+      data?.map((dat: any) => ({
+        ...dat,
+        commercial: users?.find((use) => use.id === dat.commercial_id),
+      }))
+    );
+  };
+
+  // useEffect(() => {
+  //   if (offsetShapes) return;
+  //   if (users && users?.length > 0) {
+  //     getAllShapes();
+  //   }
+  // }, [users, getAllShapes]);
+
+  const getFolders = async () => {
+    let { data, success } = await getAllFolders();
+    if (!success) return;
+    dispatchFolders(
+      data?.map((dat: any) => ({
+        ...dat,
+        commercial: users?.find((use) => use.id === dat.commercial_id),
+      }))
+    );
+  };
 
   useEffect(() => {
     if (folders) return;
     if (users && users?.length > 0) {
-      (async () => {
-        let { data, success } = await getAllFolders();
-        if (!success) return;
-        dispatchFolders(
-          data?.map((dat: any) => ({
-            ...dat,
-            commercial: users?.find((use) => use.id === dat.commercial_id),
-          }))
-        );
-      })();
+      getFolders();
     }
-  }, [users]);
+  }, [users, getFolders]);
+
+  const getBats = async () => {
+    let { data, success } = await getAllBats();
+    if (!success) return;
+    dispatchBats(
+      data?.map((dat: any) => ({
+        ...dat,
+        department: departments?.find((dep) => dep.id === dat.department_id),
+        commercial: users?.find((use) => use.id === dat.commercial_id),
+      }))
+    );
+  };
 
   useEffect(() => {
     if (bats) return;
     if (users && users?.length > 0 && departments && departments.length > 0) {
-      (async () => {
-        let { data, success } = await getAllBats();
-        if (!success) return;
-        dispatchBats(
-          data?.map((dat: any) => ({
-            ...dat,
-            department: departments?.find(
-              (dep) => dep.id === dat.department_id
-            ),
-            commercial: users?.find((use) => use.id === dat.commercial_id),
-          }))
-        );
-      })();
+      getBats();
     }
-  }, [users, departments]);
+  }, [users, departments, getBats]);
 
-  useEffect(() => {
-    if (tasks) return;
-    (async () => {
-      let { data } = await getTasks();
-      dispatchTasks(data);
-    })();
-  }, [user]);
+  const getAllTasks = async () => {
+    let { data } = await getTasks();
+    dispatchTasks(data);
+  };
+
+  // useEffect(() => {
+  //   if (tasks) return;
+  //   getAllTasks();
+  // }, [user, getAllTasks]);
 
   const [onRefreshingShape, setOnRefreshingShape] = useState<boolean>(false);
   const refreshShapeData = async () => {
@@ -408,7 +446,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     dispatchDepartment(departmentsData);
     const { data: sections, success: secSuccess } = await getAllSections();
     dispatchSection(sections);
-
     let { data: shapesData, success: shapesSuccess } =
       await getAllOffsetShapes();
     dispatchOffsetShapes(
@@ -419,7 +456,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     );
 
     setOnRefreshingShape(false);
-
     if (depSuccess && secSuccess && shapesSuccess) {
       showToast({
         type: "success",
@@ -434,9 +470,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       });
     }
   };
-
   const [onRefreshingTask, setOnRefreshingTask] = useState<boolean>(false);
   const [onRefreshingUsers, setOnRefreshingUsers] = useState<boolean>(false);
+  const [onRefreshingData, setOnRefreshingClients] = useState<boolean>(false);
 
   const refreshTaskData = async () => {
     setOnRefreshingTask(true);
@@ -478,6 +514,26 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const refreshClientsData = async () => {
+    setOnRefreshingClients(true);
+    let { data, success } = await getAllClients();
+    dispatchClients(data);
+    setOnRefreshingClients(false);
+    if (success) {
+      showToast({
+        type: "success",
+        message: "Synchronisation terminée",
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "Une erreur est survenue",
+        position: "top-center",
+      });
+    }
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -504,9 +560,20 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         refreshShapeData,
         refreshTaskData,
         refreshUsersData,
+        refreshClientsData,
         onRefreshingUsers,
         onRefreshingShape,
         onRefreshingTask,
+        onRefreshingData,
+        getUser,
+        getSections,
+        getDepartements,
+        getUsers,
+        getClients,
+        getAllShapes,
+        getAllTasks,
+        getFolders,
+        getBats,
       }}
     >
       {children}

@@ -26,6 +26,25 @@ export async function createClient(entry: ClientEntry) {
     return { success: false };
   }
 }
+export async function getClient(id: number) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/clients/${id}`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { success: true, data };
+  } catch (error) {
+    return { success: false };
+  }
+}
 export async function getAllClients() {
   const token = await getToken();
   try {
@@ -47,12 +66,8 @@ export async function getAllClients() {
 }
 export async function deleteClient(id: number) {
   const token = await getToken();
-  console.log("id", id);
-  console.log("token", token);
   try {
-    const {
-      data: { message },
-    } = await axios.post(
+    const { data } = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/clients/${id}/delete`,
       null,
       {

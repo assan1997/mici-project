@@ -221,14 +221,14 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = ({
                   placeholder="Recherche"
                   ref={inputRef}
                   onChange={handleSearch}
-                  className={`p-[.8rem] w-fit h-[24px] text-[14px] w-full border-none outline-none font-poppins`}
+                  className={`p-[.8rem] h-[24px] text-[14px] w-full border-none outline-none font-poppins`}
                 />
               ) : (
                 <div
                   ref={selectedContainer}
                   className={`w-[93%] flex items-center ${
                     hAuto ? "flex-wrap" : ""
-                  } gap-[.8rem] overflow-y-hidden scrollbar-hide`}
+                  } gap-[.8rem] overflow-y-hidden `}
                 >
                   {selectedElementInDropdown &&
                   selectedElementInDropdown?.length > 0 ? (
@@ -265,7 +265,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = ({
                       </div>
                     ))
                   ) : (
-                    <span className="text-black/40 text-[14px] leading-[24px] font-[400] font-poppins">
+                    <span className="text-black text-[14px] leading-[24px] font-[400] font-poppins">
                       {placeholder || `Sélectionner`}
                     </span>
                   )}

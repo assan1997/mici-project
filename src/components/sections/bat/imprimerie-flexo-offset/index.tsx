@@ -545,7 +545,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({}) => {
             />
           ) : null}
         </div>
-        <div className="relative w-full overflow-x-auto scrollbar-hide bg-white">
+        <div className="relative w-full overflow-x-auto  bg-white">
           {!allBats ? (
             <TableSkeleton head={tableHead} />
           ) : currentDatas.length > 0 ? (

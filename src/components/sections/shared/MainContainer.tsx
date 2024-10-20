@@ -17,6 +17,7 @@ import { Nav, SubNav, useSideBar } from "@/contexts/sidebar.context";
 import { useData } from "@/contexts/data.context";
 import { logout } from "@/services/auth";
 import { ProfillSkeleton } from "@/components/ui/loader/Skeleton";
+import { Spinner } from "@/components/ui/loader/spinner";
 
 const MainContainer: FC<{ children: any; title: string }> = ({
   children,
@@ -30,17 +31,27 @@ const MainContainer: FC<{ children: any; title: string }> = ({
   }, [pathName]);
 
   const { setResize, resize } = useSideBar();
+
+  const { user } = useData();
   return (
-    <div className="w-full h-screen scrollbar-hide flex flex-row bg-white">
-      <SideBar resize={resize} />
-      <Content
-        resize={resize}
-        title={title}
-        subTitle={subTitle}
-        setResize={setResize}
-      >
-        {children}
-      </Content>
+    <div className="w-full h-screen  flex flex-row">
+      {!user ? (
+        <div className="h-full w-full flex items-center justify-center">
+          <Spinner color={"#000"} size={50} />
+        </div>
+      ) : (
+        <>
+          <SideBar resize={resize} />
+          <Content
+            resize={resize}
+            title={title}
+            subTitle={subTitle}
+            setResize={setResize}
+          >
+            {children}
+          </Content>
+        </>
+      )}
     </div>
   );
 };
@@ -70,7 +81,7 @@ const SideBar: FC<{ resize: boolean }> = ({ resize }) => {
       >
         <div
           className={`${
-            resize ? "w-[80px] h-[80px]" : "w-[100px] h-[100px]"
+            resize ? "w-[70px] h-[70px]" : "w-[100px] h-[100px]"
           } transition-all duration-300 rounded-full flex items-center justify-center relative`}
         >
           <Image
@@ -201,11 +212,6 @@ const TopBar: FC<{
   const { user, sections } = useData();
   const Router = useRouter();
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
-
-  const section = useMemo(() => {
-    return sections.find((sec) => sec.id === user?.role_id);
-  }, [user, sections]);
-
   const pathName = usePathname();
 
   const inDetailsPage: boolean = useMemo(() => {
@@ -260,7 +266,23 @@ const TopBar: FC<{
         ) : (
           <div className="w-[195px] h-[50px] bg-white border flex items-center px-[10px] gap-x-[10px] justify-between rounded-full">
             <div className="flex items-center gap-x-2">
-              <div className="w-[34px] h-[34px] bg-gray-300 rounded-full"></div>
+              <div className="w-[34px] h-[34px] bg-gray-300 flex items-center justify-center rounded-full">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 20C5.33579 17.5226 8.50702 16 12 16C15.493 16 18.6642 17.5226 21 20M16.5 7.5C16.5 9.98528 14.4853 12 12 12C9.51472 12 7.5 9.98528 7.5 7.5C7.5 5.01472 9.51472 3 12 3C14.4853 3 16.5 5.01472 16.5 7.5Z"
+                    stroke="black"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
               <div className="flex flex-col">
                 <span className="text-[#292D32] text-[14px] font-poppins">
                   {user?.name}
@@ -348,7 +370,7 @@ const Content: FC<{
     <div
       className={`h-full  ${
         resize ? "w-[calc(100%-108px)]" : "w-[calc(100%-240px)]"
-      } bg-gray-100 transition-all duration-300`}
+      } bg-slate-100 transition-all duration-300`}
     >
       <TopBar
         setResize={setResize}
@@ -356,7 +378,7 @@ const Content: FC<{
         subTitle={subTitle}
         title={title}
       />
-      <div className="content-container px-[20px] overflow-auto scrollbar-hide">
+      <div className="content-container px-[20px] overflow-auto ">
         {children}
       </div>
     </div>

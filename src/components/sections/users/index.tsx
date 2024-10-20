@@ -63,11 +63,12 @@ export const Users: FC<{}> = ({}) => {
     "Avatar",
     "Nom",
     "Email",
+    "Performance global",
+    "Departements",
+    "Sections",
     "Date de création",
     "Date de mise à jour",
     // "Role",
-    // "Departements",
-    // "Sections",
     "Options",
   ];
 
@@ -214,6 +215,7 @@ export const Users: FC<{}> = ({}) => {
     const user: User | undefined = users?.find(
       (user: User) => user.id === currentEntry
     );
+    console.log("user", user);
     if (user) {
       editionForm.setValue("name", user?.name as string);
       editionForm.setValue("email", user?.email as string);
@@ -247,7 +249,23 @@ export const Users: FC<{}> = ({}) => {
 
   const renderAvatar = (avatar: string) => {
     return (
-      <div className="w-[30px] h-[30px] bg-slate-200 rounded-full relative"></div>
+      <div className="w-[30px] h-[30px] bg-slate-200 flex items-center justify-center rounded-full relative">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 20C5.33579 17.5226 8.50702 16 12 16C15.493 16 18.6642 17.5226 21 20M16.5 7.5C16.5 9.98528 14.4853 12 12 12C9.51472 12 7.5 9.98528 7.5 7.5C7.5 5.01472 9.51472 3 12 3C14.4853 3 16.5 5.01472 16.5 7.5Z"
+            stroke="black"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
     );
   };
 
@@ -359,7 +377,7 @@ export const Users: FC<{}> = ({}) => {
             filterHandler={setAllUsers}
           />
         </div>
-        <div className="relative w-full bg-white">
+        <div className="relative w-full overflow-auto bg-white">
           {allUsers ? (
             <table className="w-full mb-[15rem] relative">
               <thead className="bg-white/50 transition">
@@ -369,7 +387,7 @@ export const Users: FC<{}> = ({}) => {
                       key={index}
                       className={`font-poppins  ${
                         head === "options" ? "w-auto" : "min-w-[150px]"
-                      } text-[13px] py-[10px] font-medium  ${
+                      } text-[14px] py-[10px] font-medium  ${
                         index > 0 && index < tableHead.length
                       }  text-[#000000]`}
                     >
@@ -386,7 +404,7 @@ export const Users: FC<{}> = ({}) => {
                   ))}
                 </tr>
               </thead>
-              <tbody className="bg-white/10">
+              <tbody className="bg-white">
                 {allUsers?.map((row, index) => (
                   <tr
                     key={index}
@@ -394,23 +412,56 @@ export const Users: FC<{}> = ({}) => {
                   >
                     <td
                       onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
                     >
                       {renderAvatar(row?.avatar)}
                     </td>
                     <td
                       onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
                     >
                       {row.name}
                     </td>
                     <td
                       onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
                     >
                       {row?.email}
                     </td>
-                    <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                    <td
+                      onClick={() => goToDetail(row?.id)}
+                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                    >
+                      {row?.performance?.global_performance} {"%"}
+                    </td>
+                    <td
+                      onClick={() => goToDetail(row?.id)}
+                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                    >
+                      {row?.sections?.map((section: any) => (
+                        <>
+                          <span
+                            className="inline-block my-[4px]"
+                            key={section?.id}
+                          >
+                            {section?.name}
+                          </span>
+                          <br />
+                        </>
+                      ))}{" "}
+                    </td>
+                    <td
+                      onClick={() => goToDetail(row?.id)}
+                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                    >
+                      {row?.departments?.map((department: any) => (
+                        <>
+                          <span key={department?.id}>{department?.name}</span>{" "}
+                          <br />
+                        </>
+                      ))}
+                    </td>
+                    <td className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]">
                       {formatTime(
                         new Date(row?.["created_at"]).getTime(),
                         "d:mo:y",
@@ -419,7 +470,7 @@ export const Users: FC<{}> = ({}) => {
                     </td>
                     <td
                       onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
                     >
                       {formatTime(
                         new Date(row?.["updated_at"]).getTime(),
@@ -427,7 +478,7 @@ export const Users: FC<{}> = ({}) => {
                         "short"
                       )}
                     </td>
-                    {/* <td className="text-[#636363] w-auto px-[10px] text-start font-poppins text-[13px]">
+                    {/* <td className="text-[#636363] w-auto px-[10px] text-start font-poppins text-[14px]">
                       <div className="w-full h-full flex items-center justify-end">
                         <div ref={box}>
                           <MenuDropdown
@@ -635,14 +686,14 @@ export const Users: FC<{}> = ({}) => {
           ) : (
             <TableSkeleton head={tableHead} />
           )}
-
-          {currentDatas.length > 0 ? (
-            <Pagination
-              datas={currentDatas ? currentDatas : []}
-              listHandler={setAllUsers}
-            />
-          ) : null}
         </div>
+
+        {currentDatas.length > 0 ? (
+          <Pagination
+            datas={currentDatas ? currentDatas : []}
+            listHandler={setAllUsers}
+          />
+        ) : null}
       </motion.div>
       {/* CREATION MODAL */}
       <BaseModal open={openCreationModal} classname={""}>
