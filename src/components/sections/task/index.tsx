@@ -627,7 +627,7 @@ export const Task: FC<{}> = ({}) => {
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[18px] font-poppins text-[#060606]">
-                  Attribuer à quelqu'un
+                  {`Attribuer à quelqu'un`}
                 </span>
               </div>
               <button
