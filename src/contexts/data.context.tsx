@@ -327,7 +327,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   };
   useEffect(() => {
     getUser();
-  }, [getUser]);
+  }, []);
 
   const getDepartements = async () => {
     const { data, success } = await getAllDepartments();
@@ -338,7 +338,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (departments.length > 0) return;
     getDepartements();
-  }, [user, getDepartements]);
+  }, [user]);
 
   const getSections = async () => {
     const { data, success } = await getAllSections();
@@ -350,7 +350,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (sections.length > 0) return;
     getSections();
-  }, [user, getSections]);
+  }, [user]);
 
   const getUsers = async () => {
     const { data, success } = await getAllUsers();
@@ -362,7 +362,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (users) return;
     getUsers();
-  }, [user, getUsers]);
+  }, [user]);
 
   const getClients = async () => {
     const { data, success } = await getAllClients();
@@ -370,10 +370,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     dispatchClients(data);
   };
 
-  // useEffect(() => {
-  //   if (clients) return;
-  //   getClients();
-  // }, [user, getClients]);
+  useEffect(() => {
+    if (clients) return;
+    getClients();
+  }, [user]);
 
   const getAllShapes = async () => {
     let { data, success } = await getAllOffsetShapes();
@@ -409,7 +409,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     if (users && users?.length > 0) {
       getFolders();
     }
-  }, [users, getFolders]);
+  }, [users]);
 
   const getBats = async () => {
     let { data, success } = await getAllBats();
@@ -428,7 +428,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     if (users && users?.length > 0 && departments && departments.length > 0) {
       getBats();
     }
-  }, [users, departments, getBats]);
+  }, [users, departments]);
 
   const getAllTasks = async () => {
     let { data } = await getTasks();

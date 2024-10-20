@@ -1,5 +1,5 @@
 "use client";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, Fragment, useEffect, useMemo, useRef, useState } from "react";
 import BaseDropdown from "@/components/ui/dropdown/BaseDropdown";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import Link from "next/link";
@@ -57,8 +57,12 @@ export const Users: FC<{}> = ({}) => {
     dispatchUsers,
     refreshTaskData,
     onRefreshingUsers,
-    loadUsers,
+    getUsers,
   } = useData();
+
+  useEffect(() => {
+    getUsers();
+  }, []);
   const tableHead = [
     "Avatar",
     "Nom",
@@ -260,9 +264,9 @@ export const Users: FC<{}> = ({}) => {
           <path
             d="M3 20C5.33579 17.5226 8.50702 16 12 16C15.493 16 18.6642 17.5226 21 20M16.5 7.5C16.5 9.98528 14.4853 12 12 12C9.51472 12 7.5 9.98528 7.5 7.5C7.5 5.01472 9.51472 3 12 3C14.4853 3 16.5 5.01472 16.5 7.5Z"
             stroke="black"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       </div>
@@ -359,9 +363,9 @@ export const Users: FC<{}> = ({}) => {
                 <path
                   d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15"
                   stroke="black"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
             )}
@@ -439,15 +443,12 @@ export const Users: FC<{}> = ({}) => {
                       className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
                     >
                       {row?.sections?.map((section: any) => (
-                        <>
-                          <span
-                            className="inline-block my-[4px]"
-                            key={section?.id}
-                          >
+                        <Fragment key={section?.id}>
+                          <span className="inline-block my-[4px]">
                             {section?.name}
                           </span>
                           <br />
-                        </>
+                        </Fragment>
                       ))}{" "}
                     </td>
                     <td
@@ -455,10 +456,9 @@ export const Users: FC<{}> = ({}) => {
                       className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
                     >
                       {row?.departments?.map((department: any) => (
-                        <>
-                          <span key={department?.id}>{department?.name}</span>{" "}
-                          <br />
-                        </>
+                        <Fragment key={department?.id}>
+                          <span>{department?.name}</span> <br />
+                        </Fragment>
                       ))}
                     </td>
                     <td className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]">
