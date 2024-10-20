@@ -37,13 +37,15 @@ export async function getTasks() {
   }
 }
 
-export async function endTask(taskId: number, reason: string) {
-  console.log("taskId", taskId);
+export async function endTask(
+  taskId: number,
+  entry: { reason: string; note: string; user_id: number }
+) {
   const token = await getToken();
   try {
     const { data } = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/tasks/${taskId}/complete`,
-      { reason },
+      { ...entry },
       {
         headers: {
           accept: "application/json",
