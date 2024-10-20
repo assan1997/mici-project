@@ -115,6 +115,7 @@ export interface TaskInterface {
 }
 
 export interface User {
+  slice(arg0: number, arg1: number): unknown;
   id: number;
   role_id: number;
   name: string;

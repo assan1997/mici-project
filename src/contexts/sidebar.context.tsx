@@ -20,11 +20,11 @@ import {
   GreetingIcon,
   PrintIcon2,
   TaskIcon,
+  Home,
 } from "../components/svg";
 import uniqid from "uniqid";
 import { usePathname } from "next/navigation";
 import { useData } from "./data.context";
-
 export type Nav = {
   link: string;
   slug: string;
@@ -79,9 +79,17 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
   const navDatas = useMemo(
     () => [
       {
+        link: "/home",
+        slug: "Accueil",
+        active: false,
+        id: "nav-10",
+        icon: (color: string) => <Home color={color} size={22} />,
+      },
+      {
         link: "/folder",
         slug: "Dossiers",
         active: false,
+        disable: true,
         id: "nav-0",
         icon: (color: string) => <FolderIcon color={color} size={22} />,
       },
@@ -89,6 +97,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
         link: "/bat",
         slug: "B.A.T",
         active: false,
+        disable: true,
         id: "nav-1",
         icon: (color: string) => <PaintIcon color={color} size={24} />,
       },
@@ -103,6 +112,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
         link: "/task",
         slug: "Tâches",
         active: false,
+        disable: true,
         id: "nav-3",
         icon: (color: string) => <TaskIcon color={color} size={20} />,
       },
@@ -171,6 +181,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
     if (!roleAdmin)
       setNav(
         navDatas
+          .filter((nav) => !nav.disable)
           .filter((nav) => !["nav-4", "nav-5"].includes(nav.id))
           .map((nav: Nav) =>
             pathName.includes(nav.link)
@@ -180,11 +191,13 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       );
     else
       setNav(
-        navDatas.map((nav: Nav) =>
-          pathName.includes(nav.link)
-            ? { ...nav, active: true }
-            : { ...nav, active: false }
-        )
+        navDatas
+          .filter((nav) => !nav.disable)
+          .map((nav: Nav) =>
+            pathName.includes(nav.link)
+              ? { ...nav, active: true }
+              : { ...nav, active: false }
+          )
       );
   }, [roleAdmin, pathName]);
 

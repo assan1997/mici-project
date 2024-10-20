@@ -235,7 +235,6 @@ export const Task: FC<{}> = ({}) => {
             : task
         )
       );
-      console.log("closeTaskData", closeTaskData);
     } else {
       showToast({
         type: "danger",
@@ -815,7 +814,7 @@ export const Task: FC<{}> = ({}) => {
                         </td>
                         <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
                           <div
-                            className={`flex w-fit justify-center py-[3px] px-[10px] rounded-full`}
+                            className={`flex w-fit justify-center py-[3px] rounded-full`}
                           >
                             {row?.description}
                           </div>
