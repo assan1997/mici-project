@@ -89,6 +89,7 @@ export const Task: FC<{}> = ({}) => {
 
   const endTaskShema = z.object({
     reason: z.string(),
+    note: z.string()
   });
   const form = useForm({ schema: shapeSchema });
   const standByform = useForm({ schema: shapeStandBySchema });
@@ -96,6 +97,7 @@ export const Task: FC<{}> = ({}) => {
   const assignForm = useForm({ schema: shapeAssignSchema });
   const tableHead = [
     "Statut",
+    "Référence",
     "Description",
     "Date & Heure de création",
     "Date & Heure de mise à jour",
@@ -256,6 +258,7 @@ export const Task: FC<{}> = ({}) => {
       (shape: TaskInterface) => shape.id === currentEntry
     );
     // setObservationList(shape?.observations?.map((observation) => ({ id: observation.id, text: observation.observation })))
+    console.log("shape", shape);
     return shape;
   }, [currentEntry]);
 
@@ -713,82 +716,6 @@ export const Task: FC<{}> = ({}) => {
                           }`}
                         >
                           {head}
-                          {![
-                            "Options",
-                            "Statut",
-                            "Date & Heure de création",
-                            "Date & Heure de mise à jour",
-                          ].includes(head) ? (
-                            <div
-                              className={`${
-                                sortedBy === head.toLowerCase()
-                                  ? "bg-blue-200"
-                                  : ""
-                              } cursor-pointer shrink-0 p-[4px] rounded-lg`}
-                            >
-                              <svg
-                                version="1.1"
-                                id="fi_690342"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width={15}
-                                height={15}
-                                viewBox="0 0 512 512"
-                              >
-                                <g>
-                                  <g>
-                                    <path
-                                      fill={
-                                        sortedBy === head.toLowerCase()
-                                          ? "#3b82f6"
-                                          : "#64748b"
-                                      }
-                                      d="M106.23,0H75.86L1.496,212.467h42.273l11.172-31.92h71.37l11.012,31.92h42.207L106.23,0z M68.906,140.647l21.976-62.791 l21.664,62.791H68.906z"
-                                    ></path>
-                                  </g>
-                                </g>
-                                <g>
-                                  <g>
-                                    <polygon
-                                      fill={
-                                        sortedBy === head.toLowerCase()
-                                          ? "#3b82f6"
-                                          : "#64748b"
-                                      }
-                                      points="483.288,359.814 407.478,435.624 407.478,0 367.578,0 367.578,435.624 291.768,359.814 263.555,388.027 387.528,512 511.501,388.027 		"
-                                    ></polygon>
-                                  </g>
-                                </g>
-                                <g>
-                                  <g>
-                                    <polygon
-                                      fill={
-                                        sortedBy === head.toLowerCase()
-                                          ? "#3b82f6"
-                                          : "#64748b"
-                                      }
-                                      points="182.043,299.247 0.499,299.247 0.499,339.147 122.039,339.147 0.499,480.372 0.499,511.717 180.048,511.717 
-			180.048,471.817 60.503,471.817 182.043,330.592 		"
-                                    ></polygon>
-                                  </g>
-                                </g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                                <g></g>
-                              </svg>
-                            </div>
-                          ) : null}
                         </div>
                       </th>
                     ))}
@@ -811,6 +738,9 @@ export const Task: FC<{}> = ({}) => {
                           >
                             {!row.completed_at ? "En cours" : "Terminé"}
                           </div>
+                        </td>
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                          {row?.assignable?.reference}
                         </td>
                         <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
                           <div
@@ -958,7 +888,7 @@ export const Task: FC<{}> = ({}) => {
                                     >
                                       {/* <DeleteShapeIcon color={""} /> */}
                                       <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        Terminer
+                                        Assigner à un autre utilisateur
                                       </span>
                                     </button>
                                     {/* <button
@@ -1636,12 +1566,55 @@ export const Task: FC<{}> = ({}) => {
             </div>
 
             <div className="w-full p-[20px]">
+              <ComboboxMultiSelect
+                label={"Utilisateur"}
+                placeholder="Selectionnez un utilisateur"
+                className="w-full"
+                icon={
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                      stroke="black"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                }
+                id={`utilisateur`}
+                options={
+                  clients?.map((client: Client) => ({
+                    value: client.id as unknown as string,
+                    label: client.name,
+                  })) as any
+                }
+                error={undefined}
+                isUniq={true}
+                selectedElementInDropdown={client}
+                setSelectedUniqElementInDropdown={setClient}
+                borderColor="border-grayscale-200"
+              />
+
               <BaseTextArea
                 label="Raison"
                 id="reason"
                 placeholder={`Donnez un descriptif`}
                 type="text"
                 {...endTaskForm.register("reason")}
+              />
+
+              <BaseTextArea
+                label="Note"
+                id="note"
+                placeholder={`Laisser une note`}
+                type="text"
+                {...endTaskForm.register("note")}
               />
             </div>
 

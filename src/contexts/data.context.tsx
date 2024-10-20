@@ -106,6 +106,7 @@ export interface LoadUsers {
 
 export interface TaskInterface {
   completed_at: string | null;
+  assignable: any;
   created_at: string;
   description: string;
   id: number;
