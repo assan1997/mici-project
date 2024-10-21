@@ -423,12 +423,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     );
   };
 
-  useEffect(() => {
-    if (bats) return;
-    if (users && users?.length > 0 && departments && departments.length > 0) {
-      getBats();
-    }
-  }, [users, departments]);
+  // useEffect(() => {
+  //   if (bats) return;
+  //   if (users && users?.length > 0 && departments && departments.length > 0) {
+  //     getBats();
+  //   }
+  // }, [users, departments]);
 
   const getAllTasks = async () => {
     let { data } = await getTasks();
@@ -499,8 +499,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const refreshUsersData = async () => {
     setOnRefreshingUsers(true);
     let { data, success } = await getAllUsers();
-    dispatchTasks(data);
-    setOnRefreshingUsers(false);
+    dispatchUsers(data);
     if (success) {
       showToast({
         type: "success",
@@ -514,6 +513,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         position: "top-center",
       });
     }
+    setOnRefreshingUsers(false);
   };
 
   const refreshClientsData = async () => {

@@ -1,5 +1,5 @@
 "use client";
-import { FC, useMemo, useState, useEffect } from "react";
+import { FC, useMemo, useState, useEffect, useCallback } from "react";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import { CloseIcon, OptionsIcon } from "@/components/svg";
 import { BaseTextArea } from "@/components/ui/forms/BaseInput";
@@ -21,6 +21,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { Filter } from "@/components/ui/filter";
 
 import { endTask } from "@/services/task";
+import { createRoot } from "react-dom/client";
 
 export const Task: FC<{}> = ({}) => {
   const {
@@ -43,6 +44,10 @@ export const Task: FC<{}> = ({}) => {
   const tableHead = [
     "Statut",
     "Référence",
+    "Code",
+    "Dimension LxLxH",
+    "Dimensions Carré",
+    "Dimensions Plaque",
     "Description",
     "Date & Heure de création",
     "Date & Heure de mise à jour",
@@ -118,6 +123,10 @@ export const Task: FC<{}> = ({}) => {
     );
     return shape;
   }, [currentEntry]);
+
+  useEffect(() => {
+    console.log("taskInEntry", taskInEntry);
+  }, [taskInEntry]);
 
   //   useState<boolean>(false);
   // const onSubmitStandBy = async (data: z.infer<typeof shapeStandBySchema>) => {
@@ -338,6 +347,53 @@ export const Task: FC<{}> = ({}) => {
     getAllTasks();
   }, []);
 
+  const PopOverDropdown = useCallback(
+    () => (
+      <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+        <div className="flex flex-col items-center w-full">
+          <button
+            type="button"
+            onClick={() => {
+              setDelationModal(true);
+            }}
+            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+          >
+            {/* <DeleteShapeIcon color={""} /> */}
+            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+              Assigner à un autre utilisateur
+            </span>
+          </button>
+          {/* <button
+          type="button"
+          onClick={() => {
+            setOpenObservationModal(true);
+          }}
+          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+        >
+          <DeleteShapeIcon color={""} />
+          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+            Faire une observation
+          </span>
+        </button> */}
+
+          {/* <button
+          type="button"
+          onClick={() => {
+            setDelationModal(true);
+          }}
+          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+        >
+          <DeleteShapeIcon color={""} />
+          <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+            Supprimer la forme
+          </span>
+        </button> */}
+        </div>
+      </div>
+    ),
+    [taskInEntry?.id]
+  );
+
   return (
     <div className="w-full h-full">
       <motion.div
@@ -452,6 +508,33 @@ export const Task: FC<{}> = ({}) => {
                     return (
                       <tr
                         key={index}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          document.getElementById("dropdown")?.remove();
+                          const dropdown = document.createElement("div");
+                          dropdown.id = "dropdown";
+                          dropdown.className =
+                            "w-[200px] h-auto absolute z-[500]";
+                          const target = e.target as HTMLElement;
+                          target.appendChild(dropdown);
+                          const root = createRoot(dropdown);
+                          setCurrentEntry(row.id);
+                          root.render(<PopOverDropdown />);
+                          const handleClickOutside = (event: any) => {
+                            if (!dropdown.contains(event.target)) {
+                              root.unmount();
+                              dropdown.remove();
+                              document.removeEventListener(
+                                "click",
+                                handleClickOutside
+                              );
+                            }
+                          };
+                          document.addEventListener(
+                            "click",
+                            handleClickOutside
+                          );
+                        }}
                         className={`cursor-pointer border-b transition-all duration hover:bg-gray-100 checked:hover:bg-gray-100`}
                       >
                         <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
@@ -468,6 +551,21 @@ export const Task: FC<{}> = ({}) => {
                         <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
                           {row?.assignable?.reference}
                         </td>
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                          {row?.assignable?.code}
+                        </td>
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                          {row?.assignable?.dim_lx_lh}
+                        </td>
+
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                          {row?.assignable?.dim_square}
+                        </td>
+
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                          {row?.assignable?.dim_plate}
+                        </td>
+
                         <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
                           <div
                             className={`flex w-fit justify-center py-[3px] rounded-full`}

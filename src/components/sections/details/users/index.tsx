@@ -64,7 +64,7 @@ export const Details = () => {
     (async () => {
       const { data } = await getUser(id);
       setData(data);
-      setPerformance(data.performance);
+      setPerformance(data?.performance);
     })();
   }, [id]);
 

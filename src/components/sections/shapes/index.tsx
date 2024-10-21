@@ -37,7 +37,6 @@ import { Filter } from "@/components/ui/filter";
 import { Export } from "@/components/ui/export";
 import { useRouter } from "next/navigation";
 import { deleteShape } from "@/services/shapes";
-import ReactDOMServer from "react-dom/server";
 import { createRoot } from "react-dom/client";
 
 export const Shape: FC<{}> = ({}) => {
@@ -111,10 +110,17 @@ export const Shape: FC<{}> = ({}) => {
     form.setValue("paper_type", "");
     form.setValue("pose_number", "");
     form.setValue("reference", "");
+
+    standByform.setValue("reason", "");
+    observationForm.setValue("observation", "");
+
+    assignForm.setValue("description", "");
+    assignForm.setValue("user_id", 0);
     setCurrentEntry(undefined);
     setCommercial([]);
     setDepartment([]);
     setClient([]);
+    setAssignUser([]);
   };
   const { box, handleClick } = useActiveState();
   const [offsetShapes, setOffsetShapes] = useState<OffsetShape[] | undefined>(
@@ -213,6 +219,7 @@ export const Shape: FC<{}> = ({}) => {
   const [department, setDepartment] = useState<ComboSelect[]>([]);
   const [currentEntry, setCurrentEntry] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
+
   const [currentDatas, setCurrentDatas] = useState<any[]>(
     allOffsetShapes ? allOffsetShapes : []
   );
@@ -1562,7 +1569,6 @@ export const Shape: FC<{}> = ({}) => {
                           target.appendChild(dropdown);
                           const root = createRoot(dropdown);
                           setCurrentEntry(row.id);
-
                           root.render(<PopOverDropdown />);
                           const handleClickOutside = (event: any) => {
                             if (!dropdown.contains(event.target)) {
@@ -1574,7 +1580,6 @@ export const Shape: FC<{}> = ({}) => {
                               );
                             }
                           };
-
                           document.addEventListener(
                             "click",
                             handleClickOutside

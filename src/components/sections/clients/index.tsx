@@ -1,5 +1,13 @@
 "use client";
-import { FC, Fragment, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FC,
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import BaseDropdown from "@/components/ui/dropdown/BaseDropdown";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import Link from "next/link";
@@ -39,6 +47,7 @@ import { Filter } from "@/components/ui/filter";
 import { Pagination } from "@/components/ui/pagination";
 
 import { useRouter } from "next/navigation";
+import { createRoot } from "react-dom/client";
 export const Clients: FC<{}> = ({}) => {
   const {
     users,
@@ -125,6 +134,10 @@ export const Clients: FC<{}> = ({}) => {
         createdClient.departments = allDepartments.filter(
           (dep) => departments.includes(dep.id) && dep
         );
+
+        createdClient.sections = allDepartments.filter(
+          (dep) => departments.includes(dep.id) && dep
+        );
         createdClient.user = users?.find((use) => use.id === user);
         return [{ ...createdClient }, ...(tmp as [])];
       });
@@ -165,7 +178,6 @@ export const Clients: FC<{}> = ({}) => {
         JSON.stringify(clientInEntry?.departments?.map((dep) => dep.id))
     )
       delete entry.department_ids;
-
     const { data: updatedClient, success } = await updateClient(
       currentEntry as number,
       entry
@@ -177,6 +189,7 @@ export const Clients: FC<{}> = ({}) => {
         type: "success",
         position: "top-center",
       });
+
       dispatchClients((clients): Client[] => {
         updatedClient.departments = allDepartments.filter(
           (dep) => departments.includes(dep.id) && dep
@@ -356,6 +369,101 @@ export const Clients: FC<{}> = ({}) => {
     Router.push(`/workspace/details/clients/${id}`);
   };
 
+  const PopOverDropdown = useCallback(
+    () => (
+      <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+        <div className="flex flex-col items-center w-full">
+          <button
+            type="button"
+            onClick={() => setOpenEditionModal(true)}
+            className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+          >
+            {/* <UpdateIcon color={""} /> */}
+            <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+              Modifier les entrées
+            </span>
+          </button>
+
+          {/* <Export
+                                      title="Télécharger le pdf"
+                                      type="pdf"
+                                      entry={{
+                                        headers: [],
+                                        data: row,
+                                      }}
+                                    /> */}
+
+          <button
+            type="button"
+            onClick={() => {
+              goToDetail(clientInEntry?.id);
+            }}
+            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+          >
+            {/* <DetailsIcon color={""} /> */}
+            <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+              Voir les détails
+            </span>
+          </button>
+          {/* <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenLockModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <DeleteShapeIcon color={""} />
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        {row.status_id === 3
+                                          ? "Débloquer"
+                                          : "Bloquer"}
+                                      </span>
+                                    </button> */}
+
+          {/* <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenStandByModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <DeleteShapeIcon color={""} />
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        {row.status_id === 2
+                                          ? "Enlever en standby"
+                                          : "Mettre en standby"}
+                                      </span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEndModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <DeleteShapeIcon color={""} />
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        Terminer
+                                      </span>
+                                    </button> */}
+
+          <button
+            type="button"
+            onClick={() => {
+              setDelationModal(true);
+            }}
+            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+          >
+            <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+              Supprimer
+            </span>
+          </button>
+        </div>
+      </div>
+    ),
+    [clientInEntry?.id]
+  );
+
   return (
     <div className="w-full h-full">
       <div className="w-full flex py-[10px] justify-end">
@@ -469,6 +577,33 @@ export const Clients: FC<{}> = ({}) => {
                     return (
                       <tr
                         key={index}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          document.getElementById("dropdown")?.remove();
+                          const dropdown = document.createElement("div");
+                          dropdown.id = "dropdown";
+                          dropdown.className =
+                            "w-[200px] h-auto absolute z-[500]";
+                          const target = e.target as HTMLElement;
+                          target.appendChild(dropdown);
+                          const root = createRoot(dropdown);
+                          setCurrentEntry(row.id);
+                          root.render(<PopOverDropdown />);
+                          const handleClickOutside = (event: any) => {
+                            if (!dropdown.contains(event.target)) {
+                              root.unmount();
+                              dropdown.remove();
+                              document.removeEventListener(
+                                "click",
+                                handleClickOutside
+                              );
+                            }
+                          };
+                          document.addEventListener(
+                            "click",
+                            handleClickOutside
+                          );
+                        }}
                         className={`cursor-pointer border-b transition-all duration hover:bg-gray-100 checked:hover:bg-gray-100`}
                       >
                         <td

@@ -1,5 +1,13 @@
 "use client";
-import { FC, Fragment, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FC,
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import BaseDropdown from "@/components/ui/dropdown/BaseDropdown";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import Link from "next/link";
@@ -32,6 +40,8 @@ import { motion } from "framer-motion";
 import { Filter } from "@/components/ui/filter";
 import { Pagination } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
+import { CircularProgress } from "@nextui-org/react";
+import { createRoot } from "react-dom/client";
 export const Users: FC<{}> = ({}) => {
   const userSchema = z.object({
     name: z.string(),
@@ -55,10 +65,14 @@ export const Users: FC<{}> = ({}) => {
     sections: allSections,
     departments: allDepartments,
     dispatchUsers,
-    refreshTaskData,
+    refreshUsersData,
     onRefreshingUsers,
     getUsers,
   } = useData();
+
+  useEffect(() => {
+    console.log("onRefreshingUsers", onRefreshingUsers);
+  }, [onRefreshingUsers]);
 
   useEffect(() => {
     getUsers();
@@ -109,6 +123,8 @@ export const Users: FC<{}> = ({}) => {
     name = name.trim();
     email = email.trim();
     password = password.trim();
+    console.log("departments", departments);
+    console.log("sections", sections);
     const { data: createdUser, success } = await createUser({
       name,
       department_ids: departments,
@@ -126,12 +142,11 @@ export const Users: FC<{}> = ({}) => {
         createdUser.departments = allDepartments.filter(
           (dep) => departments.includes(dep.id) && dep
         );
-        createdUser.sections = allDepartments.filter(
+        createdUser.sections = allSections.filter(
           (sec) => sections.includes(sec.id) && sec
         );
-        tmp?.unshift(createdUser);
 
-        if (tmp) return [...tmp];
+        return [{ ...createdUser }, ...(tmp as unknown as [])];
       });
       reset();
       setCreationModal(false);
@@ -188,7 +203,7 @@ export const Users: FC<{}> = ({}) => {
         updatedUser.departments = allDepartments.filter(
           (dep) => departments.includes(dep.id) && dep
         );
-        updatedUser.sections = allDepartments.filter(
+        updatedUser.sections = allSections.filter(
           (sec) => sections.includes(sec.id) && sec
         );
         return users?.map((user: User) =>
@@ -242,10 +257,19 @@ export const Users: FC<{}> = ({}) => {
       "departments",
       departments?.map((department) => department.value as unknown as number)
     );
+    form.setValue(
+      "departments",
+      departments?.map((department) => department.value as unknown as number)
+    );
   }, [departments]);
 
   useEffect(() => {
     editionForm.setValue(
+      "sections",
+      sections?.map((section) => section.value as unknown as number)
+    );
+
+    form.setValue(
       "sections",
       sections?.map((section) => section.value as unknown as number)
     );
@@ -308,6 +332,131 @@ export const Users: FC<{}> = ({}) => {
     Router.push(`/workspace/details/users/${id}`);
   };
 
+  const PopOverDropdown = useCallback(
+    () => (
+      <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+        <div className="flex flex-col items-center w-full">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenEditionModal(true);
+            }}
+            className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+          >
+            {/* <UpdateIcon color={""} /> */}
+            <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+              Modifier les entrées
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              goToDetail(userInEntry?.id);
+            }}
+            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+          >
+            {/* <DetailsIcon color={""} /> */}
+            <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+              Voir les détails
+            </span>
+          </button>
+          {/* <button
+          type="button"
+          onClick={() => {
+            setOpenAssignToUserModal(true);
+          }}
+          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+        >
+         
+          <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+            Assigner à un utilisateur
+          </span>
+        </button> */}
+          {/* <button
+              type="button"
+              onClick={() => {
+                setOpenLogsModal(true);
+              }}
+              className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+            >
+              <LogIcon color={""} />
+              <span className="text-[14px]  text-grayscale-900 font-medium font-poppins leading-[20px]">
+                Voir les logs
+              </span>
+            </button> */}
+          {/* <button
+          type="button"
+          onClick={() => {
+            setOpenLockModal(true);
+          }}
+          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+        >
+        
+          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+            {row.status_id === 3
+              ? "Débloquer"
+              : "Bloquer"}
+          </span>
+        </button> */}
+          {/* 
+        <button
+          type="button"
+          onClick={() => {
+            setOpenStandByModal(true);
+          }}
+          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+        >
+        
+          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+            {row.status_id === 2
+              ? "Enlever en standby"
+              : "Mettre en standby"}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setEndModal(true);
+          }}
+          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+        >
+          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+            Terminer
+          </span>
+        </button> */}
+          {/* <button
+              type="button"
+              onClick={() => {
+                setOpenObservationModal(true);
+              }}
+              className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+            >
+              <DeleteShapeIcon color={""} />
+              <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                Faire une observation
+              </span>
+            </button> */}
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDelationModal(true);
+            }}
+            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+          >
+            <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+              {`Supprimer l'utilisateur`}
+            </span>
+          </button>
+        </div>
+      </div>
+    ),
+    [userInEntry?.id]
+  );
+
   return (
     <div className="w-full h-full">
       <div className="w-full flex py-[10px] justify-end">
@@ -347,7 +496,7 @@ export const Users: FC<{}> = ({}) => {
             dataHandler={setCurrentDatas}
             filterHandler={setAllUsers}
             onClick={() => {
-              refreshTaskData();
+              refreshUsersData();
             }}
           >
             {onRefreshingUsers ? (
@@ -412,6 +561,29 @@ export const Users: FC<{}> = ({}) => {
                 {allUsers?.map((row, index) => (
                   <tr
                     key={index}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      document.getElementById("dropdown")?.remove();
+                      const dropdown = document.createElement("div");
+                      dropdown.id = "dropdown";
+                      dropdown.className = "w-[200px] h-auto absolute z-[500]";
+                      const target = e.target as HTMLElement;
+                      target.appendChild(dropdown);
+                      const root = createRoot(dropdown);
+                      setCurrentEntry(row.id);
+                      root.render(<PopOverDropdown />);
+                      const handleClickOutside = (event: any) => {
+                        if (!dropdown.contains(event.target)) {
+                          root.unmount();
+                          dropdown.remove();
+                          document.removeEventListener(
+                            "click",
+                            handleClickOutside
+                          );
+                        }
+                      };
+                      document.addEventListener("click", handleClickOutside);
+                    }}
                     className={`cursor-pointer border-b transition-all duration hover:bg-gray-100 checked:hover:bg-gray-100`}
                   >
                     <td
@@ -436,8 +608,30 @@ export const Users: FC<{}> = ({}) => {
                       onClick={() => goToDetail(row?.id)}
                       className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
                     >
-                      {row?.performance?.global_performance} {"%"}
+                      <CircularProgress
+                        classNames={{
+                          svg: "w-[40px] h-[40px]",
+                          indicator: "green",
+                          track: "gray",
+                          value: "text-sm font-semibold text-black",
+                        }}
+                        value={row?.global_performance || 0}
+                        strokeWidth={2}
+                        showValueLabel={true}
+                      />
                     </td>
+
+                    <td
+                      onClick={() => goToDetail(row?.id)}
+                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                    >
+                      {row?.departments?.map((department: any) => (
+                        <Fragment key={department?.id}>
+                          <span>{department?.name}</span> <br />
+                        </Fragment>
+                      ))}
+                    </td>
+
                     <td
                       onClick={() => goToDetail(row?.id)}
                       className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
@@ -450,16 +644,6 @@ export const Users: FC<{}> = ({}) => {
                           <br />
                         </Fragment>
                       ))}{" "}
-                    </td>
-                    <td
-                      onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
-                    >
-                      {row?.departments?.map((department: any) => (
-                        <Fragment key={department?.id}>
-                          <span>{department?.name}</span> <br />
-                        </Fragment>
-                      ))}
                     </td>
                     <td className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]">
                       {formatTime(
