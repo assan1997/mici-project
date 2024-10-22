@@ -441,6 +441,7 @@ export const Users: FC<{}> = ({}) => {
                         const target = e.target as HTMLElement;
                         target.appendChild(dropdown);
                         const root = createRoot(dropdown);
+                        setCurrentEntry(row?.id);
                         root.render(
                           <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                             <div className="flex flex-col items-center w-full">
