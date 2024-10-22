@@ -39,7 +39,11 @@ export async function getTasks() {
 
 export async function endAndAssignTask(
   taskId: number,
-  entry: { reason: string; note: string; user_id: number }
+  entry: {
+    reason: string;
+    task_description: string;
+    user_assignated_id: number;
+  }
 ) {
   const token = await getToken();
   try {

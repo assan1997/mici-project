@@ -108,8 +108,8 @@ export const Task: FC<{}> = ({}) => {
       taskInEntry?.id as unknown as number,
       {
         reason: data.reason,
-        note: data.note,
-        user_id: data.user,
+        task_description: data.note,
+        user_assignated_id: data.user,
       }
     );
     if (success) {
@@ -135,6 +135,7 @@ export const Task: FC<{}> = ({}) => {
     }
     setLoading(false);
     setEndAndAssignModal(false);
+    reset();
   };
 
   const onSubmitEndTaskForm = async (data: z.infer<typeof endTaskShema>) => {
@@ -165,11 +166,20 @@ export const Task: FC<{}> = ({}) => {
     }
     setLoading(false);
     setEndAndAssignModal(false);
+    reset();
   };
 
   useEffect(() => {
     setCurrentDatas(allTasks ? allTasks : []);
   }, [allTasks]);
+
+  const reset = () => {
+    endAndAssignTaskForm.setValue("note", "");
+    endAndAssignTaskForm.setValue("reason", "");
+    endAndAssignTaskForm.setValue("user", 0);
+    endTaskForm.setValue("reason", "");
+    setUser([]);
+  };
 
   const { showToast } = useToast();
   const taskInEntry = useMemo(() => {
