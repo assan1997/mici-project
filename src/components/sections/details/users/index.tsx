@@ -73,7 +73,6 @@ export const Details = () => {
       if (!data || !selectedYear[0]?.value || !selectedMonth[0]?.value) return;
       const period: string = `${selectedYear[0]?.value}-${selectedMonth[0]?.value}`;
       const { data: perfData } = await getUserPerformance(data.id, period);
-      console.log("perfData", perfData);
       setPerformance(perfData);
     })();
   }, [data, selectedYear, selectedMonth]);

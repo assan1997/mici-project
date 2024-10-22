@@ -130,8 +130,6 @@ export const ImprimerieFlexoOffset: FC<{}> = ({}) => {
     reference = reference.trim();
     details = details.trim();
 
-    console.log("department", department);
-
     const { data: createdBat, success } = await createBat({
       client_id: client,
       department_id: department,
@@ -346,7 +344,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({}) => {
         position: "top-center",
       });
     } else {
-      console.log("error");
+      //console.log("error");
       showToast({
         type: "danger",
         message: "L'opération a échoué",
@@ -428,7 +426,6 @@ export const ImprimerieFlexoOffset: FC<{}> = ({}) => {
       }
     );
     if (success) {
-      console.log("observationData", observationData);
       observationForm.setValue("observation", "");
       setOpenObservationModal(false);
 
@@ -458,7 +455,7 @@ export const ImprimerieFlexoOffset: FC<{}> = ({}) => {
       }
     );
     if (success) {
-      // console.log('assignShape', assignShape);
+      // //console.log('assignShape', assignShape);
       // tmp => {
       //   return tmp?.map((bat) => {
       //     return ({ ...bat, logs: [] })

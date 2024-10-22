@@ -36,7 +36,7 @@ export const Export: FC<{
 
   useEffect(() => {
     const embed = document.getElementsByTagName("iframe");
-    console.log("entry.data?.code", entry.data?.code);
+    //console.log("entry.data?.code", entry.data?.code);
   }, [entry.data?.code]);
 
   if (type === "csv") {

@@ -30,9 +30,7 @@ export default function Home() {
     setLoading(true);
     if (email.length > 0 && password.length > 0) {
       const { success, data } = await login({ email, password });
-      console.log("data", data);
       if (success) {
-        console.log("success", success);
 
         setConnected(true);
         dispatchUser(data);
@@ -41,7 +39,7 @@ export default function Home() {
           type: "success",
           position: "top-center",
         });
-        Router.push("/workspace/shapes");
+        Router.push("/workspace/home");
       } else {
         showToast({
           message:

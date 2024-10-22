@@ -80,7 +80,7 @@ export async function deleteClient(id: number) {
     );
     return { success: true };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -98,10 +98,10 @@ export async function updateClient(id: number, entry: ClientEntry) {
         },
       }
     );
-    console.log("updatedUser", data);
+    //console.log("updatedUser", data);
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }

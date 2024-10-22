@@ -52,7 +52,7 @@ export async function refreshUser() {
 //     return user;
 //   } catch (error: any) {
 //     if (axios.isAxiosError(error)) {
-//       console.log("error", error?.response?.data);
+//       //console.log("error", error?.response?.data);
 //       return { inUsedError: error?.response?.data };
 //     } else return {};
 //   }
@@ -79,7 +79,7 @@ export async function refreshUser() {
 //     );
 //     return { user };
 //   } catch (error) {
-//     console.log("error", error);
+//     //console.log("error", error);
 //     return {};
 //   }
 // };

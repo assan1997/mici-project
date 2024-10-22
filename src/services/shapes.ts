@@ -40,7 +40,7 @@ export async function getShapeDetails(shapeId: string) {
 }
 
 export async function endShape(shapeId: number) {
-  console.log("shapeId", shapeId);
+  //console.log("shapeId", shapeId);
   const token = await getToken();
   try {
     const { data } = await axios.post(
@@ -56,7 +56,7 @@ export async function endShape(shapeId: number) {
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -100,8 +100,8 @@ export async function getAllOffsetShapes() {
 }
 export async function deleteOffsetShape(id: number) {
   const token = await getToken();
-  console.log("id", id);
-  console.log("token", token);
+  //console.log("id", id);
+  //console.log("token", token);
   try {
     const {
       data: { message },
@@ -118,7 +118,7 @@ export async function deleteOffsetShape(id: number) {
     );
     return { success: true };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -136,10 +136,10 @@ export async function updateOffsetShape(id: number, entry: OffsetShapeEntry) {
         },
       }
     );
-    console.log("updatedUser", data);
+    //console.log("updatedUser", data);
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -166,7 +166,7 @@ export async function standbyOffsetShape(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -192,7 +192,7 @@ export async function observationOffsetShape(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -219,7 +219,7 @@ export async function assignToAnUserOffsetShape(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -247,7 +247,7 @@ export async function lockShape(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -275,7 +275,7 @@ export async function resumeShape(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -303,7 +303,7 @@ export async function unlockShape(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -348,8 +348,8 @@ export async function getAllFlexoShapes() {
 }
 export async function deleteShape(id: number) {
   const token = await getToken();
-  console.log("id", id);
-  console.log("token", token);
+  //console.log("id", id);
+  //console.log("token", token);
   try {
     const { data } = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}/delete`,
@@ -364,7 +364,7 @@ export async function deleteShape(id: number) {
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -382,10 +382,10 @@ export async function updateFlexoShape(id: number, entry: OffsetShapeEntry) {
         },
       }
     );
-    console.log("updatedUser", data);
+    //console.log("updatedUser", data);
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -412,7 +412,7 @@ export async function standbyFlexoShape(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -438,7 +438,7 @@ export async function observationFlexoShape(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -464,7 +464,7 @@ export async function assignToAnUserFlexoShape(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }

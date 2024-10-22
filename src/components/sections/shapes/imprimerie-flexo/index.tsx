@@ -205,7 +205,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       });
     }
     setLoading(false);
-    console.log("createdOffsetShape", createdOffsetShape);
+    //console.log("createdOffsetShape", createdOffsetShape);
   };
   interface ComboSelect {
     label: string;
@@ -428,7 +428,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
         position: "top-center",
       });
     } else {
-      console.log("error");
+      //console.log("error");
       showToast({
         type: "danger",
         message: "L'opération a échoué",

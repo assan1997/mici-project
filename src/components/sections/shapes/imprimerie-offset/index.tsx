@@ -202,7 +202,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
       });
     }
     setLoading(false);
-    console.log("createdOffsetShape", createdOffsetShape);
+    //console.log("createdOffsetShape", createdOffsetShape);
   };
   interface ComboSelect {
     label: string;
@@ -406,7 +406,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
         position: "top-center",
       });
     } else {
-      console.log("error");
+      //console.log("error");
       showToast({
         type: "danger",
         message: "L'opération a échoué",
@@ -478,7 +478,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
       }
     );
     if (success) {
-      console.log("observationData", observationData);
+      //console.log("observationData", observationData);
       observationForm.setValue("observation", "");
       setOpenObservationModal(false);
 
@@ -509,7 +509,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
       }
     );
     if (success) {
-      // console.log('assignShape', assignShape);
+      // //console.log('assignShape', assignShape);
       // tmp => {
       //   return tmp?.map((shape) => {
       //     return ({ ...shape, logs: [] })
@@ -557,7 +557,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
       shapeInEntry?.id as unknown as number
     );
     if (success) {
-      console.log("closeShapeData", closeShapeData);
+      //console.log("closeShapeData", closeShapeData);
     }
     setLoading(false);
   };
@@ -581,7 +581,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
         }
         return 0; // 'a' et 'b' sont égaux
       });
-      console.log("sorted", sorted);
+      //console.log("sorted", sorted);
       return sorted;
     });
   };

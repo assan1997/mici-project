@@ -428,7 +428,7 @@ export const Shape: FC<{}> = ({}) => {
         position: "top-center",
       });
     } else {
-      console.log("error");
+      //console.log("error");
       showToast({
         type: "danger",
         message: "L'opération a échoué",
@@ -1006,118 +1006,6 @@ export const Shape: FC<{}> = ({}) => {
     getAllShapes();
   }, []);
 
-  const PopOverDropdown = useCallback(
-    () => (
-      <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-        <div className="flex flex-col items-center w-full">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenEditionModal(true);
-            }}
-            className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-          >
-            {/* <UpdateIcon color={""} /> */}
-            <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-              Modifier les entrées
-            </span>
-          </button>
-
-          <Export
-            title="Télécharger le pdf"
-            type="pdf"
-            entry={{
-              headers: [],
-              data: shapeInEntry,
-            }}
-          />
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              goToDetail(shapeInEntry?.id);
-            }}
-            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-          >
-            {/* <DetailsIcon color={""} /> */}
-            <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-              Voir les détails
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenAssignToUserModal(true);
-            }}
-            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-          >
-            {/* <DetailsIcon color={""} /> */}
-            <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
-              Assigner à un utilisateur
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenLockModal(true);
-            }}
-            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-          >
-            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-              {shapeInEntry?.status_id === 3 ? "Débloquer" : "Bloquer"}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenStandByModal(true);
-            }}
-            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-          >
-            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-              {shapeInEntry?.status_id === 2
-                ? "Enlever en standby"
-                : "Mettre en standby"}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEndModal(true);
-            }}
-            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-          >
-            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-              Terminer
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDelationModal(true);
-            }}
-            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-          >
-            <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-              Supprimer la forme
-            </span>
-          </button>
-        </div>
-      </div>
-    ),
-    [shapeInEntry?.id]
-  );
-
   return (
     <div className="w-full h-full">
       <div className="w-full flex py-[10px] justify-end">
@@ -1568,8 +1456,117 @@ export const Shape: FC<{}> = ({}) => {
                           const target = e.target as HTMLElement;
                           target.appendChild(dropdown);
                           const root = createRoot(dropdown);
-                          setCurrentEntry(row.id);
-                          root.render(<PopOverDropdown />);
+                          setCurrentEntry(row?.id);
+                          root.render(
+                            <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                              <div className="flex flex-col items-center w-full">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenEditionModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                >
+                                  {/* <UpdateIcon color={""} /> */}
+                                  <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                    Modifier les entrées
+                                  </span>
+                                </button>
+
+                                <Export
+                                  title="Télécharger le pdf"
+                                  type="pdf"
+                                  entry={{
+                                    headers: [],
+                                    data: shapeInEntry,
+                                  }}
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    goToDetail(row?.id);
+                                  }}
+                                  className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                  {/* <DetailsIcon color={""} /> */}
+                                  <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                    Voir les détails
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenAssignToUserModal(true);
+                                  }}
+                                  className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                >
+                                  {/* <DetailsIcon color={""} /> */}
+                                  <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                    Assigner à un utilisateur
+                                  </span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenLockModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    {shapeInEntry?.status_id === 3
+                                      ? "Débloquer"
+                                      : "Bloquer"}
+                                  </span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenStandByModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    {shapeInEntry?.status_id === 2
+                                      ? "Enlever en standby"
+                                      : "Mettre en standby"}
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEndModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    Terminer
+                                  </span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDelationModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                  <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                    Supprimer la forme
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          );
                           const handleClickOutside = (event: any) => {
                             if (!dropdown.contains(event.target)) {
                               root.unmount();
@@ -1720,7 +1717,114 @@ export const Shape: FC<{}> = ({}) => {
                                   </div>
                                 }
                               >
-                                <PopOverDropdown />
+                                <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                                  <div className="flex flex-col items-center w-full">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenEditionModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                    >
+                                      {/* <UpdateIcon color={""} /> */}
+                                      <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                        Modifier les entrées
+                                      </span>
+                                    </button>
+
+                                    <Export
+                                      title="Télécharger le pdf"
+                                      type="pdf"
+                                      entry={{
+                                        headers: [],
+                                        data: shapeInEntry,
+                                      }}
+                                    />
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        goToDetail(row?.id);
+                                      }}
+                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      {/* <DetailsIcon color={""} /> */}
+                                      <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                        Voir les détails
+                                      </span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenAssignToUserModal(true);
+                                      }}
+                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                    >
+                                      {/* <DetailsIcon color={""} /> */}
+                                      <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                        Assigner à un utilisateur
+                                      </span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenLockModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        {shapeInEntry?.status_id === 3
+                                          ? "Débloquer"
+                                          : "Bloquer"}
+                                      </span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenStandByModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        {shapeInEntry?.status_id === 2
+                                          ? "Enlever en standby"
+                                          : "Mettre en standby"}
+                                      </span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEndModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        Terminer
+                                      </span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDelationModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                        Supprimer la forme
+                                      </span>
+                                    </button>
+                                  </div>
+                                </div>
                               </MenuDropdown>
                             </div>
                           </div>

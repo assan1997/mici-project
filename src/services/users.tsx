@@ -62,10 +62,10 @@ export async function updateUser(id: number, entry: UserEntry) {
         },
       }
     );
-    console.log("updatedUser", data);
+    //console.log("updatedUser", data);
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -88,7 +88,7 @@ export async function deleteUser(id: number) {
     );
     return { success: true };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -106,10 +106,10 @@ export async function getUser(id: string) {
         },
       }
     );
-    console.log("updatedUser", data);
+    //console.log("updatedUser", data);
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -128,10 +128,10 @@ export async function getUserPerformance(id: string, period: string) {
         },
       }
     );
-    console.log("updatedUser", data);
+    //console.log("updatedUser", data);
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }

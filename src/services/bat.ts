@@ -52,8 +52,8 @@ export async function getAllBats() {
 }
 export async function deleteBat(id: number) {
   const token = await getToken();
-  console.log("id", id);
-  console.log("token", token);
+  //console.log("id", id);
+  //console.log("token", token);
   try {
     const {
       data: { message },
@@ -70,7 +70,7 @@ export async function deleteBat(id: number) {
     );
     return { success: true };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -88,10 +88,10 @@ export async function updateBat(id: number, entry: BatEntry) {
         },
       }
     );
-    console.log("updatedUser", data);
+    //console.log("updatedUser", data);
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -118,7 +118,7 @@ export async function standbyBat(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -144,7 +144,7 @@ export async function observationBat(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -170,7 +170,7 @@ export async function assignToAnUserBat(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }

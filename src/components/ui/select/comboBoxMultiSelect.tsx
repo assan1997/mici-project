@@ -163,7 +163,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = ({
     e.stopPropagation();
     setCanSearch((tmp) => {
       setTimeout(() => {
-        console.log("tmp", tmp);
+        //console.log("tmp", tmp);
         if (inputRef.current) {
           if (tmp) inputRef.current.focus();
           // else inputRef.current.blur()

@@ -203,7 +203,7 @@ export const Folder: FC<{}> = ({}) => {
       });
     }
     setLoading(false);
-    console.log("createdOffsetShape", createdOffsetShape);
+    //console.log("createdOffsetShape", createdOffsetShape);
   };
   interface ComboSelect {
     label: string;
@@ -407,7 +407,7 @@ export const Folder: FC<{}> = ({}) => {
         position: "top-center",
       });
     } else {
-      console.log("error");
+      //console.log("error");
       showToast({
         type: "danger",
         message: "L'opération a échoué",
@@ -479,7 +479,6 @@ export const Folder: FC<{}> = ({}) => {
       }
     );
     if (success) {
-      console.log("observationData", observationData);
       observationForm.setValue("observation", "");
       setOpenObservationModal(false);
 
@@ -510,7 +509,7 @@ export const Folder: FC<{}> = ({}) => {
       }
     );
     if (success) {
-      // console.log('assignShape', assignShape);
+      // //console.log('assignShape', assignShape);
       // tmp => {
       //   return tmp?.map((shape) => {
       //     return ({ ...shape, logs: [] })
@@ -558,7 +557,6 @@ export const Folder: FC<{}> = ({}) => {
       shapeInEntry?.id as unknown as number
     );
     if (success) {
-      console.log("closeShapeData", closeShapeData);
     }
     setLoading(false);
   };
@@ -582,7 +580,7 @@ export const Folder: FC<{}> = ({}) => {
         }
         return 0; // 'a' et 'b' sont égaux
       });
-      console.log("sorted", sorted);
+      //console.log("sorted", sorted);
       return sorted;
     });
   };

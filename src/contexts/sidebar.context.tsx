@@ -12,7 +12,6 @@ import React, {
 } from "react";
 
 import {
-  CardBoardIcon,
   CompassIcon,
   UserIcon,
   FolderIcon,
@@ -56,6 +55,7 @@ interface SideBarContextType {
   setNav: React.Dispatch<React.SetStateAction<Nav[]>>;
   setSubNav: React.Dispatch<React.SetStateAction<SubNav[]>>;
   setResize: React.Dispatch<React.SetStateAction<boolean>>;
+  roleAdmin: boolean;
 }
 
 const SibeBarContext = createContext<SideBarContextType>({
@@ -69,6 +69,7 @@ const SibeBarContext = createContext<SideBarContextType>({
   setNav: () => {},
   setSubNav: () => {},
   setResize: () => {},
+  roleAdmin: false,
 });
 
 export const useSideBar = () => useContext(SibeBarContext);
@@ -265,6 +266,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
         setSubNav,
         setResize,
         resize,
+        roleAdmin,
       }}
     >
       {children}

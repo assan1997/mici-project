@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { BaseTabs } from "@/components/ui/tabs/BaseTabs";
 import { useRouter, usePathname } from "next/navigation";
 import { getClient } from "@/services/clients";
@@ -20,7 +20,6 @@ export const Details = () => {
   useEffect(() => {
     (async () => {
       const { data } = await getClient(id as unknown as number);
-      console.log("data", data);
       setData(data);
     })();
   }, [id]);
@@ -54,7 +53,7 @@ export const Details = () => {
                     <ColumnSkeleton />
                   ) : (
                     data?.departments?.map((department: any) => (
-                      <>
+                      <Fragment key={department?.id}>
                         <span
                           className="inline-block my-[4px]"
                           key={department?.id}
@@ -62,7 +61,7 @@ export const Details = () => {
                           {department?.name}
                         </span>
                         <br />
-                      </>
+                      </Fragment>
                     ))
                   )}
                 </div>

@@ -71,10 +71,6 @@ export const Users: FC<{}> = ({}) => {
   } = useData();
 
   useEffect(() => {
-    console.log("onRefreshingUsers", onRefreshingUsers);
-  }, [onRefreshingUsers]);
-
-  useEffect(() => {
     getUsers();
   }, []);
   const tableHead = [
@@ -123,8 +119,6 @@ export const Users: FC<{}> = ({}) => {
     name = name.trim();
     email = email.trim();
     password = password.trim();
-    console.log("departments", departments);
-    console.log("sections", sections);
     const { data: createdUser, success } = await createUser({
       name,
       department_ids: departments,
@@ -151,7 +145,7 @@ export const Users: FC<{}> = ({}) => {
       reset();
       setCreationModal(false);
     } else {
-      console.log("error");
+      //console.log("error");
     }
     setLoading(false);
   };
@@ -180,12 +174,12 @@ export const Users: FC<{}> = ({}) => {
       delete entry.password;
     if (
       JSON.stringify(entry.department_ids) ===
-      JSON.stringify(userInEntry?.departments?.map((dep) => dep.id))
+      JSON.stringify(userInEntry?.departments?.map((dep: any) => dep.id))
     )
       delete entry.department_ids;
     if (
       JSON.stringify(entry.section_ids) ===
-      JSON.stringify(userInEntry?.sections?.map((sec) => sec.id))
+      JSON.stringify(userInEntry?.sections?.map((sec: any) => sec.id))
     )
       delete entry.section_ids;
     if (entry?.password?.length === 0) delete entry.password;
@@ -217,24 +211,22 @@ export const Users: FC<{}> = ({}) => {
         type: "danger",
         position: "top-center",
       });
-      console.log("error");
+      //console.log("error");
     }
     setLoading(false);
   };
 
   const { box, handleClick } = useActiveState();
-  const userInEntry = useMemo(() => {
-    const user: User | undefined = users?.find(
-      (user: User) => user.id === currentEntry
-    );
-    return user;
-  }, [currentEntry]);
+  const [userInEntry, setUserInEntry] = useState<any>();
+
+  useEffect(() => {
+    //console.log("userInEntry", userInEntry);
+  }, [userInEntry]);
 
   useEffect(() => {
     const user: User | undefined = users?.find(
       (user: User) => user.id === currentEntry
     );
-    console.log("user", user);
     if (user) {
       editionForm.setValue("name", user?.name as string);
       editionForm.setValue("email", user?.email as string);
@@ -248,7 +240,9 @@ export const Users: FC<{}> = ({}) => {
         value: section.id,
         label: section.name,
       }));
+
       if (sec) setSections(sec as any);
+      setUserInEntry(user);
     }
   }, [currentEntry]);
 
@@ -331,131 +325,6 @@ export const Users: FC<{}> = ({}) => {
   const goToDetail = (id: any) => {
     Router.push(`/workspace/details/users/${id}`);
   };
-
-  const PopOverDropdown = useCallback(
-    () => (
-      <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-        <div className="flex flex-col items-center w-full">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenEditionModal(true);
-            }}
-            className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-          >
-            {/* <UpdateIcon color={""} /> */}
-            <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-              Modifier les entrées
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              goToDetail(userInEntry?.id);
-            }}
-            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-          >
-            {/* <DetailsIcon color={""} /> */}
-            <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-              Voir les détails
-            </span>
-          </button>
-          {/* <button
-          type="button"
-          onClick={() => {
-            setOpenAssignToUserModal(true);
-          }}
-          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-        >
-         
-          <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
-            Assigner à un utilisateur
-          </span>
-        </button> */}
-          {/* <button
-              type="button"
-              onClick={() => {
-                setOpenLogsModal(true);
-              }}
-              className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-            >
-              <LogIcon color={""} />
-              <span className="text-[14px]  text-grayscale-900 font-medium font-poppins leading-[20px]">
-                Voir les logs
-              </span>
-            </button> */}
-          {/* <button
-          type="button"
-          onClick={() => {
-            setOpenLockModal(true);
-          }}
-          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-        >
-        
-          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-            {row.status_id === 3
-              ? "Débloquer"
-              : "Bloquer"}
-          </span>
-        </button> */}
-          {/* 
-        <button
-          type="button"
-          onClick={() => {
-            setOpenStandByModal(true);
-          }}
-          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-        >
-        
-          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-            {row.status_id === 2
-              ? "Enlever en standby"
-              : "Mettre en standby"}
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setEndModal(true);
-          }}
-          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-        >
-          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-            Terminer
-          </span>
-        </button> */}
-          {/* <button
-              type="button"
-              onClick={() => {
-                setOpenObservationModal(true);
-              }}
-              className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-            >
-              <DeleteShapeIcon color={""} />
-              <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                Faire une observation
-              </span>
-            </button> */}
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDelationModal(true);
-            }}
-            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-          >
-            <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-              {`Supprimer l'utilisateur`}
-            </span>
-          </button>
-        </div>
-      </div>
-    ),
-    [userInEntry?.id]
-  );
 
   return (
     <div className="w-full h-full">
@@ -558,313 +427,435 @@ export const Users: FC<{}> = ({}) => {
                 </tr>
               </thead>
               <tbody className="bg-white">
-                {allUsers?.map((row, index) => (
-                  <tr
-                    key={index}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      document.getElementById("dropdown")?.remove();
-                      const dropdown = document.createElement("div");
-                      dropdown.id = "dropdown";
-                      dropdown.className = "w-[200px] h-auto absolute z-[500]";
-                      const target = e.target as HTMLElement;
-                      target.appendChild(dropdown);
-                      const root = createRoot(dropdown);
-                      setCurrentEntry(row.id);
-                      root.render(<PopOverDropdown />);
-                      const handleClickOutside = (event: any) => {
-                        if (!dropdown.contains(event.target)) {
-                          root.unmount();
-                          dropdown.remove();
-                          document.removeEventListener(
-                            "click",
-                            handleClickOutside
-                          );
-                        }
-                      };
-                      document.addEventListener("click", handleClickOutside);
-                    }}
-                    className={`cursor-pointer border-b transition-all duration hover:bg-gray-100 checked:hover:bg-gray-100`}
-                  >
-                    <td
-                      onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
-                    >
-                      {renderAvatar(row?.avatar)}
-                    </td>
-                    <td
-                      onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
-                    >
-                      {row.name}
-                    </td>
-                    <td
-                      onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
-                    >
-                      {row?.email}
-                    </td>
-                    <td
-                      onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
-                    >
-                      <CircularProgress
-                        classNames={{
-                          svg: "w-[40px] h-[40px]",
-                          indicator: "green",
-                          track: "gray",
-                          value: "text-sm font-semibold text-black",
-                        }}
-                        value={row?.global_performance || 0}
-                        strokeWidth={2}
-                        showValueLabel={true}
-                      />
-                    </td>
-
-                    <td
-                      onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
-                    >
-                      {row?.departments?.map((department: any) => (
-                        <Fragment key={department?.id}>
-                          <span>{department?.name}</span> <br />
-                        </Fragment>
-                      ))}
-                    </td>
-
-                    <td
-                      onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
-                    >
-                      {row?.sections?.map((section: any) => (
-                        <Fragment key={section?.id}>
-                          <span className="inline-block my-[4px]">
-                            {section?.name}
-                          </span>
-                          <br />
-                        </Fragment>
-                      ))}{" "}
-                    </td>
-                    <td className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]">
-                      {formatTime(
-                        new Date(row?.["created_at"]).getTime(),
-                        "d:mo:y",
-                        "short"
-                      )}
-                    </td>
-                    <td
-                      onClick={() => goToDetail(row?.id)}
-                      className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
-                    >
-                      {formatTime(
-                        new Date(row?.["updated_at"]).getTime(),
-                        "d:mo:y",
-                        "short"
-                      )}
-                    </td>
-                    {/* <td className="text-[#636363] w-auto px-[10px] text-start font-poppins text-[14px]">
-                      <div className="w-full h-full flex items-center justify-end">
-                        <div ref={box}>
-                          <MenuDropdown
-                            dropdownOrigin="bottom-right"
-                            otherStyles={"w-auto"}
-                            buttonContent={
-                              <div>
-                                <div
-                                  onClick={() => {
-                                    handleClick();
-                                    setCurrentEntry(row.id);
-                                  }}
-                                  className={`h-[44px] flex items-center justify-center`}
-                                >
-                                  <OptionsIcon color={""} />
-                                </div>
-                              </div>
-                            }
+                {allUsers?.map((row, index) => {
+                  return (
+                    <tr
+                      key={index}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        document.getElementById("dropdown")?.remove();
+                        const dropdown = document.createElement("div");
+                        dropdown.id = "dropdown";
+                        dropdown.className =
+                          "w-[200px] h-auto absolute z-[500]";
+                        const target = e.target as HTMLElement;
+                        target.appendChild(dropdown);
+                        const root = createRoot(dropdown);
+                        root.render(
+                          <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                            <div className="flex flex-col items-center w-full">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenEditionModal(true);
+                                }}
+                                className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                              >
+                                {/* <UpdateIcon color={""} /> */}
+                                <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                  Modifier les entrées
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  goToDetail(row?.id);
+                                }}
+                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                              >
+                                {/* <DetailsIcon color={""} /> */}
+                                <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                  Voir les détails
+                                </span>
+                              </button>
+                              {/* <button
+                            type="button"
+                            onClick={() => {
+                              setOpenAssignToUserModal(true);
+                            }}
+                            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
                           >
-                            <div className="bg-white shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-                              <div className="flex flex-col items-center w-full">
-                                <button
-                                  type="button"
-                                  onClick={() => setOpenEditionModal(true)}
-                                  className="flex items-center w-full gap-[8px] py-[4px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                >
-                                  <UpdateIcon color={""} />
-                                  <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                    Modifier
-                                  </span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {}}
-                                  className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                >
-                                  <DetailsIcon color={""} />
-                                  <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                    Détails
-                                  </span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setDelationModal(true);
-                                  }}
-                                  className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                >
-                                  <DeleteUserIcon className={""} />
-                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    Supprimer
-                                  </span>
-                                </button>
+                           
+                            <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                              Assigner à un utilisateur
+                            </span>
+                          </button> */}
+                              {/* <button
+                                type="button"
+                                onClick={() => {
+                                  setOpenLogsModal(true);
+                                }}
+                                className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                              >
+                                <LogIcon color={""} />
+                                <span className="text-[14px]  text-grayscale-900 font-medium font-poppins leading-[20px]">
+                                  Voir les logs
+                                </span>
+                              </button> */}
+                              {/* <button
+                            type="button"
+                            onClick={() => {
+                              setOpenLockModal(true);
+                            }}
+                            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                          >
+                          
+                            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                              {row.status_id === 3
+                                ? "Débloquer"
+                                : "Bloquer"}
+                            </span>
+                          </button> */}
+                              {/* 
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenStandByModal(true);
+                            }}
+                            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                          >
+                          
+                            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                              {row.status_id === 2
+                                ? "Enlever en standby"
+                                : "Mettre en standby"}
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEndModal(true);
+                            }}
+                            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                          >
+                            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                              Terminer
+                            </span>
+                          </button> */}
+                              {/* <button
+                                type="button"
+                                onClick={() => {
+                                  setOpenObservationModal(true);
+                                }}
+                                className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                              >
+                                <DeleteShapeIcon color={""} />
+                                <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                  Faire une observation
+                                </span>
+                              </button> */}
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDelationModal(true);
+                                }}
+                                className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                              >
+                                <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                  {`Supprimer l'utilisateur`}
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                        const handleClickOutside = (event: any) => {
+                          if (!dropdown.contains(event.target)) {
+                            root.unmount();
+                            dropdown.remove();
+                            document.removeEventListener(
+                              "click",
+                              handleClickOutside
+                            );
+                          }
+                        };
+                        document.addEventListener("click", handleClickOutside);
+                      }}
+                      className={`cursor-pointer border-b transition-all duration hover:bg-gray-100 checked:hover:bg-gray-100`}
+                    >
+                      <td
+                        onClick={() => goToDetail(row?.id)}
+                        className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                      >
+                        {renderAvatar(row?.avatar)}
+                      </td>
+                      <td
+                        onClick={() => goToDetail(row?.id)}
+                        className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                      >
+                        {row.name}
+                      </td>
+                      <td
+                        onClick={() => goToDetail(row?.id)}
+                        className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                      >
+                        {row?.email}
+                      </td>
+                      <td
+                        onClick={() => goToDetail(row?.id)}
+                        className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                      >
+                        <CircularProgress
+                          classNames={{
+                            svg: "w-[60px] h-[60px]",
+                            indicator: "green",
+                            track: "gray",
+                            value: "text-md font-medium text-black",
+                          }}
+                          value={row?.performance?.global_performance || 0}
+                          strokeWidth={3}
+                          showValueLabel={true}
+                        />
+                      </td>
+
+                      <td
+                        onClick={() => goToDetail(row?.id)}
+                        className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                      >
+                        {row?.departments?.map((department: any) => (
+                          <Fragment key={department?.id}>
+                            <span>{department?.name}</span> <br />
+                          </Fragment>
+                        ))}
+                      </td>
+
+                      <td
+                        onClick={() => goToDetail(row?.id)}
+                        className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                      >
+                        {row?.sections?.map((section: any) => (
+                          <Fragment key={section?.id}>
+                            <span className="inline-block my-[4px]">
+                              {section?.name}
+                            </span>
+                            <br />
+                          </Fragment>
+                        ))}{" "}
+                      </td>
+                      <td className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]">
+                        {formatTime(
+                          new Date(row?.["created_at"]).getTime(),
+                          "d:mo:y",
+                          "short"
+                        )}
+                      </td>
+                      <td
+                        onClick={() => goToDetail(row?.id)}
+                        className="text-[#636363] w-[300px] px-[20px] text-start font-poppins text-[14px]"
+                      >
+                        {formatTime(
+                          new Date(row?.["updated_at"]).getTime(),
+                          "d:mo:y",
+                          "short"
+                        )}
+                      </td>
+                      {/* <td className="text-[#636363] w-auto px-[10px] text-start font-poppins text-[14px]">
+                    <div className="w-full h-full flex items-center justify-end">
+                      <div ref={box}>
+                        <MenuDropdown
+                          dropdownOrigin="bottom-right"
+                          otherStyles={"w-auto"}
+                          buttonContent={
+                            <div>
+                              <div
+                                onClick={() => {
+                                  handleClick();
+                                  setCurrentEntry(row.id);
+                                }}
+                                className={`h-[44px] flex items-center justify-center`}
+                              >
+                                <OptionsIcon color={""} />
                               </div>
                             </div>
-                          </MenuDropdown>
-                        </div>
+                          }
+                        >
+                          <div className="bg-white shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                            <div className="flex flex-col items-center w-full">
+                              <button
+                                type="button"
+                                onClick={() => setOpenEditionModal(true)}
+                                className="flex items-center w-full gap-[8px] py-[4px] px-[10px] rounded-t-[12px] cursor-pointer"
+                              >
+                                <UpdateIcon color={""} />
+                                <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                  Modifier
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {}}
+                                className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                              >
+                                <DetailsIcon color={""} />
+                                <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                  Détails
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setDelationModal(true);
+                                }}
+                                className="flex items-center border-t w-full py-[4px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                              >
+                                <DeleteUserIcon className={""} />
+                                <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                  Supprimer
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        </MenuDropdown>
                       </div>
-                    </td> */}
+                    </div>
+                  </td> */}
 
-                    <td className="text-[#636363] w-auto px-[20px] text-start font-poppins">
-                      <div className="w-full h-full flex items-center justify-end">
-                        <div ref={box}>
-                          <MenuDropdown
-                            dropdownOrigin="bottom-right"
-                            otherStyles={"w-auto"}
-                            buttonContent={
-                              <div>
-                                <div
-                                  onClick={(e) => {
-                                    handleClick(e);
-                                    setCurrentEntry(row.id);
-                                  }}
-                                  className={`h-[44px] w-full flex items-center justify-center`}
-                                >
-                                  <OptionsIcon color={"#636363"} />
+                      <td className="text-[#636363] w-auto px-[20px] text-start font-poppins">
+                        <div className="w-full h-full flex items-center justify-end">
+                          <div ref={box}>
+                            <MenuDropdown
+                              dropdownOrigin="bottom-right"
+                              otherStyles={"w-auto"}
+                              buttonContent={
+                                <div>
+                                  <div
+                                    onClick={(e) => {
+                                      handleClick(e);
+                                      setCurrentEntry(row.id);
+                                    }}
+                                    className={`h-[44px] w-full flex items-center justify-center`}
+                                  >
+                                    <OptionsIcon color={"#636363"} />
+                                  </div>
+                                </div>
+                              }
+                            >
+                              <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                                <div className="flex flex-col items-center w-full">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenEditionModal(true);
+                                    }}
+                                    className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                  >
+                                    {/* <UpdateIcon color={""} /> */}
+                                    <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                      Modifier les entrées
+                                    </span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      goToDetail(row?.id);
+                                    }}
+                                    className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                  >
+                                    {/* <DetailsIcon color={""} /> */}
+                                    <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                      Voir les détails
+                                    </span>
+                                  </button>
+                                  {/* <button
+                                type="button"
+                                onClick={() => {
+                                  setOpenAssignToUserModal(true);
+                                }}
+                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                              >
+                               
+                                <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                  Assigner à un utilisateur
+                                </span>
+                              </button> */}
+                                  {/* <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenLogsModal(true);
+                                    }}
+                                    className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                  >
+                                    <LogIcon color={""} />
+                                    <span className="text-[14px]  text-grayscale-900 font-medium font-poppins leading-[20px]">
+                                      Voir les logs
+                                    </span>
+                                  </button> */}
+                                  {/* <button
+                                type="button"
+                                onClick={() => {
+                                  setOpenLockModal(true);
+                                }}
+                                className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                              >
+                              
+                                <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                  {row.status_id === 3
+                                    ? "Débloquer"
+                                    : "Bloquer"}
+                                </span>
+                              </button> */}
+                                  {/* 
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setOpenStandByModal(true);
+                                }}
+                                className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                              >
+                              
+                                <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                  {row.status_id === 2
+                                    ? "Enlever en standby"
+                                    : "Mettre en standby"}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEndModal(true);
+                                }}
+                                className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                              >
+                                <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                  Terminer
+                                </span>
+                              </button> */}
+                                  {/* <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenObservationModal(true);
+                                    }}
+                                    className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                  >
+                                    <DeleteShapeIcon color={""} />
+                                    <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                      Faire une observation
+                                    </span>
+                                  </button> */}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setDelationModal(true);
+                                    }}
+                                    className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                  >
+                                    <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                      {`Supprimer l'utilisateur`}
+                                    </span>
+                                  </button>
                                 </div>
                               </div>
-                            }
-                          >
-                            <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-                              <div className="flex flex-col items-center w-full">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenEditionModal(true);
-                                  }}
-                                  className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                >
-                                  {/* <UpdateIcon color={""} /> */}
-                                  <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-                                    Modifier les entrées
-                                  </span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    goToDetail(row?.id);
-                                  }}
-                                  className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                >
-                                  {/* <DetailsIcon color={""} /> */}
-                                  <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                    Voir les détails
-                                  </span>
-                                </button>
-                                {/* <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenAssignToUserModal(true);
-                                  }}
-                                  className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                >
-                                 
-                                  <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                    Assigner à un utilisateur
-                                  </span>
-                                </button> */}
-                                {/* <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenLogsModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <LogIcon color={""} />
-                                      <span className="text-[14px]  text-grayscale-900 font-medium font-poppins leading-[20px]">
-                                        Voir les logs
-                                      </span>
-                                    </button> */}
-                                {/* <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenLockModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                
-                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    {row.status_id === 3
-                                      ? "Débloquer"
-                                      : "Bloquer"}
-                                  </span>
-                                </button> */}
-                                {/* 
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenStandByModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                
-                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    {row.status_id === 2
-                                      ? "Enlever en standby"
-                                      : "Mettre en standby"}
-                                  </span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEndModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    Terminer
-                                  </span>
-                                </button> */}
-                                {/* <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenObservationModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <DeleteShapeIcon color={""} />
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        Faire une observation
-                                      </span>
-                                    </button> */}
-
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setDelationModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                  <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                    {`Supprimer l'utilisateur`}
-                                  </span>
-                                </button>
-                              </div>
-                            </div>
-                          </MenuDropdown>
+                            </MenuDropdown>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           ) : (

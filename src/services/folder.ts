@@ -59,8 +59,8 @@ export async function getAllFolders() {
 }
 export async function deleteFolder(id: number) {
   const token = await getToken();
-  console.log("id", id);
-  console.log("token", token);
+  //console.log("id", id);
+  //console.log("token", token);
   try {
     const {
       data: { message },
@@ -77,7 +77,7 @@ export async function deleteFolder(id: number) {
     );
     return { success: true };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -95,10 +95,10 @@ export async function updateFolder(id: number, entry: FolderEntry) {
         },
       }
     );
-    console.log("updatedUser", data);
+    //console.log("updatedUser", data);
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -125,7 +125,7 @@ export async function standbyFolder(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -151,7 +151,7 @@ export async function observationFolder(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }
@@ -177,7 +177,7 @@ export async function assignToAnUserFolder(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
     return { success: false };
   }
 }

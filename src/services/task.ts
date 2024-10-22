@@ -37,7 +37,7 @@ export async function getTasks() {
   }
 }
 
-export async function endTask(
+export async function endAndAssignTask(
   taskId: number,
   entry: { reason: string; note: string; user_id: number }
 ) {
@@ -56,7 +56,27 @@ export async function endTask(
     );
     return { success: true, data };
   } catch (error) {
-    console.log("error", error);
+    //console.log("error", error);
+    return { success: false };
+  }
+}
+export async function endTask(taskId: number, entry: { reason: string }) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/tasks/${taskId}/complete-without-assignation`,
+      { ...entry },
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    //console.log("error", error);
     return { success: false };
   }
 }

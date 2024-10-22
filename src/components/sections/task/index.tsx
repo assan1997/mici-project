@@ -8,7 +8,7 @@ import { Form } from "@/components/ui/forms/Form";
 import { useForm } from "@/lib/hooks/useForm";
 import React from "react";
 import ComboboxMultiSelect from "@/components/ui/select/comboBoxMultiSelect";
-import { Client, TaskInterface, useData, User } from "@/contexts/data.context";
+import { TaskInterface, useData, User } from "@/contexts/data.context";
 import { formatTime } from "@/lib/utils/timestamp";
 import MenuDropdown from "@/components/ui/dropdown/MenuDropdown";
 import useActiveState from "@/lib/hooks/useActiveState";
@@ -20,25 +20,46 @@ import { motion } from "framer-motion";
 import { Pagination } from "@/components/ui/pagination";
 import { Filter } from "@/components/ui/filter";
 
-import { endTask } from "@/services/task";
+import { endTask, endAndAssignTask } from "@/services/task";
 import { createRoot } from "react-dom/client";
+import { useSideBar } from "@/contexts/sidebar.context";
+import useSWR from "swr";
+import { getTasks } from "@/services/task";
+import axios from "axios";
+import { getToken } from "@/lib/data/token";
 
 export const Task: FC<{}> = ({}) => {
   const {
-    users,
-    clients,
-    tasks: allTasks,
-    status,
-    dispatchTasks,
-    refreshTaskData,
-    onRefreshingTask,
-    getAllTasks,
-  } = useData();
+    data: allTasks,
+    error,
+    isLoading,
+  } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, async () => {
+    const token = await getToken();
+    const reponse = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/tasks`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-  const endTaskShema = z.object({
+    return reponse.data;
+  });
+
+  const { users, status, dispatchTasks, refreshTaskData, onRefreshingTask } =
+    useData();
+
+  const endAndAssignTaskShema = z.object({
     reason: z.string(),
     note: z.string(),
     user: z.number(),
+  });
+
+  const endTaskShema = z.object({
+    reason: z.string(),
   });
 
   const tableHead = [
@@ -57,7 +78,8 @@ export const Task: FC<{}> = ({}) => {
 
   const { box, handleClick } = useActiveState();
   const [tasks, setTasks] = useState<TaskInterface[] | undefined>([]);
-  const [openDelationModal, setDelationModal] = useState<boolean>(false);
+  const [endAndAssignModal, setEndAndAssignModal] = useState<boolean>(false);
+  const [endModal, setEndModal] = useState<boolean>(false);
 
   interface ComboSelect {
     label: string;
@@ -67,19 +89,22 @@ export const Task: FC<{}> = ({}) => {
   const [user, setUser] = useState<ComboSelect[]>([]);
   const [currentEntry, setCurrentEntry] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
-
   const [currentDatas, setCurrentDatas] = useState<any[]>(
     allTasks ? allTasks : []
   );
 
   useEffect(() => {
-    endTaskForm.setValue("user", user[0]?.value as unknown as number);
+    endAndAssignTaskForm.setValue("user", user[0]?.value as unknown as number);
   }, [user]);
 
+  const endAndAssignTaskForm = useForm({ schema: endAndAssignTaskShema });
   const endTaskForm = useForm({ schema: endTaskShema });
-  const onSubmitEndTaskForm = async (data: z.infer<typeof endTaskShema>) => {
+
+  const onSubmitEndAndAssignTaskForm = async (
+    data: z.infer<typeof endAndAssignTaskShema>
+  ) => {
     setLoading(true);
-    const { data: closeTaskData, success } = await endTask(
+    const { data: closeTaskData, success } = await endAndAssignTask(
       taskInEntry?.id as unknown as number,
       {
         reason: data.reason,
@@ -109,7 +134,37 @@ export const Task: FC<{}> = ({}) => {
       });
     }
     setLoading(false);
-    setDelationModal(false);
+    setEndAndAssignModal(false);
+  };
+
+  const onSubmitEndTaskForm = async (data: z.infer<typeof endTaskShema>) => {
+    setLoading(true);
+    const { success } = await endTask(taskInEntry?.id as unknown as number, {
+      reason: data.reason,
+    });
+    if (success) {
+      showToast({
+        type: "success",
+        message: "Terminé avec succès",
+        position: "top-center",
+      });
+
+      dispatchTasks((tmp) =>
+        tmp?.map((task: TaskInterface) =>
+          task.id === taskInEntry?.id
+            ? { ...task, completed_at: new Date() as unknown as string }
+            : task
+        )
+      );
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setLoading(false);
+    setEndAndAssignModal(false);
   };
 
   useEffect(() => {
@@ -124,139 +179,8 @@ export const Task: FC<{}> = ({}) => {
     return shape;
   }, [currentEntry]);
 
-  useEffect(() => {
-    console.log("taskInEntry", taskInEntry);
-  }, [taskInEntry]);
+  const { roleAdmin } = useSideBar();
 
-  //   useState<boolean>(false);
-  // const onSubmitStandBy = async (data: z.infer<typeof shapeStandBySchema>) => {
-  //   setLoading(true);
-  //   let { reason } = data;
-  //   reason = reason.trim();
-  //   const status_id = taskInEntry?.status_id !== 2 ? 2 : 1;
-  //   const { data: standByShape, success } = await standbyOffsetShape(
-  //     currentEntry as number,
-  //     {
-  //       type: "STANDBY",
-  //       reason,
-  //       status_id,
-  //     }
-  //   );
-  //   if (success) {
-  //     standByShape.status_id = status_id;
-  //     dispatchOffsetShapes((tmp: any) => {
-  //       let tmpDatas;
-  //       let tmpData;
-  //       if (tmp) {
-  //         tmpData = tmp.find((t: any) => t.id === standByShape.id);
-  //         tmpDatas = tmp.filter((t: any) => t.id !== standByShape.id);
-  //         return [{ ...tmpData, status_id }, ...tmpDatas];
-  //       }
-  //     });
-  //     standByform.setValue("reason", "");
-  //     setOpenStandByModal(false);
-  //     showToast({
-  //       type: "success",
-  //       message: `${status_id === 2 ? "Mis" : "Enlevé"} en standby avec succès`,
-  //       position: "top-center",
-  //     });
-  //   } else {
-  //     showToast({
-  //       type: "danger",
-  //       message: "L'opération a échoué",
-  //       position: "top-center",
-  //     });
-  //   }
-  //   setLoading(false);
-  //   reset();
-  // };
-  // const onSubmitOservation = async (
-  //   data: z.infer<typeof shapeObservationSchema>
-  // ) => {
-  //   let { observation } = data;
-  //   setLoading(true);
-  //   observation = observation.trim();
-  //   const { data: observationData, success } = await observationOffsetShape(
-  //     currentEntry as number,
-  //     {
-  //       type: "OBSERVATION",
-  //       observation,
-  //     }
-  //   );
-  //   if (success) {
-  //     console.log("observationData", observationData);
-  //     observationForm.setValue("observation", "");
-  //     setOpenObservationModal(false);
-
-  //     showToast({
-  //       type: "success",
-  //       message: "Observation crée avec succès",
-  //       position: "top-center",
-  //     });
-  //   } else {
-  //     showToast({
-  //       type: "danger",
-  //       message: "L'opération a échoué",
-  //       position: "top-center",
-  //     });
-  //   }
-  //   setLoading(false);
-  //   reset();
-  // };
-  // const onSubmitAssign = async (data: z.infer<typeof shapeAssignSchema>) => {
-  //   setLoading(true);
-  //   let { user_id } = data;
-  //   const { data: assignShape, success } = await assignToAnUserOffsetShape(
-  //     currentEntry as number,
-  //     {
-  //       type: "ASSIGNATION",
-  //       user_assignated_id: user_id,
-  //       task_description: data.description,
-  //     }
-  //   );
-  //   if (success) {
-  //     // console.log('assignShape', assignShape);
-  //     // tmp => {
-  //     //   return tmp?.map((shape) => {
-  //     //     return ({ ...shape, logs: [] })
-  //     //     // shape.id === assignShape.id ? ({
-  //     //     //   ...shape,
-  //     //     //   logs: [
-  //     //     //     {
-  //     //     //       "id": shape.logs[shape.logs.length - 1].id + 1,
-  //     //     //       "shape_id": shape.id,
-  //     //     //       "title": "Assigné à une personne",
-  //     //     //       "description": null,
-  //     //     //       "user_treating_id": user?.id,
-  //     //     //       "type": "ASSIGNATION",
-  //     //     //       "created_at": new Date(),
-  //     //     //       "updated_at": new Date(),
-  //     //     //       "user_assignated_id": user_id,
-  //     //     //       "bat_id": null,
-  //     //     //       "folder_id": null
-  //     //     //     },
-  //     //     //     ...shape.logs]
-  //     //     // }) : shape
-  //     //   })
-  //     // }
-  //     // dispatchOffsetShapes([])
-  //     assignForm.setValue("user_id", 0);
-  //     setOpenAssignToUserModal(false);
-  //     showToast({
-  //       type: "success",
-  //       message: "Assigné avec succès",
-  //       position: "top-center",
-  //     });
-  //   } else {
-  //     showToast({
-  //       type: "danger",
-  //       message: "L'opération a échoué",
-  //       position: "top-center",
-  //     });
-  //   }
-  //   setLoading(false);
-  //   reset();
-  // };
   const [sortedBy, setSortedBY] = useState<string>("");
   const sort = (key: string) => {
     setCurrentDatas((tmp) => {
@@ -323,14 +247,6 @@ export const Task: FC<{}> = ({}) => {
       }
 
       setSortedBY((tmp) => {
-        console.log(
-          "sortedBy",
-          sortedBy,
-          "key",
-          key,
-          "sortedBy===",
-          sortedBy === key
-        );
         // if (tmp === key) return "";
         return key;
       });
@@ -342,57 +258,6 @@ export const Task: FC<{}> = ({}) => {
       return [...(sorted as unknown as any)];
     });
   };
-
-  useEffect(() => {
-    getAllTasks();
-  }, []);
-
-  const PopOverDropdown = useCallback(
-    () => (
-      <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-        <div className="flex flex-col items-center w-full">
-          <button
-            type="button"
-            onClick={() => {
-              setDelationModal(true);
-            }}
-            className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-          >
-            {/* <DeleteShapeIcon color={""} /> */}
-            <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-              Assigner à un autre utilisateur
-            </span>
-          </button>
-          {/* <button
-          type="button"
-          onClick={() => {
-            setOpenObservationModal(true);
-          }}
-          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-        >
-          <DeleteShapeIcon color={""} />
-          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-            Faire une observation
-          </span>
-        </button> */}
-
-          {/* <button
-          type="button"
-          onClick={() => {
-            setDelationModal(true);
-          }}
-          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-        >
-          <DeleteShapeIcon color={""} />
-          <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-            Supprimer la forme
-          </span>
-        </button> */}
-        </div>
-      </div>
-    ),
-    [taskInEntry?.id]
-  );
 
   return (
     <div className="w-full h-full">
@@ -517,9 +382,40 @@ export const Task: FC<{}> = ({}) => {
                             "w-[200px] h-auto absolute z-[500]";
                           const target = e.target as HTMLElement;
                           target.appendChild(dropdown);
+                          setCurrentEntry(row?.id);
                           const root = createRoot(dropdown);
-                          setCurrentEntry(row.id);
-                          root.render(<PopOverDropdown />);
+                          root.render(
+                            <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                              <div className="flex flex-col items-center w-full">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEndAndAssignModal(true);
+                                  }}
+                                  className="flex items-center justify-start w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                  {/* <DeleteShapeIcon color={""} /> */}
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] text-start ">
+                                    Assigner à un utilisateur
+                                  </span>
+                                </button>
+                                {roleAdmin ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEndModal(true);
+                                    }}
+                                    className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                  >
+                                    {/* <DeleteShapeIcon color={""} /> */}
+                                    <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                      Terminer
+                                    </span>
+                                  </button>
+                                ) : null}
+                              </div>
+                            </div>
+                          );
                           const handleClickOutside = (event: any) => {
                             if (!dropdown.contains(event.target)) {
                               root.unmount();
@@ -548,21 +444,21 @@ export const Task: FC<{}> = ({}) => {
                             {!row.completed_at ? "En cours" : "Terminé"}
                           </div>
                         </td>
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
                           {row?.assignable?.reference}
                         </td>
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
                           {row?.assignable?.code}
                         </td>
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
                           {row?.assignable?.dim_lx_lh}
                         </td>
 
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
                           {row?.assignable?.dim_square}
                         </td>
 
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
                           {row?.assignable?.dim_plate}
                         </td>
 
@@ -648,40 +544,29 @@ export const Task: FC<{}> = ({}) => {
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        setDelationModal(true);
+                                        setEndAndAssignModal(true);
                                       }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                      className="flex items-center justify-start w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                     >
                                       {/* <DeleteShapeIcon color={""} /> */}
                                       <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        Assigner à un autre utilisateur
+                                        Assigner à un utilisateur
                                       </span>
                                     </button>
-                                    {/* <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenObservationModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <DeleteShapeIcon color={""} />
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        Faire une observation
-                                      </span>
-                                    </button> */}
-
-                                    {/* <button
-                                      type="button"
-                                      onClick={() => {
-                                        setDelationModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <DeleteShapeIcon color={""} />
-                                      <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                        Supprimer la forme
-                                      </span>
-                                    </button> */}
+                                    {roleAdmin ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setEndModal(true);
+                                        }}
+                                        className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                      >
+                                        {/* <DeleteShapeIcon color={""} /> */}
+                                        <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                          Terminer
+                                        </span>
+                                      </button>
+                                    ) : null}
                                   </div>
                                 </div>
                               </MenuDropdown>
@@ -718,9 +603,12 @@ export const Task: FC<{}> = ({}) => {
         ) : null}
       </motion.div>
 
-      {/* end MODAL */}
-      <BaseModal open={openDelationModal} classname={""}>
-        <Form form={endTaskForm} onSubmit={onSubmitEndTaskForm}>
+      {/* end with assignation */}
+      <BaseModal open={endAndAssignModal} classname={""}>
+        <Form
+          form={endAndAssignTaskForm}
+          onSubmit={onSubmitEndAndAssignTaskForm}
+        >
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
@@ -731,7 +619,7 @@ export const Task: FC<{}> = ({}) => {
               <button
                 disabled={loading}
                 type="button"
-                onClick={() => setDelationModal(false)}
+                onClick={() => setEndAndAssignModal(false)}
                 className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
               >
                 <CloseIcon />
@@ -779,7 +667,7 @@ export const Task: FC<{}> = ({}) => {
                 id="reason"
                 placeholder={`Donnez un descriptif`}
                 type="text"
-                {...endTaskForm.register("reason")}
+                {...endAndAssignTaskForm.register("reason")}
               />
 
               <BaseTextArea
@@ -787,7 +675,49 @@ export const Task: FC<{}> = ({}) => {
                 id="note"
                 placeholder={`Laisser une note`}
                 type="text"
-                {...endTaskForm.register("note")}
+                {...endAndAssignTaskForm.register("note")}
+              />
+            </div>
+
+            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
+              <button
+                type="submit"
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+              >
+                {loading ? <Spinner color={"#fff"} size={20} /> : "Terminer"}
+              </button>
+            </div>
+          </div>
+        </Form>
+      </BaseModal>
+
+      {/* end without assignation */}
+      <BaseModal open={endModal} classname={""}>
+        <Form form={endTaskForm} onSubmit={onSubmitEndTaskForm}>
+          <div className="w-[calc(80vh)] h-auto overflow-auto">
+            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
+              <div className="flex flex-col">
+                <span className="text-[18px] font-poppins text-[#060606]">
+                  {`Terminer`}
+                </span>
+              </div>
+              <button
+                disabled={loading}
+                type="button"
+                onClick={() => setEndModal(false)}
+                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="w-full p-[20px]">
+              <BaseTextArea
+                label="Raison"
+                id="reason"
+                placeholder={`Donnez un descriptif`}
+                type="text"
+                {...endTaskForm.register("reason")}
               />
             </div>
 
