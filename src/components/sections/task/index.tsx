@@ -31,6 +31,7 @@ import { getToken } from "@/lib/data/token";
 export const Task: FC<{}> = ({}) => {
   const {
     data: allTasks,
+    mutate,
     error,
     isLoading,
   } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, async () => {
@@ -119,13 +120,15 @@ export const Task: FC<{}> = ({}) => {
         position: "top-center",
       });
 
-      dispatchTasks((tmp) =>
-        tmp?.map((task: TaskInterface) =>
-          task.id === taskInEntry?.id
-            ? { ...task, completed_at: new Date() as unknown as string }
-            : task
-        )
-      );
+      mutate({
+        data: [
+          ...allTasks.map((task: TaskInterface) =>
+            task.id === taskInEntry?.id
+              ? { ...task, completed_at: new Date() as unknown as string }
+              : { ...task }
+          ),
+        ],
+      });
     } else {
       showToast({
         type: "danger",
@@ -150,13 +153,15 @@ export const Task: FC<{}> = ({}) => {
         position: "top-center",
       });
 
-      dispatchTasks((tmp) =>
-        tmp?.map((task: TaskInterface) =>
-          task.id === taskInEntry?.id
-            ? { ...task, completed_at: new Date() as unknown as string }
-            : task
-        )
-      );
+      mutate({
+        data: [
+          ...allTasks.map((task: TaskInterface) =>
+            task.id === taskInEntry?.id
+              ? { ...task, completed_at: new Date() as unknown as string }
+              : { ...task }
+          ),
+        ],
+      });
     } else {
       showToast({
         type: "danger",
@@ -165,7 +170,7 @@ export const Task: FC<{}> = ({}) => {
       });
     }
     setLoading(false);
-    setEndAndAssignModal(false);
+    setEndModal(false);
     reset();
   };
 
@@ -636,7 +641,7 @@ export const Task: FC<{}> = ({}) => {
               </button>
             </div>
 
-            <div className="w-full p-[20px]">
+            <div className="w-full p-[20px] flex flex-col gap-y-[10px]">
               <ComboboxMultiSelect
                 label={"Utilisateur"}
                 placeholder="Selectionnez un utilisateur"
@@ -673,8 +678,8 @@ export const Task: FC<{}> = ({}) => {
               />
 
               <BaseTextArea
-                label="Raison"
-                id="reason"
+                label="Description de la tâche"
+                id="description"
                 placeholder={`Donnez un descriptif`}
                 type="text"
                 {...endAndAssignTaskForm.register("reason")}
