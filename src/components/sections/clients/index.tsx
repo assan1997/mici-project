@@ -498,7 +498,10 @@ export const Clients: FC<{}> = ({}) => {
                               <div className="flex flex-col items-center w-full">
                                 <button
                                   type="button"
-                                  onClick={() => setOpenEditionModal(true)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenEditionModal(true);
+                                  }}
                                   className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
                                 >
                                   {/* <UpdateIcon color={""} /> */}
@@ -518,7 +521,8 @@ export const Clients: FC<{}> = ({}) => {
 
                                 <button
                                   type="button"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     goToDetail(row?.id);
                                   }}
                                   className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
@@ -572,7 +576,8 @@ export const Clients: FC<{}> = ({}) => {
 
                                 <button
                                   type="button"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setDelationModal(true);
                                   }}
                                   className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
