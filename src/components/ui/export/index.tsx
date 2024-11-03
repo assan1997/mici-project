@@ -42,7 +42,7 @@ export const Export: FC<{
   if (type === "csv") {
     return (
       <CSVLink data={entry?.data} headers={entry?.headers}>
-        <div className="h-[40px] shrink-0 text-[14px] min-w-[150px] shadow-custom bg-white gap-x-[4px] text-[#000] font-poppins leading-[20px] rounded-[20px] flex items-center justify-center px-[8px] border">
+        <div className="h-[40px] shrink-0 text-[14px] min-w-[150px]  bg-white gap-x-[4px] text-[#000] font-poppins leading-[20px] rounded-[14px] flex items-center justify-center px-[8px] border">
           <svg
             fill="none"
             height={16}

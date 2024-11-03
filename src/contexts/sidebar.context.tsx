@@ -87,10 +87,10 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
         icon: (color: string) => <Home color={color} size={22} />,
       },
       {
-        link: "/folder",
+        link: "/folders",
         slug: "Dossiers",
         active: false,
-        disable: true,
+        disable: false,
         id: "nav-0",
         icon: (color: string) => <FolderIcon color={color} size={22} />,
       },

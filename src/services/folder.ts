@@ -6,17 +6,17 @@ export interface FolderEntry {
   client_id?: number;
   department_id?: number;
   commercial_id?: number;
-  product_id?: number;
+  // product_id?: number;
   shape_id?: number;
-  fabrication_id?: number;
+  // fabrication_id?: number;
   file_number?: string;
   format?: string;
   color?: string;
   support?: string;
-  bat_id?: number;
+  // bat_id?: number;
   details?: string;
   state?: string;
-  user_id?: string;
+  rule_id?: number;
 }
 
 // OFFSET
@@ -52,6 +52,43 @@ export async function getAllFolders() {
         },
       }
     );
+    return { success: true, allFolders: data };
+  } catch (error) {
+    return { success: false };
+  }
+}
+export async function getOneFolder(id: number) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/folders/${id}`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    return { success: false };
+  }
+}
+export async function closeFolder(id: number) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/${id}/close/`,
+      null,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return { success: true, data };
   } catch (error) {
     return { success: false };
@@ -59,8 +96,6 @@ export async function getAllFolders() {
 }
 export async function deleteFolder(id: number) {
   const token = await getToken();
-  //console.log("id", id);
-  //console.log("token", token);
   try {
     const {
       data: { message },
@@ -77,10 +112,10 @@ export async function deleteFolder(id: number) {
     );
     return { success: true };
   } catch (error) {
-    //console.log("error", error);
     return { success: false };
   }
 }
+
 export async function updateFolder(id: number, entry: FolderEntry) {
   const token = await getToken();
   try {
@@ -159,7 +194,8 @@ export async function assignToAnUserFolder(
   id: number,
   entry: {
     type: string;
-    user_id: string;
+    user_assignated_id: number;
+    task_description: string;
   }
 ) {
   const token = await getToken();
@@ -181,3 +217,4 @@ export async function assignToAnUserFolder(
     return { success: false };
   }
 }
+

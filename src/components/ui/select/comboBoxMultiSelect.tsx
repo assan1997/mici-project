@@ -179,7 +179,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = ({
         className={`relative inline-block  ${className}`}
       >
         {mainText && (
-          <label className="block text-[14px] font-poppins leading-[20px] text-grayscale-900  font-[500] mb-[4px]">
+          <label className="block text-[14px] font-poppins leading-[20px] text-grayscale-900 font-[500] mb-[4px]">
             <span className="text-grayscale-900">{mainText}</span>
             {asterisk && <span className="text-danger-500">{asterisk}</span>}
           </label>
@@ -195,7 +195,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = ({
             }
           }}
           className={twMerge(
-            `shadow-field flex items-center justify-between px-[1.2rem] text-grayscale-900 font-[500] w-full text-[1.4rem] border rounded-full bg-white placeholder:text-[1.4rem] placeholder:text-grayscale-600 placeholder:font-[400] ${
+            `shadow-field flex items-center justify-between px-[1.2rem] text-grayscale-900 font-[500] w-full text-[1.4rem] border rounded-[14px] bg-white placeholder:text-[1.4rem] placeholder:text-grayscale-600 placeholder:font-[400] ${
               selectDropdown === id &&
               "border-vermilion-300 ring-2 ring-offset-2 ring-vermilion-400"
             } transition duration-300 ease-out cursor-pointer`,
@@ -301,7 +301,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = ({
           <div
             className={`
               ${selectDropdown === id ? "block" : "hidden"}
-              absolute left-0 mt-4 origin-top-left rounded-[12px] p-[1rem] border border-gray-200 bg-white shadow-[0px_12px_16px_-4px_#10182814] z-[10000]  focus:outline-none
+              absolute left-0 mt-4 origin-top-left z-50 rounded-[12px] p-[1rem] border border-gray-200 bg-white shadow-[0px_12px_16px_-4px_#10182814]  focus:outline-none
               w-[100%] max-h-[28.8rem] overflow-y-scroll
             `}
           >

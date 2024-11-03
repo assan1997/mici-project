@@ -98,6 +98,7 @@ export const Filter: FC<{
         }
       }
     }
+
     filterHandler((tmp: any) => {
       const newDatas = filterDatas.filter((dt) => {
         setProcessSearch(true);
@@ -180,7 +181,7 @@ export const Filter: FC<{
             dropdownOrigin="bottom-right"
             otherStyles={"w-auto"}
             buttonContent={
-              <div className="rounded-[20px] min-w-[200px] shadow-custom bg-white px-[10px] border">
+              <div className="rounded-[14px] w-auto bg-white px-[10px] border">
                 <div
                   onClick={() => {
                     handleClick();
@@ -189,7 +190,7 @@ export const Filter: FC<{
                 >
                   <div className="flex items-center gap-x-[10px]">
                     <CalendarIcon className={""} size={16} />
-                    <span className="text-[14px] text-[#000] font-poppins  leading-[20px]">
+                    <span className="text-[13px] text-[#000] font-poppins  leading-[20px]">
                       {title}
                     </span>
                   </div>
@@ -205,7 +206,7 @@ export const Filter: FC<{
               </div>
             }
           >
-            <div className="bg-white shadow-custom w-auto shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+            <div className="bg-white w-auto h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
               {/* <div className="w-[200px] h-[200px] bg-red-500"></div> */}
               <Calendar
                 onChange={(data) => {
@@ -228,12 +229,12 @@ export const Filter: FC<{
           dropdownOrigin="bottom-right"
           otherStyles={"w-auto"}
           buttonContent={
-            <div className="rounded-[20px] min-w-[250px] w-auto shadow-custom bg-white px-[10px] border">
+            <div className="rounded-[14px] w-auto bg-white px-[10px] border">
               <div
                 onClick={() => {
                   handleClick();
                 }}
-                className={`h-[40px] flex items-center justify-between`}
+                className={`h-[40px] flex items-center gap-x-[10px] justify-between`}
               >
                 <div className="flex  shrink-0 gap-x-[10px] items-center">
                   <svg
@@ -251,19 +252,19 @@ export const Filter: FC<{
                       fillRule="evenodd"
                     ></path>
                   </svg>
-                  <div className="text-[14px] text-[#000] font-poppins leading-[20px]">
+                  <div className="text-[13px] text-[#000] font-poppins leading-[20px]">
                     {title}
                     {/* {selected ? ` - ${selected}` : ""} */}
                   </div>
                 </div>
-                <div onClick={reset} className="px-[4px]">
+                <div onClick={reset} className="h-hull px-[4px]">
                   <CloseIcon size={10} />
                 </div>
               </div>
             </div>
           }
         >
-          <div className="bg-white w-[250px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+          <div className="bg-white min-w-[150px] h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
             <div className="flex flex-col items-center p-[4px] w-full">
               {list?.map(({ id, name, active }) => (
                 <button
@@ -304,7 +305,7 @@ export const Filter: FC<{
                   className="flex items-center justify-start w-full cursor-pointer"
                 >
                   <div
-                    className={`text-[14px] text-justify w-full p-[4px] transition-all hover:bg-slate-50 ${
+                    className={`text-[13px] text-justify w-full p-[4px] transition-all hover:bg-slate-50 ${
                       active ? "bg-slate-100" : ""
                     } text-[#000] rounded-lg font-poppins font-medium leading-[20px]`}
                   >
@@ -383,7 +384,7 @@ export const Filter: FC<{
       //               <path d="m40.2850342 37.4604492-6.4862061-6.4862061c1.9657593-2.5733643 3.0438843-5.6947021 3.0443115-8.9884033 0-3.9692383-1.5458984-7.7011719-4.3530273-10.5078125-2.8066406-2.8066406-6.5380859-4.3525391-10.5078125-4.3525391-3.9692383 0-7.7011719 1.5458984-10.5078125 4.3525391-5.7939453 5.7944336-5.7939453 15.222168 0 21.015625 2.8066406 2.8071289 6.5385742 4.3530273 10.5078125 4.3530273 3.2937012-.0004272 6.4150391-1.0785522 8.9884033-3.0443115l6.4862061 6.4862061c.3901367.390625.9023438.5859375 1.4140625.5859375s1.0239258-.1953125 1.4140625-.5859375c.78125-.7807617.78125-2.0473633 0-2.828125zm-25.9824219-7.7949219c-4.234375-4.234375-4.2338867-11.1245117 0-15.359375 2.0512695-2.0507813 4.7788086-3.1806641 7.6796875-3.1806641 2.9013672 0 5.628418 1.1298828 7.6796875 3.1806641 2.0512695 2.0512695 3.1811523 4.7788086 3.1811523 7.6796875 0 2.9013672-1.1298828 5.628418-3.1811523 7.6796875s-4.7783203 3.1811523-7.6796875 3.1811523c-2.9008789.0000001-5.628418-1.1298827-7.6796875-3.1811523z"></path>
       //             </g>
       //           </svg>
-      //           <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+      //           <span className="text-[13px] text-[#000] font-poppins font-medium leading-[20px]">
       //             {title} {selected ? ` - ${selected}` : ""}
       //           </span>
       //           {selected ? (
@@ -403,13 +404,9 @@ export const Filter: FC<{
     return (
       <div
         onClick={onClick}
-        className="rounded-full cursor-pointer shadow-custom shrink-0 bg-white  border"
+        className="rounded-[14px] cursor-pointer shrink-0 bg-white  border"
       >
-        <div
-          className={`h-[40px] w-[40px] shrink-0  flex items-center  justify-center`}
-        >
-          {children ? children : ""}
-        </div>
+        {children ? children : ""}
       </div>
     );
 };

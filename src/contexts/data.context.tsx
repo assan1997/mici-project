@@ -32,13 +32,15 @@ export interface FolderInterface {
   support: string;
   commercial: Client;
   department: Department;
-  shape: OffsetShape;
+  shape: ShapeInterface;
+  shape_id: Number;
   bat: any;
   details: string;
   updated_at: string;
   created_at: string;
   id: number;
   status_id: number;
+  rule_id: number;
   logs: any[];
 }
 
@@ -48,7 +50,7 @@ export interface BatInterface {
   fabrication: any;
   commercial: Client;
   department: Department;
-  shape: OffsetShape;
+  shape: ShapeInterface;
   details: string;
   updated_at: string;
   created_at: string;
@@ -113,6 +115,7 @@ export interface TaskInterface {
   started_at: string | null;
   status: string;
   updated_at: string | null;
+  assignable_type: string;
 }
 
 export interface User {
@@ -139,14 +142,14 @@ export interface DataContextType {
   user: User | undefined;
   departments: Department[];
   sections: Section[];
-  offsetShapes: OffsetShape[] | undefined;
+  offsetShapes: ShapeInterface[] | undefined;
   flexoShapes: FlexoShape[] | undefined;
   dispatchUser: React.Dispatch<React.SetStateAction<User | undefined>>;
   dispatchUsers: React.Dispatch<React.SetStateAction<User[] | undefined>>;
   dispatchClients: React.Dispatch<React.SetStateAction<Client[] | undefined>>;
   dispatchDepartment: React.Dispatch<React.SetStateAction<Department[]>>;
   dispatchOffsetShapes: React.Dispatch<
-    React.SetStateAction<OffsetShape[] | undefined>
+    React.SetStateAction<ShapeInterface[] | undefined>
   >;
   dispatchBats: React.Dispatch<
     React.SetStateAction<BatInterface[] | undefined>
@@ -181,7 +184,7 @@ export interface Status {
   id: number;
   name: string;
 }
-export interface OffsetShape {
+export interface ShapeInterface {
   id: number;
   client: Client;
   department: Department;
@@ -271,7 +274,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [user, setUser] = useState<User>();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
-  const [offsetShapes, setOffsetShapes] = useState<OffsetShape[] | undefined>();
+  const [offsetShapes, setOffsetShapes] = useState<
+    ShapeInterface[] | undefined
+  >();
   const [flexoShapes, setFlexoShapes] = useState<FlexoShape[] | undefined>();
   const [bats, setBats] = useState<BatInterface[] | undefined>();
   const [tasks, setTasks] = useState<TaskInterface[] | undefined>();
@@ -394,10 +399,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   // }, [users, getAllShapes]);
 
   const getFolders = async () => {
-    let { data, success } = await getAllFolders();
+    let { allFolders, success } = await getAllFolders();
     if (!success) return;
     dispatchFolders(
-      data?.map((dat: any) => ({
+      allFolders?.map((dat: any) => ({
         ...dat,
         commercial: users?.find((use) => use.id === dat.commercial_id),
       }))

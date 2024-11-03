@@ -5,20 +5,32 @@ import { useRouter, usePathname } from "next/navigation";
 import { getShapeDetails } from "@/services/shapes";
 import { formatTime } from "@/lib/utils/timestamp";
 import { ColumnSkeleton } from "@/components/ui/loader/Skeleton";
+import useSWR from "swr";
+import { getToken } from "@/lib/data/token";
+import axios from "axios";
 export const Details = () => {
   const pathname = usePathname();
   const category = useMemo(() => pathname.split("/")[3], [pathname]);
   const id = useMemo(() => pathname.split("/")[4], [pathname]);
-  const [data, setData] = useState<any>(undefined);
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await getShapeDetails(id);
-      setData(data);
-    })();
-  }, [id]);
+  const { data, isLoading } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}`,
+    async () => {
+      const URL: string = `${process.env.NEXT_PUBLIC_API_URL}/shapes/${id}`;
+      const token = await getToken();
+      const reponse = await axios.get(URL, {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-  const notificationTabs = useMemo(
+      return reponse.data;
+    }
+  );
+
+  const tabs = useMemo(
     () => [
       {
         id: 1,
@@ -30,43 +42,43 @@ export const Details = () => {
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Code</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.code}
+                  {isLoading ? <ColumnSkeleton /> : data?.code}
                 </div>
               </div>
               <div className="border-b border-gray-100  w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Dim_lx_lh</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.dim_lx_lh}
+                  {isLoading ? <ColumnSkeleton /> : data?.dim_lx_lh}
                 </div>
               </div>
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Dim_square</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.dim_square}
+                  {isLoading ? <ColumnSkeleton /> : data?.dim_square}
                 </div>
               </div>
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Dim_plate</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.dim_plate}
+                  {isLoading ? <ColumnSkeleton /> : data?.dim_plate}
                 </div>
               </div>
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Paper_type</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.paper_type}
+                  {isLoading ? <ColumnSkeleton /> : data?.paper_type}
                 </div>
               </div>
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Pose_number</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.pose_number}
+                  {isLoading ? <ColumnSkeleton /> : data?.pose_number}
                 </div>
               </div>
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Part</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.part}
+                  {isLoading ? <ColumnSkeleton /> : data?.part}
                 </div>
               </div>
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
@@ -76,25 +88,25 @@ export const Details = () => {
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Départment</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.department?.name}
+                  {isLoading ? <ColumnSkeleton /> : data?.department?.name}
                 </div>
               </div>
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Commercial</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.commercial?.name}
+                  {isLoading ? <ColumnSkeleton /> : data?.commercial?.name}
                 </div>
               </div>
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Client</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.client?.name}
+                  {isLoading ? <ColumnSkeleton /> : data?.client?.name}
                 </div>
               </div>
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Réference</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.reference}
+                  {isLoading ? <ColumnSkeleton /> : data?.reference}
                 </div>
               </div>
 
@@ -103,7 +115,7 @@ export const Details = () => {
                   Date de création
                 </div>
                 <div className="text-[14px]">
-                  {!data ? (
+                  {isLoading ? (
                     <ColumnSkeleton />
                   ) : (
                     <>
@@ -128,7 +140,7 @@ export const Details = () => {
                   Date de de mise à jour
                 </div>
                 <div className="text-[14px]">
-                  {!data ? (
+                  {isLoading ? (
                     <ColumnSkeleton />
                   ) : (
                     <>
@@ -150,7 +162,7 @@ export const Details = () => {
               <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                 <div className="text-[12px] text-gray-500">Règle</div>
                 <div className="text-[14px]">
-                  {!data ? <ColumnSkeleton /> : data?.rule_id}
+                  {isLoading ? <ColumnSkeleton /> : data?.rule_id}
                 </div>
               </div>
             </div>
@@ -407,7 +419,7 @@ export const Details = () => {
 
   return (
     <BaseTabs
-      tabs={[...notificationTabs]}
+      tabs={[...tabs]}
       layoutId="active_pill_notification"
       headClass="flex items-center relative !px-0"
       animateButtonTabClass="absolute inset-x-0 bottom-0 h-[2px] font-poppins rounded-full bg-vermilion-200"

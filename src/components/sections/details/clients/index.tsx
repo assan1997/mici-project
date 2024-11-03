@@ -24,7 +24,7 @@ export const Details = () => {
     })();
   }, [id]);
 
-  const notificationTabs = useMemo(
+  const tabs = useMemo(
     () => [
       {
         id: 1,
@@ -124,7 +124,7 @@ export const Details = () => {
 
   return (
     <BaseTabs
-      tabs={[...notificationTabs]}
+      tabs={[...tabs]}
       layoutId="active_pill_notification"
       headClass="flex items-center relative !px-0"
       animateButtonTabClass="absolute inset-x-0 bottom-0 h-[2px] font-poppins rounded-full bg-vermilion-200"

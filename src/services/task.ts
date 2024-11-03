@@ -18,6 +18,25 @@ export interface TaskEntry {
   reference?: string;
 }
 
+export async function getAllTasks() {
+  const token = await getToken();
+  try {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/all-tasks`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    return { success: false };
+  }
+}
+
 export async function getTasks() {
   const token = await getToken();
   try {

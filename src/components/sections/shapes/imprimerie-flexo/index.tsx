@@ -24,7 +24,7 @@ import ComboboxMultiSelect from "@/components/ui/select/comboBoxMultiSelect";
 import {
   Client,
   Department,
-  OffsetShape,
+  ShapeInterface,
   useData,
   User,
 } from "@/contexts/data.context";
@@ -123,9 +123,9 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     setClient([]);
   };
   const { box, handleClick } = useActiveState();
-  const [offsetShapes, setOffsetShapes] = useState<OffsetShape[] | undefined>(
-    []
-  );
+  const [offsetShapes, setOffsetShapes] = useState<
+    ShapeInterface[] | undefined
+  >([]);
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
@@ -228,8 +228,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
   const { showToast } = useToast();
   const shapeInEntry = useMemo(() => {
-    const shape: OffsetShape | undefined = offsetShapes?.find(
-      (shape: OffsetShape) => shape.id === currentEntry
+    const shape: ShapeInterface | undefined = offsetShapes?.find(
+      (shape: ShapeInterface) => shape.id === currentEntry
     );
     if (!shape) return;
 

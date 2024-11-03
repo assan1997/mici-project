@@ -13,6 +13,7 @@ import {
   Client,
   Department,
   ShapeInterface,
+  FolderInterface,
   useData,
   User,
 } from "@/contexts/data.context";
@@ -28,6 +29,20 @@ import {
   assignToAnUserOffsetShape,
   endShape,
 } from "@/services/shapes";
+
+import {
+  FolderEntry,
+  createFolder,
+  getAllFolders,
+  getOneFolder,
+  closeFolder,
+  updateFolder,
+  deleteFolder,
+  standbyFolder,
+  observationFolder,
+  assignToAnUserFolder,
+} from "@/services/folder";
+
 import { Spinner } from "@/components/ui/loader/spinner";
 import { TableSkeleton } from "@/components/ui/loader/Skeleton";
 import { useToast } from "@/contexts/toast.context";
@@ -36,17 +51,15 @@ import { Pagination } from "@/components/ui/pagination";
 import { Filter } from "@/components/ui/filter";
 import { Export } from "@/components/ui/export";
 import { useRouter } from "next/navigation";
-import { deleteShape } from "@/services/shapes";
 import { createRoot } from "react-dom/client";
+import useSWR from "swr";
 
-import { useSideBar } from "@/contexts/sidebar.context";
-
-export const Shape: FC<{}> = ({}) => {
+export const Folder: FC<{}> = ({}) => {
   const {
     users,
     clients,
     departments,
-    offsetShapes: allOffsetShapes,
+    offsetShapes: allShapes,
     user,
     dispatchOffsetShapes,
     status,
@@ -55,49 +68,57 @@ export const Shape: FC<{}> = ({}) => {
     refreshShapeData,
     getAllShapes,
   } = useData();
-  const shapeSchema = z.object({
+
+  const { data, mutate, error, isLoading } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}/folders`,
+    getAllFolders
+  );
+
+  const allFolders = useMemo(() => data?.allFolders, [data]);
+  const folderSchema = z.object({
     client: z.number(),
     commercial: z.number(),
     department: z.number(),
-    part: z.string(),
-    dim_lx_lh: z.string(),
-    dim_square: z.string(),
-    dim_plate: z.string(),
-    paper_type: z.string(),
-    pose_number: z.string(),
-    reference: z.string(),
+    number: z.string(),
+    format: z.string(),
+    support: z.string(),
+    color: z.string(),
+    state: z.string(),
+    shape: z.number(),
+    details: z.string(),
     rule: z.number(),
   });
-  const shapeStandBySchema = z.object({
+
+  const folderStandBySchema = z.object({
     reason: z.string(),
   });
-  const shapeObservationSchema = z.object({
+  const folderObservationSchema = z.object({
     observation: z.string(),
   });
-  const shapeAssignSchema = z.object({
+  const folderAssignSchema = z.object({
     user_id: z.number(),
     description: z.string(),
   });
 
-  const form = useForm({ schema: shapeSchema });
-  const standByform = useForm({ schema: shapeStandBySchema });
-  const observationForm = useForm({ schema: shapeObservationSchema });
-  const assignForm = useForm({ schema: shapeAssignSchema });
-  const { roleAdmin } = useSideBar();
+  const form = useForm({ schema: folderSchema });
+  const standByform = useForm({ schema: folderStandBySchema });
+  const observationForm = useForm({ schema: folderObservationSchema });
+  const assignForm = useForm({ schema: folderAssignSchema });
 
   const tableHead = [
     "Statut",
-    "Code",
+    "Numero",
     "Client",
-    "Reference",
     "Commercial",
+    "Etat",
     "Departement",
-    "Dimension LxLxH",
-    "Dimensions Carré",
-    "Dimensions Plaque",
-    "Type Papier",
-    "N° des poses",
-    "1/3",
+    // "Produit",
+    "Forme",
+    "Format",
+    // "Fabrication",
+    "Couleur",
+    "Support",
+    "Détails",
     "Date & Heure de création",
     "Date & Heure de mise à jour",
     "Options",
@@ -107,15 +128,75 @@ export const Shape: FC<{}> = ({}) => {
     form.setValue("client", 0);
     form.setValue("commercial", 0);
     form.setValue("department", 0);
-    form.setValue("dim_lx_lh", "");
-    form.setValue("dim_square", "");
-    form.setValue("dim_plate", "");
-    form.setValue("paper_type", "");
-    form.setValue("pose_number", "");
-    form.setValue("reference", "");
-
-    standByform.setValue("reason", "");
-    observationForm.setValue("observation", "");
+    form.setValue("number", "");
+    form.setValue("format", "");
+    form.setValue("support", "");
+    form.setValue("color", "");
+    form.setValue("state", "");
+    form.setValue("shape", 0);
+    form.setValue("details", "");
+    form.setValue("rule", 0);
+    setSelectedRule([]);
+    setShapes([]);
+    //   {
+    //     "id": 4,
+    //     "file_number": "D_001",
+    //     "client_id": 1,
+    //     "state": "etat",
+    //     "product_id": 1,
+    //     "fabrication_id": 1,
+    //     "format": "format",
+    //     "color": "details",
+    //     "support": "support",
+    //     "commercial_id": 1,
+    //     "department_id": 1,
+    //     "user_assignated_id": null,
+    //     "shape_id": 1,
+    //     "details": "details",
+    //     "created_at": "2024-10-31T18:14:09.000000Z",
+    //     "updated_at": "2024-10-31T18:14:09.000000Z",
+    //     "status_id": 1,
+    //     "rule_id": null,
+    //     "loggers": [
+    //         {
+    //             "id": 384,
+    //             "shape_id": null,
+    //             "title": "Création de dossier",
+    //             "description": "Un nouveau dossier a été créée.",
+    //             "user_treating_id": 20,
+    //             "type": "creation",
+    //             "created_at": "2024-10-31T18:14:09.000000Z",
+    //             "updated_at": "2024-10-31T18:14:09.000000Z",
+    //             "user_assignated_id": null,
+    //             "bat_id": null,
+    //             "folder_id": null,
+    //             "loggable_id": 4,
+    //             "loggable_type": "App\\Models\\Folder",
+    //             "treating_user": {
+    //                 "id": 20,
+    //                 "role_id": 1,
+    //                 "name": "Admin Super",
+    //                 "email": "admin@email.com",
+    //                 "avatar": "users/default.png",
+    //                 "email_verified_at": null,
+    //                 "settings": [],
+    //                 "created_at": "2024-10-15T13:06:54.000000Z",
+    //                 "updated_at": "2024-10-15T13:06:54.000000Z"
+    //             }
+    //         }
+    //     ],
+    //     "department": {
+    //         "id": 1,
+    //         "name": "Imprimerie Offset",
+    //         "description": "Département spécialisé en impression offset.",
+    //         "created_at": null,
+    //         "updated_at": null
+    //     },
+    //     "commercial": null,
+    //     "client": null,
+    //     "assignments": [],
+    //     "performances": []
+    // }
 
     assignForm.setValue("description", "");
     assignForm.setValue("user_id", 0);
@@ -126,10 +207,7 @@ export const Shape: FC<{}> = ({}) => {
     setAssignUser([]);
   };
   const { box, handleClick } = useActiveState();
-  const [offsetShapes, setOffsetShapes] = useState<
-    ShapeInterface[] | undefined
-  >([]);
-
+  const [folders, setFolders] = useState<FolderInterface[] | undefined>([]);
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
@@ -147,56 +225,46 @@ export const Shape: FC<{}> = ({}) => {
     },
   ]);
 
-  const onSubmit = async (data: z.infer<typeof shapeSchema>) => {
+  const onSubmit = async (data: z.infer<typeof folderSchema>) => {
     setLoading(true);
     let {
       client,
       commercial,
       department,
       rule,
-      // code,
-      dim_lx_lh,
-      dim_square,
-      dim_plate,
-      paper_type,
-      pose_number,
-      reference,
-      part,
+      number,
+      format,
+      support,
+      color,
+      state,
+      shape,
+      details,
     } = data;
-    reference = reference.trim();
-    part = part.trim();
-    // code = code.trim();
 
-    const { data: createdOffsetShape, success } = await createOffsetShape({
+    const { data: createdFolder, success } = await createFolder({
+      format,
+      color,
+      details,
+      support,
+      state,
+      shape_id: shape,
       client_id: client,
       department_id: department,
       commercial_id: commercial,
-      // code,
-      dim_lx_lh,
-      dim_square,
-      dim_plate,
-      paper_type,
-      pose_number,
-      reference,
-      part,
       rule_id: rule,
-      user_id: user?.id as unknown as number,
-      observations: observationList?.map((obs) => obs.text),
+      file_number: number,
     });
+
     if (success) {
       reset();
       setCreationModal(false);
-      createdOffsetShape.dim_plate = dim_plate;
-      createdOffsetShape.department = departments.find(
+      createdFolder.department = departments.find(
         (dep) => dep.id === department && dep
       );
-      createdOffsetShape.commercial = users?.find(
-        (use) => use.id === commercial
-      );
-      createdOffsetShape.client = clients?.find((cli) => cli?.id === client);
-      dispatchOffsetShapes((tmp) => {
-        if (tmp) return [createdOffsetShape, ...tmp];
-      });
+      createdFolder.commercial = users?.find((use) => use.id === commercial);
+      createdFolder.client = clients?.find((cli) => cli?.id === client);
+
+      mutate(createdFolder);
 
       showToast({
         type: "success",
@@ -212,6 +280,138 @@ export const Shape: FC<{}> = ({}) => {
     }
     setLoading(false);
   };
+  const onSubmitUpdate = async (data: z.infer<typeof folderSchema>) => {
+    setLoading(true);
+    let {
+      client,
+      commercial,
+      department,
+      rule,
+      number,
+      format,
+      support,
+      color,
+      state,
+      shape,
+      details,
+    } = data;
+    const entry: FolderEntry = {
+      format,
+      color,
+      support,
+      details,
+      state,
+      client_id: client,
+      department_id: department,
+      commercial_id: commercial,
+      shape_id: shape,
+      rule_id: rule,
+      file_number: number,
+    };
+    if (
+      !entry.rule_id ||
+      JSON.stringify(entry.rule_id) === JSON.stringify(folderInEntry?.rule_id)
+    )
+      delete entry.client_id;
+    if (
+      !entry.client_id ||
+      JSON.stringify(entry.client_id) ===
+        JSON.stringify(folderInEntry?.client?.id)
+    )
+      delete entry.client_id;
+    if (
+      !entry.department_id ||
+      JSON.stringify(entry.department_id) ===
+        JSON.stringify(folderInEntry?.department.id)
+    )
+      delete entry.department_id;
+
+    if (
+      !entry.commercial_id ||
+      JSON.stringify(entry?.commercial_id) ===
+        JSON.stringify(folderInEntry?.commercial?.id)
+    )
+      delete entry.commercial_id;
+
+    if (
+      !entry.shape_id ||
+      JSON.stringify(entry.shape_id) === JSON.stringify(folderInEntry?.shape)
+    )
+      delete entry.shape_id;
+
+    if (
+      !entry.file_number ||
+      JSON.stringify(entry.file_number) ===
+        JSON.stringify(folderInEntry?.file_number)
+    )
+      delete entry.file_number;
+
+    if (
+      !entry.format ||
+      JSON.stringify(entry.format) === JSON.stringify(folderInEntry?.format)
+    )
+      delete entry.format;
+
+    if (
+      !entry.color ||
+      JSON.stringify(entry.color) === JSON.stringify(folderInEntry?.color)
+    )
+      delete entry.color;
+
+    if (
+      !entry.support ||
+      JSON.stringify(entry.support) === JSON.stringify(folderInEntry?.support)
+    )
+      delete entry.support;
+
+    if (
+      !entry.state ||
+      JSON.stringify(entry.state) === JSON.stringify(folderInEntry?.state)
+    )
+      delete entry.state;
+
+    if (
+      !entry.details ||
+      JSON.stringify(entry.details) === JSON.stringify(folderInEntry?.details)
+    )
+      delete entry.details;
+
+    const { data: updatedFolder, success } = await updateFolder(
+      currentEntry as number,
+      entry
+    );
+
+    if (success) {
+      updatedFolder.department = departments.find(
+        (dep) => dep.id === department && dep
+      );
+      updatedFolder.commercial = users?.find((use) => use.id === commercial);
+      updatedFolder.client = clients?.find((cli) => cli.id === client);
+      mutate(updatedFolder);
+      // let tmpDatas;
+      // let tmpData;
+
+      // tmpData = tmp.find((t) => t.id === updatedFolder.id);
+      // tmpDatas = tmp.filter((t) => t.id !== updatedFolder.id);
+      // return [{ ...updatedFolder, logs: tmpData?.logs }, ...tmpDatas];
+
+      setOpenEditionModal(false);
+      showToast({
+        type: "success",
+        message: "Modifier avec succès",
+        position: "top-center",
+      });
+    } else {
+      //console.log("error");
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    reset();
+    setLoading(false);
+  };
   interface ComboSelect {
     label: string;
     value: string;
@@ -222,59 +422,72 @@ export const Shape: FC<{}> = ({}) => {
   const [department, setDepartment] = useState<ComboSelect[]>([]);
   const [currentEntry, setCurrentEntry] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
-
   const [currentDatas, setCurrentDatas] = useState<any[]>(
-    allOffsetShapes ? allOffsetShapes : []
+    allFolders ? allFolders : []
   );
   const [selectedRule, setSelectedRule] = useState<ComboSelect[]>([]);
+  const [shapes, setShapes] = useState<ComboSelect[]>([]);
 
   useEffect(() => {
-    setCurrentDatas(allOffsetShapes ? allOffsetShapes : []);
-  }, [allOffsetShapes]);
+    setCurrentDatas(allFolders ? allFolders : []);
+  }, [allFolders]);
 
   const { showToast } = useToast();
-  const shapeInEntry = useMemo(() => {
-    const shape: ShapeInterface | undefined = offsetShapes?.find(
-      (shape: ShapeInterface) => shape.id === currentEntry
+  const folderInEntry = useMemo(() => {
+    const folder: FolderInterface | undefined = folders?.find(
+      (folder: FolderInterface) => folder.id === currentEntry
     );
-    if (!shape) return;
+    if (!folder) return;
 
     const dep = {
-      value: shape?.department?.id,
-      label: shape?.department?.name,
+      value: folder?.department?.id,
+      label: folder?.department?.name,
     };
 
     const comm = {
-      value: shape?.commercial?.id,
-      label: shape?.commercial?.name,
+      value: folder?.commercial?.id,
+      label: folder?.commercial?.name,
     };
 
     const cli = {
-      value: shape?.client?.id,
-      label: shape?.client?.name,
+      value: folder?.client?.id,
+      label: folder?.client?.name,
     };
 
     const rule = {
-      value: shape?.rule_id,
-      label: `Règle ${shape?.rule_id}`,
+      value: folder?.rule_id,
+      label: `Règle ${folder?.rule_id}`,
     };
+
+    console.log("folder", folder);
+    let shape = allShapes
+      ?.map((shape: ShapeInterface) => ({
+        value: shape.id as unknown as string,
+        label: `${shape.reference}  ${shape.code}`,
+      }))
+      .find((shape) => shape.value.toString() === folder.shape_id.toString());
+
+    console.log("rule", rule);
 
     if (dep?.value) setDepartment([dep as any]);
     if (comm?.value) setCommercial([comm as any]);
     if (cli?.value) setClient([cli as any]);
     if (rule?.value) setSelectedRule([rule as any]);
+    if (shape?.value) setShapes([shape]);
 
-    // form.setValue("code", shape.code);
-    form.setValue("dim_lx_lh", shape.dim_lx_lh);
-    form.setValue("dim_square", shape.dim_square);
-    form.setValue("dim_plate", shape.dim_plate);
-    form.setValue("paper_type", shape.paper_type);
-    form.setValue("pose_number", shape.pose_number);
-    form.setValue("reference", shape.reference);
-    form.setValue("part", shape.part);
+    form.setValue("format", folder.format);
+    form.setValue("support", folder.support);
+    form.setValue("color", folder.color);
+    form.setValue("details", folder.details);
+    form.setValue("state", folder.state);
+    form.setValue("number", folder.file_number);
+    // form.setValue("paper_type", shape.paper_type);
+    // form.setValue("pose_number", shape.pose_number);
+    // form.setValue("reference", shape.reference);
+    // form.setValue("part", shape.part);
 
     // setObservationList(shape?.observations?.map((observation) => ({ id: observation.id, text: observation.observation })))
-    return shape;
+    return folder;
   }, [currentEntry]);
 
   useEffect(() => {
@@ -293,170 +506,19 @@ export const Shape: FC<{}> = ({}) => {
     form.setValue("rule", selectedRule[0]?.value as unknown as number);
   }, [selectedRule]);
 
-  const onSubmitUpdate = async (data: z.infer<typeof shapeSchema>) => {
-    setLoading(true);
-    let {
-      client,
-      commercial,
-      department,
-      dim_lx_lh,
-      dim_square,
-      dim_plate,
-      paper_type,
-      pose_number,
-      reference,
-      part,
-      rule,
-    } = data;
-    reference = reference.trim();
-    part = part.trim();
-    const entry: OffsetShapeEntry = {
-      client_id: client,
-      department_id: department,
-      commercial_id: commercial,
-      dim_lx_lh,
-      dim_square,
-      dim_plate,
-      paper_type,
-      pose_number,
-      part,
-      reference,
-      rule_id: rule,
-      observations: observationList?.map((obs) => obs.text),
-    };
+  useEffect(() => {
+    form.setValue("shape", shapes[0]?.value as unknown as number);
+  }, [shapes]);
 
-    if (
-      !entry.rule_id ||
-      JSON.stringify(entry.rule_id) === JSON.stringify(shapeInEntry?.rule_id)
-    )
-      delete entry.client_id;
-    if (
-      !entry.client_id ||
-      JSON.stringify(entry.client_id) ===
-        JSON.stringify(shapeInEntry?.client?.id)
-    )
-      delete entry.client_id;
-    if (
-      !entry.department_id ||
-      JSON.stringify(entry.department_id) ===
-        JSON.stringify(shapeInEntry?.department.id)
-    )
-      delete entry.department_id;
-
-    if (
-      !entry.commercial_id ||
-      JSON.stringify(entry?.commercial_id) ===
-        JSON.stringify(shapeInEntry?.commercial?.id)
-    )
-      delete entry.commercial_id;
-
-    if (
-      !entry.dim_lx_lh ||
-      JSON.stringify(entry.dim_lx_lh) ===
-        JSON.stringify(shapeInEntry?.dim_lx_lh)
-    )
-      delete entry.dim_lx_lh;
-
-    if (
-      !entry.dim_square ||
-      JSON.stringify(entry.dim_square) ===
-        JSON.stringify(shapeInEntry?.dim_square)
-    )
-      delete entry.dim_square;
-
-    if (
-      !entry.dim_plate ||
-      JSON.stringify(entry.dim_plate) ===
-        JSON.stringify(shapeInEntry?.dim_plate)
-    )
-      delete entry.dim_plate;
-
-    if (
-      !entry.paper_type ||
-      JSON.stringify(entry.paper_type) ===
-        JSON.stringify(shapeInEntry?.paper_type)
-    )
-      delete entry.paper_type;
-
-    if (
-      !entry.pose_number ||
-      JSON.stringify(entry.pose_number) ===
-        JSON.stringify(shapeInEntry?.pose_number)
-    )
-      delete entry.pose_number;
-
-    if (
-      !entry.reference ||
-      JSON.stringify(entry.reference) ===
-        JSON.stringify(shapeInEntry?.reference)
-    )
-      delete entry.reference;
-
-    if (
-      !entry.part ||
-      JSON.stringify(entry.part) === JSON.stringify(shapeInEntry?.part)
-    )
-      delete entry.part;
-
-    if (
-      !entry.code ||
-      JSON.stringify(entry.code) === JSON.stringify(shapeInEntry?.code)
-    )
-      delete entry.code;
-
-    const { data: updatedShape, success } = await updateOffsetShape(
-      currentEntry as number,
-      entry
-    );
-
-    if (success) {
-      updatedShape.department = departments.find(
-        (dep) => dep.id === department && dep
-      );
-      updatedShape.commercial = users?.find((use) => use.id === commercial);
-      updatedShape.client = clients?.find((cli) => cli.id === client);
-      dispatchOffsetShapes((tmp) => {
-        let tmpDatas;
-        let tmpData;
-        if (tmp) {
-          tmpData = tmp.find((t) => t.id === updatedShape.id);
-          tmpDatas = tmp.filter((t) => t.id !== updatedShape.id);
-          return [{ ...updatedShape, logs: tmpData?.logs }, ...tmpDatas];
-        }
-      });
-      setOpenEditionModal(false);
-      showToast({
-        type: "success",
-        message: "Modifier avec succès",
-        position: "top-center",
-      });
-    } else {
-      //console.log("error");
-      showToast({
-        type: "danger",
-        message: "L'opération a échoué",
-        position: "top-center",
-      });
-    }
-    reset();
-    setLoading(false);
-  };
   const [openAssignToUserModal, setOpenAssignToUserModal] =
     useState<boolean>(false);
   const [openLogsModal, setOpenLogsModal] = useState<boolean>(false);
-  const handleDeleteShape = async (id: number) => {
+  const handledeleteFolder = async (id: number) => {
     setLoading(true);
-    const { data: deletedShape, success } = await deleteShape(
-      currentEntry as number
-    );
+    const { success } = await deleteFolder(currentEntry as number);
     if (success) {
-      dispatchOffsetShapes((tmp: any) => {
-        let tmpDatas;
-        if (tmp) {
-          tmpDatas = tmp.filter((t: any) => t.id !== currentEntry);
-          return [...tmpDatas];
-        }
-      });
+      let tmpDatas = allFolders.filter((t: any) => t.id !== currentEntry);
+      mutate(tmpDatas);
       setDelationModal(false);
       showToast({
         type: "success",
@@ -477,11 +539,11 @@ export const Shape: FC<{}> = ({}) => {
   const [openObservationModal, setOpenObservationModal] =
     useState<boolean>(false);
 
-  const onSubmitStandBy = async (data: z.infer<typeof shapeStandBySchema>) => {
+  const onSubmitStandBy = async (data: z.infer<typeof folderStandBySchema>) => {
     setLoading(true);
     let { reason } = data;
     reason = reason.trim();
-    const status_id = shapeInEntry?.status_id !== 2 ? 2 : 1;
+    const status_id = folderInEntry?.status_id !== 2 ? 2 : 1;
     let standByShape: any;
     if (status_id === 2) {
       standByShape = await resumeShape(currentEntry as number, {
@@ -525,11 +587,11 @@ export const Shape: FC<{}> = ({}) => {
     reset();
   };
 
-  const onSubmitLock = async (data: z.infer<typeof shapeStandBySchema>) => {
+  const onSubmitLock = async (data: z.infer<typeof folderStandBySchema>) => {
     setLoading(true);
     let { reason } = data;
     reason = reason.trim();
-    const status_id = shapeInEntry?.status_id !== 3 ? 3 : 1;
+    const status_id = folderInEntry?.status_id !== 3 ? 3 : 1;
     let blockShape: any;
 
     if (status_id === 3) {
@@ -575,7 +637,7 @@ export const Shape: FC<{}> = ({}) => {
   };
 
   const onSubmitOservation = async (
-    data: z.infer<typeof shapeObservationSchema>
+    data: z.infer<typeof folderObservationSchema>
   ) => {
     let { observation } = data;
     setLoading(true);
@@ -605,10 +667,11 @@ export const Shape: FC<{}> = ({}) => {
     setLoading(false);
     reset();
   };
-  const onSubmitAssign = async (data: z.infer<typeof shapeAssignSchema>) => {
+
+  const onSubmitAssign = async (data: z.infer<typeof folderAssignSchema>) => {
     setLoading(true);
     let { user_id } = data;
-    const { data: assignShape, success } = await assignToAnUserOffsetShape(
+    const { data: assignFolder, success } = await assignToAnUserFolder(
       currentEntry as number,
       {
         type: "ASSIGNATION",
@@ -637,15 +700,15 @@ export const Shape: FC<{}> = ({}) => {
   const onSubmitClose = async () => {
     setLoading(true);
     const { data: closeShapeData, success } = await endShape(
-      shapeInEntry?.id as unknown as number
+      folderInEntry?.id as unknown as number
     );
     if (success) {
       dispatchOffsetShapes((tmp: any) => {
         let tmpDatas;
         let tmpData;
         if (tmp) {
-          tmpData = tmp.find((t: any) => t.id === shapeInEntry?.id);
-          tmpDatas = tmp.filter((t: any) => t.id !== shapeInEntry?.id);
+          tmpData = tmp.find((t: any) => t.id === folderInEntry?.id);
+          tmpDatas = tmp.filter((t: any) => t.id !== folderInEntry?.id);
           return [{ ...tmpData, status_id: 4 }, ...tmpDatas];
         }
       });
@@ -669,19 +732,18 @@ export const Shape: FC<{}> = ({}) => {
 
   const Router = useRouter();
   const goToDetail = (id: any) => {
-    Router.push(`/workspace/details/shapes/${id}`);
+    Router.push(`/workspace/details/folders/${id}`);
   };
   const [sortedBy, setSortedBY] = useState<string>("");
 
   const sort = (key: string) => {
     setCurrentDatas((tmp) => {
       let sorted: any = [];
-
       setSortedBY(key);
 
       if (key === "client") {
         sorted = tmp?.sort((a, b) => {
-          if (a?.client.name.toUpperCase() > b?.client?.name?.toUpperCase()) {
+          if (a?.client?.name.toUpperCase() > b?.client?.name?.toUpperCase()) {
             return sortedBy !== key ? 1 : -1;
           }
           if (a?.client?.name?.toUpperCase() < b?.client?.name?.toUpperCase()) {
@@ -709,24 +771,36 @@ export const Shape: FC<{}> = ({}) => {
         });
       }
 
-      if (key === "code") {
+      if (key === "numero") {
         sorted = tmp?.sort((a, b) => {
-          if (a?.code?.toUpperCase() > b?.code?.toUpperCase()) {
+          if (a?.file_number?.toUpperCase() > b?.file_number?.toUpperCase()) {
             return 1;
           }
-          if (a?.code?.toUpperCase() < b?.code?.toUpperCase()) {
+          if (a?.file_number?.toUpperCase() < b?.file_number?.toUpperCase()) {
             return -1;
           }
           return 0;
         });
       }
 
-      if (key === "reference") {
+      if (key === "etat") {
         sorted = tmp?.sort((a, b) => {
-          if (a?.reference?.toUpperCase() > b?.reference?.toUpperCase()) {
+          if (a?.state?.toUpperCase() > b?.state?.toUpperCase()) {
             return 1;
           }
-          if (a?.reference?.toUpperCase() < b?.reference?.toUpperCase()) {
+          if (a?.state?.toUpperCase() < b?.state?.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "format") {
+        sorted = tmp?.sort((a, b) => {
+          if (a?.Format?.toUpperCase() > b?.Format?.toUpperCase()) {
+            return 1;
+          }
+          if (a?.Format?.toUpperCase() < b?.Format?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -751,36 +825,36 @@ export const Shape: FC<{}> = ({}) => {
         });
       }
 
-      if (key === "dimension lxlxh") {
+      if (key === "couleur") {
         sorted = tmp?.sort((a, b) => {
-          if (a?.dim_lx_lh?.toUpperCase() > b?.dim_lx_lh?.toUpperCase()) {
+          if (a?.color?.toUpperCase() > b?.color?.toUpperCase()) {
             return 1;
           }
-          if (a?.dim_lx_lh?.toUpperCase() < b?.dim_lx_lh?.toUpperCase()) {
+          if (a?.color?.toUpperCase() < b?.color?.toUpperCase()) {
             return -1;
           }
           return 0;
         });
       }
 
-      if (key === "dimensions carré") {
+      if (key === "support") {
         sorted = tmp?.sort((a, b) => {
-          if (a?.dim_square?.toUpperCase() > b?.dim_square?.toUpperCase()) {
+          if (a?.support?.toUpperCase() > b?.support?.toUpperCase()) {
             return 1;
           }
-          if (a?.dim_square?.toUpperCase() < b?.dim_square?.toUpperCase()) {
+          if (a?.support?.toUpperCase() < b?.support?.toUpperCase()) {
             return -1;
           }
           return 0;
         });
       }
 
-      if (key === "dimensions plaque") {
+      if (key === "détails") {
         sorted = tmp?.sort((a, b) => {
-          if (a?.dim_plate?.toUpperCase() > b?.dim_plate?.toUpperCase()) {
+          if (a?.details?.toUpperCase() > b?.details?.toUpperCase()) {
             return 1;
           }
-          if (a?.dim_plate?.toUpperCase() < b?.dim_plate?.toUpperCase()) {
+          if (a?.details?.toUpperCase() < b?.details?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -840,7 +914,7 @@ export const Shape: FC<{}> = ({}) => {
   };
 
   const resetSortedBy = () => {
-    setCurrentDatas(allOffsetShapes ? [...allOffsetShapes] : []);
+    setCurrentDatas(allFolders ? [...allFolders] : []);
     setSortedBY("");
   };
 
@@ -849,71 +923,61 @@ export const Shape: FC<{}> = ({}) => {
 
   const handleCombineSearch = () => {
     combineSearch?.map((item) => {
-      if (item.id === "Code" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) => shape.code === item?.selectedValues[0]?.value
+      if (item.id === "Numero" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) => folder.file_number === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "Client" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) => shape?.client?.name === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) =>
+            folder?.client?.name === item?.selectedValues[0]?.value
         );
       }
 
-      if (item.id === "Reference" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) => shape?.reference === item?.selectedValues[0]?.value
+      if (item.id === "Etat" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) => folder?.state === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "Commercial" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) =>
-            shape?.commercial?.name === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) =>
+            folder?.commercial?.name === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "Departement" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) =>
-            shape?.department?.name === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) =>
+            folder?.department?.name === item?.selectedValues[0]?.value
         );
       }
 
-      if (item.id === "Dimensions LxLxH" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) => shape?.dim_lx_lh === item?.selectedValues[0]?.value
+      if (item.id === "Format" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) => folder?.format === item?.selectedValues[0]?.value
         );
       }
 
-      if (item.id === "Dimensions Carré" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) => shape?.dim_square === item?.selectedValues[0]?.value
+      if (item.id === "Couleur" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) => folder?.color === item?.selectedValues[0]?.value
         );
       }
 
-      if (item.id === "Dimensions Plaque" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) => shape?.dim_plate === item?.selectedValues[0]?.value
+      if (item.id === "Support" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) => folder?.support === item?.selectedValues[0]?.value
         );
       }
 
-      if (item.id === "Type Papier" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) => shape?.paper_type === item?.selectedValues[0]?.value
-        );
-      }
-
-      if (item.id === "N° des poses" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) => shape?.pose_number === item?.selectedValues[0]?.value
-        );
-      }
-
-      if (item.id === "1/3" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? allOffsetShapes : combo)?.filter(
-          (shape: any) => shape?.part === item?.selectedValues[0]?.value
+      if (item.id === "Détails" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) =>
+            folder?.details.trim() === item?.selectedValues[0]?.value.trim()
         );
       }
     });
@@ -924,7 +988,7 @@ export const Shape: FC<{}> = ({}) => {
   useEffect(() => {
     if (combineSearch.some((cmb) => cmb.selectedValues.length > 0)) {
       handleCombineSearch();
-    } else setCurrentDatas(allOffsetShapes as any);
+    } else setCurrentDatas(allFolders as any);
   }, [combineSearch]);
 
   const RenderDepartmentFilter = useCallback(
@@ -937,17 +1001,17 @@ export const Shape: FC<{}> = ({}) => {
         row={"Departement"}
         index={"status_id"}
         list={departments
-          // .filter((dep) => [1, 2].includes(dep.id))
+          .filter((dep) => [1, 2].includes(dep.id))
           ?.map((dep) => ({
             id: dep.id,
             name: dep.name,
           }))}
-        filterDatas={allOffsetShapes ? allOffsetShapes : []}
+        filterDatas={allFolders ? allFolders : []}
         dataHandler={setCurrentDatas}
-        filterHandler={setOffsetShapes}
+        filterHandler={setFolders}
       />
     ),
-    [departments, allOffsetShapes]
+    [departments, allFolders]
   );
 
   const createSearchCombinaison = (
@@ -964,26 +1028,22 @@ export const Shape: FC<{}> = ({}) => {
         selectedValues: [],
       };
 
-      if (allOffsetShapes)
-        allOffsetShapes.forEach((all) => {
-          if (row === "Code") {
-            mySet.add(all.code);
+      if (allFolders)
+        allFolders.forEach((all: any) => {
+          if (row === "Numero") {
+            mySet.add(all?.file_number);
           }
           if (row === "Client" && all?.client?.name)
             mySet.add(all?.client?.name);
-          if (row === "Reference" && all?.reference) mySet.add(all?.reference);
+          if (row === "Etat" && all?.state) mySet.add(all?.state);
           if (row === "Commercial" && all?.commercial?.name)
             mySet.add(all?.commercial?.name);
           if (row === "Departement" && all?.department?.name)
             mySet.add(all?.department?.name);
-          if (row === "Dimension LxLxH" && all?.dim_lx_lh)
-            mySet.add(all?.dim_lx_lh);
-          if (row === "Dimensions Carré" && all?.dim_square)
-            mySet.add(all?.dim_square);
-          if (row === "Dimensions Plaque" && all?.dim_plate)
-            mySet.add(all?.dim_plate);
-          if (row === "Type Papier" && all?.paper_type)
-            mySet.add(all?.paper_type);
+          if (row === "Couleur" && all?.color) mySet.add(all?.color);
+          if (row === "Support" && all?.support) mySet.add(all?.support);
+          if (row === "Détails" && all?.details) mySet.add(all?.details);
+          if (row === "Format" && all?.format) mySet.add(all?.format);
           if (row === "N° des poses" && all?.pose_number)
             mySet.add(all?.pose_number);
           if (row === "1/3" && all?.part) mySet.add(all?.part);
@@ -1009,11 +1069,13 @@ export const Shape: FC<{}> = ({}) => {
     getAllShapes();
   }, []);
 
+  const [isRefreshingFolder, setIsRefreshingFolder] = useState<boolean>(false);
+
   return (
     <div className="w-full h-full">
       <div className="w-full flex py-[10px] justify-end">
         <button
-          disabled={!offsetShapes}
+          disabled={!allFolders}
           type="button"
           onClick={() => {
             setCreationModal((tmp) => !tmp);
@@ -1042,15 +1104,18 @@ export const Shape: FC<{}> = ({}) => {
             row={""}
             index={""}
             list={[]}
-            filterDatas={allOffsetShapes ? allOffsetShapes : []}
+            filterDatas={allFolders ? allFolders : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
-            onClick={() => {
-              refreshShapeData();
+            filterHandler={setFolders}
+            onClick={async () => {
+              setIsRefreshingFolder(true);
+              const { allFolders } = await getAllFolders();
+              mutate(allFolders);
+              setIsRefreshingFolder(false);
             }}
           >
             <div className="w-[40px] h-[40px] flex items-center justify-center">
-              {onRefreshingShape ? (
+              {isRefreshingFolder ? (
                 <Spinner color={"#000"} size={16} />
               ) : (
                 <svg
@@ -1077,9 +1142,9 @@ export const Shape: FC<{}> = ({}) => {
             row={"Status"}
             index={"status_id"}
             list={status}
-            filterDatas={allOffsetShapes ? allOffsetShapes : []}
+            filterDatas={allFolders ? allFolders : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
+            filterHandler={setFolders}
           />
           {/* <Filter
             type="status"
@@ -1087,9 +1152,9 @@ export const Shape: FC<{}> = ({}) => {
             row={"Status"}
             index={"status_id"}
             list={status}
-            filterDatas={allOffsetShapes ? allOffsetShapes : []}
+            filterDatas={allFolders ? allFolders : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
+            filterHandler={setFolders}
           /> */}
           <RenderDepartmentFilter />
           <Filter
@@ -1098,9 +1163,9 @@ export const Shape: FC<{}> = ({}) => {
             row={""}
             indexs={["code", "reference", "dim_lx_lh", "commercial.name"]}
             list={status}
-            filterDatas={allOffsetShapes ? allOffsetShapes : []}
+            filterDatas={allFolders ? allFolders : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
+            filterHandler={setFolders}
           />
           <Filter
             type="date"
@@ -1108,16 +1173,16 @@ export const Shape: FC<{}> = ({}) => {
             row={"Status"}
             index={"status_id"}
             list={status}
-            filterDatas={allOffsetShapes ? allOffsetShapes : []}
+            filterDatas={allFolders ? allFolders : []}
             dataHandler={setCurrentDatas}
-            filterHandler={setOffsetShapes}
+            filterHandler={setFolders}
           />
-          {allOffsetShapes && allOffsetShapes?.length > 0 ? (
+          {/* {allFolders && allFolders?.length > 0 ? (
             <Export
               title="Exporter en csv"
               type="csv"
               entry={{
-                headers: Object.keys(allOffsetShapes ? allOffsetShapes[0] : {})
+                headers: Object.keys(allFolders ? allFolders[0] : {})
                   .flatMap((shapeKey) => shapeKey)
                   .filter((shapeKey) => {
                     if (
@@ -1141,8 +1206,8 @@ export const Shape: FC<{}> = ({}) => {
                     label: shapeKey.toUpperCase().replaceAll("_", " "),
                     key: shapeKey.toLocaleLowerCase(),
                   })),
-                data: allOffsetShapes
-                  ? allOffsetShapes?.map((shape) => ({
+                data: allFolders
+                  ? allFolders?.map((shape) => ({
                       ...shape,
                       department: shape?.department?.name,
                       client: shape?.client?.name,
@@ -1169,15 +1234,10 @@ export const Shape: FC<{}> = ({}) => {
                   : [],
               }}
             />
-          ) : null}
-          {/* <Export
-            title="Télécharger le pdf"
-            type="pdf"
-            entry={{ headers: [], data: [] }}
-          /> */}
+          ) : null} */}
         </div>
         <div className="relative w-full overflow-auto bg-white">
-          {!allOffsetShapes ? (
+          {!allFolders ? (
             <TableSkeleton head={tableHead} />
           ) : currentDatas?.length > 0 ? (
             <motion.div
@@ -1443,7 +1503,7 @@ export const Shape: FC<{}> = ({}) => {
                   </tr>
                 </thead>
                 <tbody className="bg-white/10 -z-[1]">
-                  {offsetShapes?.map((row, index) => {
+                  {folders?.map((row: any, index: number) => {
                     const statut = status.find(
                       (st) => st.id === row?.status_id
                     );
@@ -1457,8 +1517,7 @@ export const Shape: FC<{}> = ({}) => {
                           document.getElementById("dropdown")?.remove();
                           const dropdown = document.createElement("div");
                           dropdown.id = "dropdown";
-                          dropdown.style.boxShadow =
-                            "0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)";
+
                           dropdown.className = "w-[200px] h-[200px] absolute";
                           const target = e.target as HTMLElement;
                           target.appendChild(dropdown);
@@ -1473,7 +1532,7 @@ export const Shape: FC<{}> = ({}) => {
                                     e.stopPropagation();
                                     setOpenEditionModal(true);
                                   }}
-                                  className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                  className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
                                 >
                                   {/* <UpdateIcon color={""} /> */}
                                   <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
@@ -1481,18 +1540,18 @@ export const Shape: FC<{}> = ({}) => {
                                   </span>
                                 </button>
 
-                                <Export
+                                {/* <Export
                                   title="Télécharger le pdf"
                                   type="pdf"
                                   entry={{
                                     headers: [],
-                                    data: shapeInEntry,
+                                    data: folderInEntry,
                                   }}
-                                />
+                                /> */}
 
                                 <button
                                   type="button"
-                                  onClick={(e) => {
+                                  onClick={(e: any) => {
                                     e.stopPropagation();
                                     goToDetail(row?.id);
                                   }}
@@ -1517,7 +1576,7 @@ export const Shape: FC<{}> = ({}) => {
                                   </span>
                                 </button>
 
-                                <button
+                                {/* <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1526,11 +1585,11 @@ export const Shape: FC<{}> = ({}) => {
                                   className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                 >
                                   <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    {shapeInEntry?.status_id === 3
+                                    {folderInEntry?.status_id === 3
                                       ? "Débloquer"
                                       : "Bloquer"}
                                   </span>
-                                </button>
+                                </button> */}
 
                                 <button
                                   type="button"
@@ -1541,12 +1600,12 @@ export const Shape: FC<{}> = ({}) => {
                                   className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                 >
                                   <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    {shapeInEntry?.status_id === 2
+                                    {folderInEntry?.status_id === 2
                                       ? "Enlever en standby"
                                       : "Mettre en standby"}
                                   </span>
                                 </button>
-                                <button
+                                {/* <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1557,7 +1616,7 @@ export const Shape: FC<{}> = ({}) => {
                                   <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
                                     Terminer
                                   </span>
-                                </button>
+                                </button> */}
 
                                 <button
                                   type="button"
@@ -1568,7 +1627,7 @@ export const Shape: FC<{}> = ({}) => {
                                   className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                 >
                                   <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                    Supprimer la forme
+                                    Supprimer le dossier
                                   </span>
                                 </button>
                               </div>
@@ -1609,7 +1668,7 @@ export const Shape: FC<{}> = ({}) => {
                           //  onClick={() => goToDetail(row?.id)}
                           className="text-[#636363] relative min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
-                          {row?.code}
+                          {row?.file_number}
                         </td>
                         <td
                           //  onClick={() => goToDetail(row?.id)}
@@ -1621,86 +1680,87 @@ export const Shape: FC<{}> = ({}) => {
                           //  onClick={() => goToDetail(row?.id)}
                           className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
-                          {row?.reference}
-                        </td>
-                        <td
-                          //  onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
                           {row?.commercial?.name}
                         </td>
                         <td
                           //  onClick={() => goToDetail(row?.id)}
                           className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
-                          {row.department?.name}
+                          {row?.state}
                         </td>
                         <td
                           //  onClick={() => goToDetail(row?.id)}
                           className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
-                          {row?.dim_lx_lh}
-                        </td>
-                        <td
-                          //  onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.dim_square}
-                        </td>
-                        <td
-                          //  onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.dim_plate}
-                        </td>
-                        <td
-                          //  onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.paper_type}
-                        </td>
-                        <td
-                          //  onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.pose_number}
-                        </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
-                          {row?.part}
-                        </td>
-                        <td
-                          //  onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {formatTime(
-                            new Date(row?.["created_at"]).getTime(),
-                            "d:mo:y",
-                            "short"
-                          )}
-                          {" à "}
-                          {formatTime(
-                            new Date(row?.["created_at"]).getTime(),
-                            "h:m",
-                            "short"
-                          )}
-                        </td>
-                        <td
-                          //  onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {formatTime(
-                            new Date(row?.["updated_at"]).getTime(),
-                            "d:mo:y",
-                            "short"
-                          )}
-                          {" à "}
-                          {formatTime(
-                            new Date(row?.["updated_at"]).getTime(),
-                            "h:m",
-                            "short"
-                          )}
+                          {row?.department?.name}
                         </td>
 
+                        <td
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {
+                            allShapes?.find(
+                              (shape) => shape.id === row?.shape_id
+                            )?.reference
+                          }
+                        </td>
+
+                        <td
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {row.format}
+                        </td>
+                        <td
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {row?.color}
+                        </td>
+                        <td
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {row?.support}
+                        </td>
+                        <td className="text-[#636363] min-w-[100px]  px-[20px] text-start font-poppins text-[14px]">
+                          <div className="w-[200px] truncate">
+                            {row?.details}
+                          </div>
+                        </td>
+                        <td
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {formatTime(
+                            new Date(row?.["created_at"]).getTime(),
+                            "d:mo:y",
+                            "short"
+                          )}
+                          {" à "}
+                          {formatTime(
+                            new Date(row?.["created_at"]).getTime(),
+                            "h:m",
+                            "short"
+                          )}
+                        </td>
+                        <td
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {formatTime(
+                            new Date(row?.["updated_at"]).getTime(),
+                            "d:mo:y",
+                            "short"
+                          )}
+                          {" à "}
+                          {formatTime(
+                            new Date(row?.["updated_at"]).getTime(),
+                            "h:m",
+                            "short"
+                          )}
+                        </td>
                         <td
                           onClick={(e) => e.stopPropagation()}
                           className="text-[#636363] w-auto px-[20px] text-start font-poppins"
@@ -1732,7 +1792,7 @@ export const Shape: FC<{}> = ({}) => {
                                         e.stopPropagation();
                                         setOpenEditionModal(true);
                                       }}
-                                      className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                      className="flex items-center justify-start  w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
                                     >
                                       {/* <UpdateIcon color={""} /> */}
                                       <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
@@ -1740,14 +1800,14 @@ export const Shape: FC<{}> = ({}) => {
                                       </span>
                                     </button>
 
-                                    <Export
+                                    {/* <Export
                                       title="Télécharger le pdf"
                                       type="pdf"
                                       entry={{
                                         headers: [],
-                                        data: shapeInEntry,
+                                        data: folderInEntry,
                                       }}
-                                    />
+                                    /> */}
 
                                     <button
                                       type="button"
@@ -1776,7 +1836,7 @@ export const Shape: FC<{}> = ({}) => {
                                       </span>
                                     </button>
 
-                                    <button
+                                    {/* <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -1785,54 +1845,51 @@ export const Shape: FC<{}> = ({}) => {
                                       className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                     >
                                       <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        {shapeInEntry?.status_id === 3
+                                        {folderInEntry?.status_id === 3
                                           ? "Débloquer"
                                           : "Bloquer"}
                                       </span>
-                                    </button>
+                                    </button> */}
 
-                                    {roleAdmin ? (
-                                      <>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setOpenStandByModal(true);
-                                          }}
-                                          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                        >
-                                          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                            {shapeInEntry?.status_id === 2
-                                              ? "Enlever en standby"
-                                              : "Mettre en standby"}
-                                          </span>
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setEndModal(true);
-                                          }}
-                                          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                        >
-                                          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                            Terminer
-                                          </span>
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setDelationModal(true);
-                                          }}
-                                          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                        >
-                                          <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                            Supprimer la forme
-                                          </span>
-                                        </button>
-                                      </>
-                                    ) : null}
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenStandByModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        {folderInEntry?.status_id === 2
+                                          ? "Enlever en standby"
+                                          : "Mettre en standby"}
+                                      </span>
+                                    </button>
+                                    {/* <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEndModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        Terminer
+                                      </span>
+                                    </button> */}
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDelationModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                        Supprimer le dossier
+                                      </span>
+                                    </button>
                                   </div>
                                 </div>
                               </MenuDropdown>
@@ -1857,30 +1914,24 @@ export const Shape: FC<{}> = ({}) => {
             >
               <div className="w-full bg-white/80 flex gap-x-[10px] justify-center items-center font-poppins font-medium leading-[20px] px-[20px] h-[60px]">
                 Aucune donnée
-                {currentDatas?.length === 0 ? (
-                  <Filter
-                    type="button"
-                    title={""}
-                    row={""}
-                    index={""}
-                    list={[]}
-                    filterDatas={allOffsetShapes ? allOffsetShapes : []}
-                    dataHandler={setCurrentDatas}
-                    filterHandler={setOffsetShapes}
-                    onClick={() => {
-                      setCombineSearch((tmp: any) => {
-                        tmp.pop();
-                        return [...tmp];
-                      });
-                    }}
-                  >
-                    <div
-                      className={`h-[20px] w-[20px] shrink-0  flex items-center  justify-center`}
-                    >
-                      <CloseIcon size={10} />
-                    </div>
-                  </Filter>
-                ) : null}
+                <Filter
+                  type="button"
+                  title={""}
+                  row={""}
+                  index={""}
+                  list={[]}
+                  filterDatas={allFolders ? allFolders : []}
+                  dataHandler={setCurrentDatas}
+                  filterHandler={setFolders}
+                  onClick={() => {
+                    setCombineSearch((tmp: any) => {
+                      tmp.pop();
+                      return [...tmp];
+                    });
+                  }}
+                >
+                  <CloseIcon />
+                </Filter>
               </div>
             </motion.div>
           )}
@@ -1888,7 +1939,7 @@ export const Shape: FC<{}> = ({}) => {
         {currentDatas?.length > 0 ? (
           <Pagination
             datas={currentDatas ? currentDatas : []}
-            listHandler={setOffsetShapes}
+            listHandler={setFolders}
           />
         ) : null}
       </motion.div>
@@ -1897,7 +1948,7 @@ export const Shape: FC<{}> = ({}) => {
           <div className="w-[calc(150vh)] h-[98vh]">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
               <span className="text-[18px] font-medium font-poppins text-[#060606]">
-                Nouvelle forme
+                Nouveau dossier
               </span>
               <button
                 type="button"
@@ -2013,71 +2064,41 @@ export const Shape: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setCommercial}
                   borderColor="border-grayscale-200"
                 />
-                <BaseInput
-                  label="Reference"
-                  id="reference"
-                  placeholder="Reference"
-                  // leftIcon={<RulerIcon color={""} size={20} />}
-                  type="text"
-                  {...form.register("reference")}
-                />
-                {/* <BaseInput
-                  label="Code"
-                  id="code"
-                  placeholder="Code"
-                  // leftIcon={<RulerIcon color={""} size={20} />}
-                  type="text"
-                  {...form.register("code")}
-                /> */}
-                <BaseInput
-                  label="Dimension LxLxH"
-                  id="dim_lx_lxh"
-                  placeholder="Dimension LxLxH"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("dim_lx_lh")}
-                />
-                <BaseInput
-                  label="Dimensions Carrée"
-                  id="dim_square"
-                  placeholder="Dimensions Carrée"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("dim_square")}
-                />
-                <BaseInput
-                  label="Dimensions plaque"
-                  id="dim_plate"
-                  placeholder="Dimensions plaque"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("dim_plate")}
-                />
-                <BaseInput
-                  label="Type Papier"
-                  id="paper_type"
-                  placeholder="Type Papier"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("paper_type")}
-                />
-                <BaseInput
-                  label="N° des poses"
-                  id="pose_number"
-                  placeholder="N° des poses"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("pose_number")}
+                <ComboboxMultiSelect
+                  label={"Forme"}
+                  placeholder="Selectionnez une forme"
+                  className="w-full"
+                  icon={
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                        stroke="black"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  }
+                  id={`shape`}
+                  options={
+                    allShapes?.map((shape: ShapeInterface) => ({
+                      value: shape.id as unknown as string,
+                      label: `${shape.reference}  ${shape.code}`,
+                    })) as []
+                  }
+                  error={undefined}
+                  isUniq={true}
+                  selectedElementInDropdown={shapes}
+                  setSelectedUniqElementInDropdown={setShapes}
+                  borderColor="border-grayscale-200"
                 />
 
-                <BaseInput
-                  label="1/3"
-                  id="part"
-                  placeholder="1/3"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("part")}
-                />
                 <ComboboxMultiSelect
                   label={"Règle"}
                   placeholder="Sélectionnez la règle a appliquer"
@@ -2110,82 +2131,63 @@ export const Shape: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setSelectedRule}
                   borderColor="border-grayscale-200"
                 />
+                <BaseInput
+                  label="Numero de dossier"
+                  id="doc nnumber"
+                  placeholder="Numero de dossier"
+                  // leftIcon={<RulerIcon color={""} size={20} />}
+                  type="text"
+                  {...form.register("number")}
+                />
+
+                <BaseInput
+                  label="Format"
+                  id="format"
+                  placeholder="Format"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("format")}
+                />
+                <BaseInput
+                  label="Support"
+                  id="support"
+                  placeholder="Support"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("support")}
+                />
+
+                <BaseInput
+                  label="Couleur"
+                  id="color"
+                  placeholder="Couleur"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("color")}
+                />
+
+                <BaseInput
+                  label="Etat"
+                  id="state"
+                  placeholder="Etat"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("state")}
+                />
+
                 <br />
               </div>
-              {observationList?.map(
-                (
-                  observation: {
-                    id: number;
-                    text: string;
-                  },
-                  index: number
-                ) => (
-                  <motion.div
-                    key={index}
-                    initial={{ y: 40, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{
-                      duration: 1,
-                      ease: [0.36, 0.01, 0, 0.99],
-                      delay: 0.2,
-                    }}
-                  >
-                    <div className="flex gap-x-[10px] items-center">
-                      <BaseTextArea
-                        label="Nouvelle observation"
-                        id="observation"
-                        placeholder="Observation"
-                        // leftIcon={<RulerIcon color={""} size={20} />}
-                        type="text"
-                        onChange={(e) => {
-                          setObservationList((tmp) =>
-                            tmp?.map((obs) =>
-                              obs.id === observation.id
-                                ? { ...obs, text: e.target.value }
-                                : obs
-                            )
-                          );
-                        }}
-                        value={observation.text}
-                      />
-                      <div className="flex gap-x-[10px]">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setObservationList((tmp) => [
-                              ...tmp,
-                              {
-                                id:
-                                  observationList[observationList.length - 1]
-                                    .id + 1,
-                                text: "",
-                              },
-                            ]);
-                          }}
-                          className={`mt-5 w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-                        >
-                          +
-                        </button>
-                        {index !== 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setObservationList((tmp) =>
-                                tmp.filter(
-                                  (obs) => obs.id !== observation.id && obs
-                                )
-                              );
-                            }}
-                            className={`mt-5 w-fit h-[48px] text-gray-900 transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#dbdbdb8e] hover:bg-[#dbdbdb]/90`}
-                          >
-                            -
-                          </button>
-                        ) : null}
-                      </div>
-                    </div>
-                  </motion.div>
-                )
-              )}
+              <div className="flex gap-x-[10px] items-center">
+                <BaseTextArea
+                  label="Details"
+                  id="details"
+                  placeholder="Details"
+                  // leftIcon={<RulerIcon color={""} size={20} />}
+                  type="text"
+                  {...form.register("details")}
+                  // value={observation.text}
+                />
+              </div>
             </div>
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center px-[20px] py-[10px] h-[80px] border-t">
               <button
@@ -2221,7 +2223,7 @@ export const Shape: FC<{}> = ({}) => {
                 </span>
               </button>
             </div>
-            <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-auto relative py-[10px] px-[20px]">
+            <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-scroll relative py-[10px] px-[20px]">
               <div className="w-full grid gap-[8px] grid-cols-3">
                 <ComboboxMultiSelect
                   label={"Département"}
@@ -2325,69 +2327,39 @@ export const Shape: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setCommercial}
                   borderColor="border-grayscale-200"
                 />
-                <BaseInput
-                  label="Reference"
-                  id="reference"
-                  placeholder="Reference"
-                  // leftIcon={<RulerIcon color={""} size={20} />}
-                  type="text"
-                  {...form.register("reference")}
-                />
-                {/* <BaseInput
-                  label="Code"
-                  id="code"
-                  placeholder="Code"
-                  // leftIcon={<RulerIcon color={""} size={20} />}
-                  type="text"
-                  {...form.register("code")}
-                /> */}
-                <BaseInput
-                  label="Dimension LxLxh"
-                  id="dim_lx_lxh"
-                  placeholder="Dimension LxLxh"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("dim_lx_lh")}
-                />
-                <BaseInput
-                  label="Dimensions Carrée"
-                  id="dim_square"
-                  placeholder="Dimensions Carrée"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("dim_square")}
-                />
-                <BaseInput
-                  label="Dimensions plaque"
-                  id="dim_plate"
-                  placeholder="Dimensions plaque"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("dim_plate")}
-                />
-                <BaseInput
-                  label="Type Papier"
-                  id="paper_type"
-                  placeholder="Type Papier"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("paper_type")}
-                />
-                <BaseInput
-                  label="N° des poses"
-                  id="pose_number"
-                  placeholder="N° des poses"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("pose_number")}
-                />
-                <BaseInput
-                  label="1/3"
-                  id="part"
-                  placeholder="1/3"
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("part")}
+                <ComboboxMultiSelect
+                  label={"Forme"}
+                  placeholder="Selectionnez une forme"
+                  className="w-full"
+                  icon={
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                        stroke="black"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  }
+                  id={`shape`}
+                  options={
+                    allShapes?.map((shape: ShapeInterface) => ({
+                      value: shape.id as unknown as string,
+                      label: `${shape.reference}  ${shape.code}`,
+                    })) as []
+                  }
+                  error={undefined}
+                  isUniq={true}
+                  selectedElementInDropdown={shapes}
+                  setSelectedUniqElementInDropdown={setShapes}
+                  borderColor="border-grayscale-200"
                 />
 
                 <ComboboxMultiSelect
@@ -2422,96 +2394,82 @@ export const Shape: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setSelectedRule}
                   borderColor="border-grayscale-200"
                 />
-              </div>
+                <BaseInput
+                  label="Numero de dossier"
+                  id="doc nnumber"
+                  placeholder="Numero de dossier"
+                  // leftIcon={<RulerIcon color={""} size={20} />}
+                  type="text"
+                  {...form.register("number")}
+                />
 
-              {observationList?.map(
-                (
-                  observation: {
-                    id: number;
-                    text: string;
-                  },
-                  index: number
-                ) => (
-                  <motion.div
-                    key={index}
-                    initial={{ y: 40, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{
-                      duration: 1,
-                      ease: [0.36, 0.01, 0, 0.99],
-                      delay: 0.2,
-                    }}
-                  >
-                    <div className="flex gap-x-[10px] items-center">
-                      <BaseTextArea
-                        label="Nouvelle observation"
-                        id="observation"
-                        placeholder="Observation"
-                        // leftIcon={<RulerIcon color={""} size={20} />}
-                        type="text"
-                        onChange={(e) => {
-                          setObservationList((tmp) =>
-                            tmp?.map((obs) =>
-                              obs.id === observation.id
-                                ? { ...obs, text: e.target.value }
-                                : obs
-                            )
-                          );
-                        }}
-                        value={observation.text}
-                      />
-                      <div className="flex gap-x-[10px]">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setObservationList((tmp) => [
-                              ...tmp,
-                              {
-                                id:
-                                  observationList[observationList.length - 1]
-                                    .id + 1,
-                                text: "",
-                              },
-                            ]);
-                          }}
-                          className={`mt-5 w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-                        >
-                          +
-                        </button>
-                        {index !== 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setObservationList((tmp) =>
-                                tmp.filter(
-                                  (obs) => obs.id !== observation.id && obs
-                                )
-                              );
-                            }}
-                            className={`mt-5 w-fit h-[48px] text-gray-900 transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#dbdbdb8e] hover:bg-[#dbdbdb]/90`}
-                          >
-                            -
-                          </button>
-                        ) : null}
-                      </div>
-                    </div>
-                  </motion.div>
-                )
-              )}
+                <BaseInput
+                  label="Format"
+                  id="format"
+                  placeholder="Format"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("format")}
+                />
+                <BaseInput
+                  label="Support"
+                  id="support"
+                  placeholder="Support"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("support")}
+                />
+
+                <BaseInput
+                  label="Couleur"
+                  id="color"
+                  placeholder="Couleur"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("color")}
+                />
+
+                <BaseInput
+                  label="Etat"
+                  id="state"
+                  placeholder="Etat"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("state")}
+                />
+
+                <br />
+              </div>
+              <div className="flex gap-x-[10px] items-center">
+                <BaseTextArea
+                  label="Details"
+                  id="details"
+                  placeholder="Details"
+                  // leftIcon={<RulerIcon color={""} size={20} />}
+                  type="text"
+                  {...form.register("details")}
+                  // value={observation.text}
+                />
+              </div>
             </div>
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center px-[20px] py-[10px] h-[80px] border-t">
               <button
-                type="submit"
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
-                {loading ? <Spinner color={"#fff"} size={20} /> : "Modifier"}
+                {loading ? (
+                  <>
+                    <Spinner color={"#fff"} size={20} /> {"En cours"}
+                  </>
+                ) : (
+                  "Enregistrer"
+                )}
               </button>
             </div>
           </div>
         </Form>
       </BaseModal>
       {/* DELATION MODAL */}
-      <BaseModal open={openDelationModal} classname={""}>
+      {/* <BaseModal open={openDelationModal} classname={""}>
         <div className="w-[calc(80vh)] h-auto overflow-auto">
           <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
@@ -2543,7 +2501,7 @@ export const Shape: FC<{}> = ({}) => {
             <button
               type="button"
               onClick={() => {
-                handleDeleteShape(currentEntry as unknown as number);
+                handledeleteFolder(currentEntry as unknown as number);
               }}
               className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
             >
@@ -2551,9 +2509,9 @@ export const Shape: FC<{}> = ({}) => {
             </button>
           </div>
         </div>
-      </BaseModal>
+      </BaseModal> */}
       {/* DELATION MODAL */}
-      <BaseModal open={openEndModal} classname={""}>
+      {/* <BaseModal open={openEndModal} classname={""}>
         <div className="w-[calc(80vh)] h-auto overflow-auto">
           <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
@@ -2583,9 +2541,9 @@ export const Shape: FC<{}> = ({}) => {
             </button>
           </div>
         </div>
-      </BaseModal>
+      </BaseModal> */}
       {/* LOGS MODAL */}
-      <BaseModal open={openLogsModal} classname={""}>
+      {/* <BaseModal open={openLogsModal} classname={""}>
         <div className="w-[calc(150vh)] h-auto ">
           <div className="w-full bg-white/80 sticky top-0 right-0 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
@@ -2607,9 +2565,8 @@ export const Shape: FC<{}> = ({}) => {
               <CloseIcon />
             </button>
           </div>
-          {/* "Utilisateur assigné" */}
           <div className="overflow-auto max-h-[80vh]">
-            {!shapeInEntry?.logs ? (
+            {!folderInEntry?.logs ? (
               <div className="w-full flex justify-center items-center p-[20px]">
                 <span>Aucun log</span>
               </div>
@@ -2640,7 +2597,7 @@ export const Shape: FC<{}> = ({}) => {
                   </tr>
                 </thead>{" "}
                 <tbody className="bg-white/80">
-                  {shapeInEntry?.logs?.map((row, index) => (
+                  {folderInEntry?.logs?.map((row, index) => (
                     <tr key={index} className="border-b">
                       <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
                         {row?.title}
@@ -2678,21 +2635,21 @@ export const Shape: FC<{}> = ({}) => {
             )}
           </div>
         </div>
-      </BaseModal>
+      </BaseModal> */}
       {/* standBy MODAL */}
-      <BaseModal open={openStandByModal} classname={""}>
+      {/* <BaseModal open={openStandByModal} classname={""}>
         <Form form={standByform} onSubmit={onSubmitStandBy}>
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[18px] font-poppins text-[#060606]">
-                  {shapeInEntry?.status_id !== 2
+                  {folderInEntry?.status_id !== 2
                     ? "Mettre en standby"
                     : "Enlever en standby"}
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
                   {`Vous êtes sur point ${
-                    shapeInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "
+                    folderInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "
                   } une forme en standby`}
                 </span>
               </div>
@@ -2710,30 +2667,23 @@ export const Shape: FC<{}> = ({}) => {
                 label="Raison"
                 id="reason"
                 placeholder={` Dites pourquoi vous ${
-                  shapeInEntry?.status_id !== 2
+                  folderInEntry?.status_id !== 2
                     ? "mettez en standBy"
                     : "enlevez en standby"
                 } `}
-                // leftIcon={<RulerIcon color={""} size={20} />}
                 type="text"
                 {...standByform.register("reason")}
               />
             </div>
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-              {/* <button
-                type="button"
-                onClick={() => setOpenStandByModal((tmp) => !tmp)}
-                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-              >
-                Annuler
-              </button> */}
+             
               <button
                 type="submit"
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
               >
                 {loading ? (
                   <Spinner color={"#fff"} size={20} />
-                ) : shapeInEntry?.status_id !== 2 ? (
+                ) : folderInEntry?.status_id !== 2 ? (
                   "Mettre en standBy"
                 ) : (
                   "Enlever en standby"
@@ -2742,19 +2692,19 @@ export const Shape: FC<{}> = ({}) => {
             </div>
           </div>
         </Form>
-      </BaseModal>
+      </BaseModal> */}
 
-      <BaseModal open={openLockModal} classname={""}>
+      {/* <BaseModal open={openLockModal} classname={""}>
         <Form form={standByform} onSubmit={onSubmitLock}>
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[18px] font-poppins text-[#060606]">
-                  {shapeInEntry?.status_id !== 3 ? "Bloquer" : "Débloquer"}
+                  {folderInEntry?.status_id !== 3 ? "Bloquer" : "Débloquer"}
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
                   {`Vous êtes sur point de ${
-                    shapeInEntry?.status_id !== 3 ? "bloquer" : "débloquer"
+                    folderInEntry?.status_id !== 3 ? "bloquer" : "débloquer"
                   } une forme `}
                 </span>
               </div>
@@ -2772,21 +2722,15 @@ export const Shape: FC<{}> = ({}) => {
                 label="Raison"
                 id="reason"
                 placeholder={`Dites pourquoi vous  ${
-                  shapeInEntry?.status_id !== 3 ? "bloquer" : "débloquer"
+                  folderInEntry?.status_id !== 3 ? "bloquer" : "débloquer"
                 }  cette forme`}
-                // leftIcon={<RulerIcon color={""} size={20} />}
+               
                 type="text"
                 {...standByform.register("reason")}
               />
             </div>
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-              {/* <button
-                type="button"
-                onClick={() => setOpenStandByModal((tmp) => !tmp)}
-                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-              >
-                Annuler
-              </button> */}
+            
               <button
                 type="submit"
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
@@ -2794,13 +2738,13 @@ export const Shape: FC<{}> = ({}) => {
                 {loading ? (
                   <Spinner color={"#fff"} size={20} />
                 ) : (
-                  `${shapeInEntry?.status_id !== 3 ? "Bloquer" : "Débloquer"}`
+                  `${folderInEntry?.status_id !== 3 ? "Bloquer" : "Débloquer"}`
                 )}
               </button>
             </div>
           </div>
         </Form>
-      </BaseModal>
+      </BaseModal> */}
 
       {/* assign to user MODAL */}
       <BaseModal open={openAssignToUserModal} classname={""}>
@@ -2866,7 +2810,6 @@ export const Shape: FC<{}> = ({}) => {
                 label="Description"
                 id="description"
                 placeholder="Décrivez cette tâche"
-                // leftIcon={<RulerIcon color={""} size={20} />}
                 type="text"
                 {...assignForm.register("description")}
               />
@@ -2882,99 +2825,95 @@ export const Shape: FC<{}> = ({}) => {
           </div>
         </Form>
       </BaseModal>
-      {/* observation MODAL */}
-      <BaseModal open={openObservationModal} classname={""}>
-        <Form form={observationForm} onSubmit={onSubmitOservation}>
-          <div className="w-[calc(80vh)] h-auto overflow-auto">
-            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
-              <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
-                  Observation
-                </span>
-                <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                  Faites une observation
-                </span>
-              </div>
-              <button
-                disabled={loading}
-                type="button"
-                onClick={() => setOpenObservationModal(false)}
-                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
-              >
-                <CloseIcon />
-              </button>
+
+      {/*  */}
+
+      <BaseModal open={openDelationModal} classname={""}>
+        <div className="w-[calc(80vh)] h-auto overflow-auto">
+          <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
+            <div className="flex flex-col">
+              <span className="text-[18px] font-poppins text-[#060606]">
+                Confirmer la suppression
+              </span>
+              <span className="text-[14px] font-poppins text-primary-black-leg-600">
+                Vous êtes sur point de supprimer <br /> un dossier, cette action
+                est definitive !
+              </span>
             </div>
-            <div className="p-[20px]">
-              <BaseTextArea
-                label="Observation"
-                id="observation"
-                placeholder="observation"
-                // leftIcon={<FolderIcon size={18} color={""} />}
-                type="text"
-                field="text-area"
-                {...observationForm.register("observation")}
-              />
-            </div>
-            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-              {/* <button
-                type="button"
-                onClick={() => setOpenObservationModal((tmp) => !tmp)}
-                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-              >
-                Annuler
-              </button> */}
-              <button
-                type="submit"
-                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
-              >
-                {loading ? (
-                  <Spinner color={"#fff"} size={20} />
-                ) : (
-                  "Enregistrer cette observation"
-                )}
-              </button>
-            </div>
+            <button
+              disabled={loading}
+              type="button"
+              onClick={() => setDelationModal(false)}
+              className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+            >
+              <CloseIcon />
+            </button>
           </div>
-        </Form>
+          <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
+            <button
+              type="button"
+              onClick={() => setDelationModal((tmp) => !tmp)}
+              className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                handledeleteFolder(currentEntry as unknown as number);
+              }}
+              className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
+            >
+              {loading ? <Spinner color={"#fff"} size={20} /> : "Supprimer"}
+            </button>
+          </div>
+        </div>
       </BaseModal>
 
-      {/* lock MODAL */}
-      <BaseModal open={openObservationModal} classname={""}>
-        <Form form={observationForm} onSubmit={onSubmitOservation}>
+      {/* standBy MODAL */}
+      <BaseModal open={openStandByModal} classname={""}>
+        <Form form={standByform} onSubmit={onSubmitStandBy}>
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[18px] font-poppins text-[#060606]">
-                  Obervation
+                  {folderInEntry?.status_id !== 2
+                    ? "Mettre en standby"
+                    : "Enlever en standby"}
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                  Faites une observation
+                  {`Vous êtes sur point ${
+                    folderInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "
+                  } une forme en standby`}
                 </span>
               </div>
               <button
                 disabled={loading}
                 type="button"
-                onClick={() => setOpenObservationModal(false)}
+                onClick={() => setOpenStandByModal(false)}
                 className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
               >
                 <CloseIcon />
               </button>
             </div>
             <div className="p-[20px]">
-              <BaseTextArea
-                label="Observation"
-                id="observation"
-                placeholder="observation"
-                // leftIcon={<FolderIcon size={18} color={""} />}
+              <BaseInput
+                label="Raison"
+                id="reason"
+                placeholder={` Dites pourquoi vous ${
+                  folderInEntry?.status_id !== 2
+                    ? "mettez en standBy"
+                    : "enlevez en standby"
+                } `}
+                // leftIcon={<RulerIcon color={""} size={20} />}
                 type="text"
-                field="text-area"
-                {...observationForm.register("observation")}
+                {...standByform.register("reason")}
               />
             </div>
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
               {/* <button
                 type="button"
-                onClick={() => setOpenObservationModal((tmp) => !tmp)}
+                onClick={() => setOpenStandByModal((tmp) => !tmp)}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
               >
                 Annuler
@@ -2985,64 +2924,10 @@ export const Shape: FC<{}> = ({}) => {
               >
                 {loading ? (
                   <Spinner color={"#fff"} size={20} />
+                ) : folderInEntry?.status_id !== 2 ? (
+                  "Mettre en standBy"
                 ) : (
-                  "Enregistrer cette observation"
-                )}
-              </button>
-            </div>
-          </div>
-        </Form>
-      </BaseModal>
-
-      {/* lock MODAL */}
-      <BaseModal open={openObservationModal} classname={""}>
-        <Form form={observationForm} onSubmit={onSubmitOservation}>
-          <div className="w-[calc(80vh)] h-auto overflow-auto">
-            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
-              <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
-                  Bloquer
-                </span>
-                <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                  Faites une observation
-                </span>
-              </div>
-              <button
-                disabled={loading}
-                type="button"
-                onClick={() => setOpenObservationModal(false)}
-                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-            <div className="p-[20px]">
-              <BaseTextArea
-                label="Observation"
-                id="observation"
-                placeholder="observation"
-                // leftIcon={<FolderIcon size={18} color={""} />}
-                type="text"
-                field="text-area"
-                {...observationForm.register("observation")}
-              />
-            </div>
-            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-              {/* <button
-                type="button"
-                onClick={() => setOpenObservationModal((tmp) => !tmp)}
-                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-              >
-                Annuler
-              </button> */}
-              <button
-                type="submit"
-                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
-              >
-                {loading ? (
-                  <Spinner color={"#fff"} size={20} />
-                ) : (
-                  "Enregistrer cette observation"
+                  "Enlever en standby"
                 )}
               </button>
             </div>
