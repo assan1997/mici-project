@@ -7,7 +7,7 @@ export interface FolderEntry {
   department_id?: number;
   commercial_id?: number;
   // product_id?: number;
-  shape_id?: number;
+  reference?: string;
   // fabrication_id?: number;
   file_number?: string;
   format?: string;

@@ -26,6 +26,7 @@ import { useSideBar } from "@/contexts/sidebar.context";
 import useSWR from "swr";
 import axios from "axios";
 import { getToken } from "@/lib/data/token";
+import { useRouter } from "next/navigation";
 
 export const Task: FC<{}> = ({}) => {
   const { roleAdmin } = useSideBar();
@@ -635,6 +636,11 @@ export const Task: FC<{}> = ({}) => {
     []
   );
 
+  const Router = useRouter();
+  const goToDetail = (id: any) => {
+    Router.push(`/workspace/details/user-tasks/${id}`);
+  };
+
   return (
     <div className="w-full h-full">
       <motion.div
@@ -996,6 +1002,7 @@ export const Task: FC<{}> = ({}) => {
                   {tasks?.map((row, index) => {
                     return (
                       <tr
+                        onClick={() => goToDetail(row?.id)}
                         key={index}
                         onContextMenu={(e) => {
                           e.preventDefault();

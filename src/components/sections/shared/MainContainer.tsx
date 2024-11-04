@@ -18,6 +18,7 @@ import { useData } from "@/contexts/data.context";
 import { logout } from "@/services/auth";
 import { ProfillSkeleton } from "@/components/ui/loader/Skeleton";
 import { Spinner } from "@/components/ui/loader/spinner";
+import { Fraunces } from "next/font/google";
 
 const MainContainer: FC<{ children: any; title: string }> = ({
   children,
@@ -264,7 +265,7 @@ const TopBar: FC<{
         {!user ? (
           <ProfillSkeleton />
         ) : (
-          <div className="w-[195px] h-[50px] bg-white border flex items-center px-[10px] gap-x-[10px] justify-between rounded-full">
+          <div className="min-w-[195px] h-[50px] bg-white border flex items-center px-[10px] gap-x-[10px] justify-between rounded-full">
             <div className="flex items-center gap-x-2">
               <div className="w-[34px] h-[34px] bg-gray-300 flex items-center justify-center rounded-full">
                 <svg
@@ -287,10 +288,19 @@ const TopBar: FC<{
                 <span className="text-[#292D32] text-[14px] font-poppins">
                   {user?.name}
                 </span>
-                <span className="text-[#636363] flex gap-x-[6px] text-[12px] truncate font-poppins">
-                  {user.sections?.slice(0, 2).map((section: any) => (
-                    <span key={section.id}> {section.name}</span>
-                  ))}
+                <span className="text-[#636363] flex text-[12px] items-center truncate font-poppins">
+                  {user.sections
+                    ?.slice(0, 2)
+                    .map((section: any, index: number) => (
+                      <div className="flex items-center" key={index}>
+                        {index > 0 ? (
+                          <span
+                            className={`w-[4px] h-[4px] mx-[6px] shrink-0 bg-gray-500 rounded-full`}
+                          ></span>
+                        ) : null}
+                        <span key={section.id}> {section.name}</span>
+                      </div>
+                    ))}
                 </span>
               </div>
             </div>

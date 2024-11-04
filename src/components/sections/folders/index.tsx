@@ -53,6 +53,7 @@ import { Export } from "@/components/ui/export";
 import { useRouter } from "next/navigation";
 import { createRoot } from "react-dom/client";
 import useSWR from "swr";
+import { useSideBar } from "@/contexts/sidebar.context";
 
 export const Folder: FC<{}> = ({}) => {
   const {
@@ -67,6 +68,7 @@ export const Folder: FC<{}> = ({}) => {
     onRefreshingShape,
     refreshShapeData,
     getAllShapes,
+    checkIfCommercial,
   } = useData();
 
   const { data, mutate, error, isLoading } = useSWR(
@@ -84,9 +86,9 @@ export const Folder: FC<{}> = ({}) => {
     support: z.string(),
     color: z.string(),
     state: z.string(),
-    shape: z.number(),
     details: z.string(),
     rule: z.number(),
+    reference: z.string(),
   });
 
   const folderStandBySchema = z.object({
@@ -109,6 +111,8 @@ export const Folder: FC<{}> = ({}) => {
     "Statut",
     "Numero",
     "Client",
+    "Reference",
+    "Code",
     "Commercial",
     "Etat",
     "Departement",
@@ -133,7 +137,6 @@ export const Folder: FC<{}> = ({}) => {
     form.setValue("support", "");
     form.setValue("color", "");
     form.setValue("state", "");
-    form.setValue("shape", 0);
     form.setValue("details", "");
     form.setValue("rule", 0);
     setSelectedRule([]);
@@ -213,6 +216,7 @@ export const Folder: FC<{}> = ({}) => {
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
   const [openEndModal, setEndModal] = useState<boolean>(false);
   const [openLockModal, setOpenLockModal] = useState<boolean>(false);
+  const { roleAdmin } = useSideBar();
   const [observationList, setObservationList] = useState<
     {
       id: number;
@@ -237,7 +241,7 @@ export const Folder: FC<{}> = ({}) => {
       support,
       color,
       state,
-      shape,
+      reference,
       details,
     } = data;
 
@@ -247,7 +251,7 @@ export const Folder: FC<{}> = ({}) => {
       details,
       support,
       state,
-      shape_id: shape,
+      reference,
       client_id: client,
       department_id: department,
       commercial_id: commercial,
@@ -292,10 +296,11 @@ export const Folder: FC<{}> = ({}) => {
       support,
       color,
       state,
-      shape,
+      reference,
       details,
     } = data;
     const entry: FolderEntry = {
+      reference,
       format,
       color,
       support,
@@ -304,7 +309,6 @@ export const Folder: FC<{}> = ({}) => {
       client_id: client,
       department_id: department,
       commercial_id: commercial,
-      shape_id: shape,
       rule_id: rule,
       file_number: number,
     };
@@ -334,10 +338,11 @@ export const Folder: FC<{}> = ({}) => {
       delete entry.commercial_id;
 
     if (
-      !entry.shape_id ||
-      JSON.stringify(entry.shape_id) === JSON.stringify(folderInEntry?.shape)
+      !entry.reference ||
+      JSON.stringify(entry.reference) ===
+        JSON.stringify(folderInEntry?.reference)
     )
-      delete entry.shape_id;
+      delete entry.reference;
 
     if (
       !entry.file_number ||
@@ -459,21 +464,10 @@ export const Folder: FC<{}> = ({}) => {
       label: `Règle ${folder?.rule_id}`,
     };
 
-    console.log("folder", folder);
-    let shape = allShapes
-      ?.map((shape: ShapeInterface) => ({
-        value: shape.id as unknown as string,
-        label: `${shape.reference}  ${shape.code}`,
-      }))
-      .find((shape) => shape.value.toString() === folder.shape_id.toString());
-
-    console.log("rule", rule);
-
     if (dep?.value) setDepartment([dep as any]);
     if (comm?.value) setCommercial([comm as any]);
     if (cli?.value) setClient([cli as any]);
     if (rule?.value) setSelectedRule([rule as any]);
-    if (shape?.value) setShapes([shape]);
 
     form.setValue("format", folder.format);
     form.setValue("support", folder.support);
@@ -505,10 +499,6 @@ export const Folder: FC<{}> = ({}) => {
   useEffect(() => {
     form.setValue("rule", selectedRule[0]?.value as unknown as number);
   }, [selectedRule]);
-
-  useEffect(() => {
-    form.setValue("shape", shapes[0]?.value as unknown as number);
-  }, [shapes]);
 
   const [openAssignToUserModal, setOpenAssignToUserModal] =
     useState<boolean>(false);
@@ -726,6 +716,7 @@ export const Folder: FC<{}> = ({}) => {
     }
     setLoading(false);
   };
+
   useEffect(() => {
     assignForm.setValue("user_id", assignUser[0]?.value as unknown as number);
   }, [assignUser]);
@@ -748,6 +739,30 @@ export const Folder: FC<{}> = ({}) => {
           }
           if (a?.client?.name?.toUpperCase() < b?.client?.name?.toUpperCase()) {
             return sortedBy !== key ? -1 : 1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "code") {
+        sorted = tmp?.sort((a, b) => {
+          if (a?.code?.toUpperCase() > b?.code?.toUpperCase()) {
+            return 1;
+          }
+          if (a?.code?.toUpperCase() < b?.code?.toUpperCase()) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "reference") {
+        sorted = tmp?.sort((a, b) => {
+          if (a?.reference?.toUpperCase() > b?.reference?.toUpperCase()) {
+            return 1;
+          }
+          if (a?.reference?.toUpperCase() < b?.reference?.toUpperCase()) {
+            return -1;
           }
           return 0;
         });
@@ -936,6 +951,18 @@ export const Folder: FC<{}> = ({}) => {
         );
       }
 
+      if (item.id === "Code" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) => folder?.code === item?.selectedValues[0]?.value
+        );
+      }
+
+      if (item.id === "Reference" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allFolders : combo)?.filter(
+          (folder: any) => folder?.reference === item?.selectedValues[0]?.value
+        );
+      }
+
       if (item.id === "Etat" && item?.selectedValues.length > 0) {
         combo = (combo.length === 0 ? allFolders : combo)?.filter(
           (folder: any) => folder?.state === item?.selectedValues[0]?.value
@@ -1038,6 +1065,8 @@ export const Folder: FC<{}> = ({}) => {
           if (row === "Etat" && all?.state) mySet.add(all?.state);
           if (row === "Commercial" && all?.commercial?.name)
             mySet.add(all?.commercial?.name);
+          if (row === "Reference" && all?.reference) mySet.add(all?.reference);
+          if (row === "Code" && all?.code) mySet.add(all?.code);
           if (row === "Departement" && all?.department?.name)
             mySet.add(all?.department?.name);
           if (row === "Couleur" && all?.color) mySet.add(all?.color);
@@ -1073,20 +1102,22 @@ export const Folder: FC<{}> = ({}) => {
 
   return (
     <div className="w-full h-full">
-      <div className="w-full flex py-[10px] justify-end">
-        <button
-          disabled={!allFolders}
-          type="button"
-          onClick={() => {
-            setCreationModal((tmp) => !tmp);
-            reset();
-          }}
-          className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-        >
-          Créer
-          <EditIcon color="#E65F2B" />
-        </button>
-      </div>
+      {roleAdmin ? (
+        <div className="w-full flex py-[10px] justify-end">
+          <button
+            disabled={!allFolders}
+            type="button"
+            onClick={() => {
+              setCreationModal((tmp) => !tmp);
+              reset();
+            }}
+            className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+          >
+            Créer
+            <EditIcon color="#E65F2B" />
+          </button>
+        </div>
+      ) : null}
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -1526,19 +1557,20 @@ export const Folder: FC<{}> = ({}) => {
                           root.render(
                             <div className="bg-white w-[200px] z-[50] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                               <div className="flex flex-col items-center w-full">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenEditionModal(true);
-                                  }}
-                                  className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                >
-                                  {/* <UpdateIcon color={""} /> */}
-                                  <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-                                    Modifier les entrées
-                                  </span>
-                                </button>
+                                {roleAdmin ? (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenEditionModal(true);
+                                    }}
+                                    className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                  >
+                                    <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                      Modifier les entrées
+                                    </span>
+                                  </button>
+                                ) : null}
 
                                 {/* <Export
                                   title="Télécharger le pdf"
@@ -1576,7 +1608,9 @@ export const Folder: FC<{}> = ({}) => {
                                   </span>
                                 </button>
 
-                                {/* <button
+                                {roleAdmin ? (
+                                  <>
+                                    {/* <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1591,21 +1625,21 @@ export const Folder: FC<{}> = ({}) => {
                                   </span>
                                 </button> */}
 
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenStandByModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    {folderInEntry?.status_id === 2
-                                      ? "Enlever en standby"
-                                      : "Mettre en standby"}
-                                  </span>
-                                </button>
-                                {/* <button
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenStandByModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        {folderInEntry?.status_id === 2
+                                          ? "Enlever en standby"
+                                          : "Mettre en standby"}
+                                      </span>
+                                    </button>
+                                    {/* <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1618,18 +1652,20 @@ export const Folder: FC<{}> = ({}) => {
                                   </span>
                                 </button> */}
 
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDelationModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                  <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                    Supprimer le dossier
-                                  </span>
-                                </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDelationModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                        Supprimer le dossier
+                                      </span>
+                                    </button>
+                                  </>
+                                ) : null}
                               </div>
                             </div>
                           );
@@ -1675,6 +1711,20 @@ export const Folder: FC<{}> = ({}) => {
                           className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.client?.name}
+                        </td>
+
+                        <td
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {row?.reference}
+                        </td>
+
+                        <td
+                          //  onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {row?.code}
                         </td>
                         <td
                           //  onClick={() => goToDetail(row?.id)}
@@ -1786,19 +1836,20 @@ export const Folder: FC<{}> = ({}) => {
                               >
                                 <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                                   <div className="flex flex-col items-center w-full">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenEditionModal(true);
-                                      }}
-                                      className="flex items-center justify-start  w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                    >
-                                      {/* <UpdateIcon color={""} /> */}
-                                      <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-                                        Modifier les entrées
-                                      </span>
-                                    </button>
+                                    {roleAdmin ? (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setOpenEditionModal(true);
+                                        }}
+                                        className="flex items-center justify-start  w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                      >
+                                        <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                          Modifier les entrées
+                                        </span>
+                                      </button>
+                                    ) : null}
 
                                     {/* <Export
                                       title="Télécharger le pdf"
@@ -1836,7 +1887,9 @@ export const Folder: FC<{}> = ({}) => {
                                       </span>
                                     </button>
 
-                                    {/* <button
+                                    {roleAdmin ? (
+                                      <>
+                                        {/* <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -1851,21 +1904,21 @@ export const Folder: FC<{}> = ({}) => {
                                       </span>
                                     </button> */}
 
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenStandByModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        {folderInEntry?.status_id === 2
-                                          ? "Enlever en standby"
-                                          : "Mettre en standby"}
-                                      </span>
-                                    </button>
-                                    {/* <button
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenStandByModal(true);
+                                          }}
+                                          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                        >
+                                          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                            {folderInEntry?.status_id === 2
+                                              ? "Enlever en standby"
+                                              : "Mettre en standby"}
+                                          </span>
+                                        </button>
+                                        {/* <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -1878,18 +1931,20 @@ export const Folder: FC<{}> = ({}) => {
                                       </span>
                                     </button> */}
 
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDelationModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                        Supprimer le dossier
-                                      </span>
-                                    </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDelationModal(true);
+                                          }}
+                                          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                        >
+                                          <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                            Supprimer le dossier
+                                          </span>
+                                        </button>
+                                      </>
+                                    ) : null}
                                   </div>
                                 </div>
                               </MenuDropdown>
@@ -2053,10 +2108,12 @@ export const Folder: FC<{}> = ({}) => {
                   }
                   id={`commercial`}
                   options={
-                    users?.map((commercial: User) => ({
-                      value: commercial.id as unknown as string,
-                      label: commercial.name,
-                    })) as any
+                    users
+                      ?.filter((user: User) => checkIfCommercial(user) && user)
+                      ?.map((commercial: User) => ({
+                        value: commercial.id as unknown as string,
+                        label: commercial.name,
+                      })) as any
                   }
                   error={undefined}
                   isUniq={true}
@@ -2064,7 +2121,7 @@ export const Folder: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setCommercial}
                   borderColor="border-grayscale-200"
                 />
-                <ComboboxMultiSelect
+                {/* <ComboboxMultiSelect
                   label={"Forme"}
                   placeholder="Selectionnez une forme"
                   className="w-full"
@@ -2097,7 +2154,7 @@ export const Folder: FC<{}> = ({}) => {
                   selectedElementInDropdown={shapes}
                   setSelectedUniqElementInDropdown={setShapes}
                   borderColor="border-grayscale-200"
-                />
+                /> */}
 
                 <ComboboxMultiSelect
                   label={"Règle"}
@@ -2147,6 +2204,15 @@ export const Folder: FC<{}> = ({}) => {
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("format")}
+                />
+
+                <BaseInput
+                  label="Reference"
+                  id="reference"
+                  placeholder="Reference"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("reference")}
                 />
                 <BaseInput
                   label="Support"
@@ -2316,10 +2382,12 @@ export const Folder: FC<{}> = ({}) => {
                   }
                   id={`commercial`}
                   options={
-                    users?.map((commercial: User) => ({
-                      value: commercial.id as unknown as string,
-                      label: commercial.name,
-                    })) as any
+                    users
+                      ?.filter((user: User) => checkIfCommercial(user) && user)
+                      ?.map((commercial: User) => ({
+                        value: commercial.id as unknown as string,
+                        label: commercial.name,
+                      })) as any
                   }
                   error={undefined}
                   isUniq={true}
@@ -2327,7 +2395,7 @@ export const Folder: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setCommercial}
                   borderColor="border-grayscale-200"
                 />
-                <ComboboxMultiSelect
+                {/* <ComboboxMultiSelect
                   label={"Forme"}
                   placeholder="Selectionnez une forme"
                   className="w-full"
@@ -2360,7 +2428,7 @@ export const Folder: FC<{}> = ({}) => {
                   selectedElementInDropdown={shapes}
                   setSelectedUniqElementInDropdown={setShapes}
                   borderColor="border-grayscale-200"
-                />
+                /> */}
 
                 <ComboboxMultiSelect
                   label={"Règle"}

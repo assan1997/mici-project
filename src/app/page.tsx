@@ -31,7 +31,6 @@ export default function Home() {
     if (email.length > 0 && password.length > 0) {
       const { success, data } = await login({ email, password });
       if (success) {
-
         setConnected(true);
         dispatchUser(data);
         showToast({
@@ -39,7 +38,7 @@ export default function Home() {
           type: "success",
           position: "top-center",
         });
-        Router.push("/workspace/home");
+        Router.push("/workspace/user-tasks");
       } else {
         showToast({
           message:

@@ -33,7 +33,7 @@ export interface FolderInterface {
   commercial: Client;
   department: Department;
   shape: ShapeInterface;
-  shape_id: Number;
+  reference: String;
   bat: any;
   details: string;
   updated_at: string;
@@ -179,6 +179,7 @@ export interface DataContextType {
   getFolders: Function;
   getBats: Function;
   onRefreshingData: Boolean;
+  checkIfCommercial: (user: User) => Boolean;
 }
 export interface Status {
   id: number;
@@ -263,6 +264,7 @@ const DataContext = createContext<DataContextType>({
   getAllTasks: () => {},
   getFolders: () => {},
   getBats: () => {},
+  checkIfCommercial: (arg) => false,
 });
 export const useData = () => useContext(DataContext);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({
@@ -541,6 +543,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  function checkIfCommercial(user: User): Boolean {
+    return user.sections.map((section: Section) => section.id).includes(6);
+  }
+
   return (
     <DataContext.Provider
       value={{
@@ -581,6 +587,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         getAllTasks,
         getFolders,
         getBats,
+        checkIfCommercial,
       }}
     >
       {children}

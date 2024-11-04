@@ -12,6 +12,7 @@ import ComboboxMultiSelect from "@/components/ui/select/comboBoxMultiSelect";
 import {
   Client,
   Department,
+  Section,
   ShapeInterface,
   useData,
   User,
@@ -54,6 +55,7 @@ export const Shape: FC<{}> = ({}) => {
     onRefreshingShape,
     refreshShapeData,
     getAllShapes,
+    checkIfCommercial,
   } = useData();
   const shapeSchema = z.object({
     client: z.number(),
@@ -1009,22 +1011,28 @@ export const Shape: FC<{}> = ({}) => {
     getAllShapes();
   }, []);
 
+  useEffect(() => {
+    console.log("users", users);
+  }, [users]);
+
   return (
     <div className="w-full h-full">
-      <div className="w-full flex py-[10px] justify-end">
-        <button
-          disabled={!offsetShapes}
-          type="button"
-          onClick={() => {
-            setCreationModal((tmp) => !tmp);
-            reset();
-          }}
-          className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-        >
-          Créer
-          <EditIcon color="#E65F2B" />
-        </button>
-      </div>
+      {roleAdmin ? (
+        <div className="w-full flex py-[10px] justify-end">
+          <button
+            disabled={!offsetShapes}
+            type="button"
+            onClick={() => {
+              setCreationModal((tmp) => !tmp);
+              reset();
+            }}
+            className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+          >
+            Créer
+            <EditIcon color="#E65F2B" />
+          </button>
+        </div>
+      ) : null}
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -1467,19 +1475,21 @@ export const Shape: FC<{}> = ({}) => {
                           root.render(
                             <div className="bg-white w-[200px] z-[50] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                               <div className="flex flex-col items-center w-full">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenEditionModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                >
-                                  {/* <UpdateIcon color={""} /> */}
-                                  <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-                                    Modifier les entrées
-                                  </span>
-                                </button>
+                                {roleAdmin ? (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenEditionModal(true);
+                                    }}
+                                    className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                  >
+                                    {/* <UpdateIcon color={""} /> */}
+                                    <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                      Modifier les entrées
+                                    </span>
+                                  </button>
+                                ) : null}
 
                                 <Export
                                   title="Télécharger le pdf"
@@ -1517,60 +1527,64 @@ export const Shape: FC<{}> = ({}) => {
                                   </span>
                                 </button>
 
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenLockModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    {shapeInEntry?.status_id === 3
-                                      ? "Débloquer"
-                                      : "Bloquer"}
-                                  </span>
-                                </button>
+                                {roleAdmin ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenLockModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        {shapeInEntry?.status_id === 3
+                                          ? "Débloquer"
+                                          : "Bloquer"}
+                                      </span>
+                                    </button>
 
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenStandByModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    {shapeInEntry?.status_id === 2
-                                      ? "Enlever en standby"
-                                      : "Mettre en standby"}
-                                  </span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEndModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    Terminer
-                                  </span>
-                                </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenStandByModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        {shapeInEntry?.status_id === 2
+                                          ? "Enlever en standby"
+                                          : "Mettre en standby"}
+                                      </span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEndModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        Terminer
+                                      </span>
+                                    </button>
 
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDelationModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                  <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                    Supprimer la forme
-                                  </span>
-                                </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDelationModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                        Supprimer la forme
+                                      </span>
+                                    </button>
+                                  </>
+                                ) : null}
                               </div>
                             </div>
                           );
@@ -1726,19 +1740,21 @@ export const Shape: FC<{}> = ({}) => {
                               >
                                 <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                                   <div className="flex flex-col items-center w-full">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenEditionModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                    >
-                                      {/* <UpdateIcon color={""} /> */}
-                                      <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-                                        Modifier les entrées
-                                      </span>
-                                    </button>
+                                    {roleAdmin ? (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setOpenEditionModal(true);
+                                        }}
+                                        className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                      >
+                                        {/* <UpdateIcon color={""} /> */}
+                                        <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                          Modifier les entrées
+                                        </span>
+                                      </button>
+                                    ) : null}
 
                                     <Export
                                       title="Télécharger le pdf"
@@ -1776,23 +1792,23 @@ export const Shape: FC<{}> = ({}) => {
                                       </span>
                                     </button>
 
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenLockModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        {shapeInEntry?.status_id === 3
-                                          ? "Débloquer"
-                                          : "Bloquer"}
-                                      </span>
-                                    </button>
-
                                     {roleAdmin ? (
                                       <>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenLockModal(true);
+                                          }}
+                                          className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                        >
+                                          <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                            {shapeInEntry?.status_id === 3
+                                              ? "Débloquer"
+                                              : "Bloquer"}
+                                          </span>
+                                        </button>
+
                                         <button
                                           type="button"
                                           onClick={(e) => {
@@ -2002,10 +2018,12 @@ export const Shape: FC<{}> = ({}) => {
                   }
                   id={`commercial`}
                   options={
-                    users?.map((commercial: User) => ({
-                      value: commercial.id as unknown as string,
-                      label: commercial.name,
-                    })) as any
+                    users
+                      ?.filter((user: User) => checkIfCommercial(user) && user)
+                      ?.map((commercial: User) => ({
+                        value: commercial.id as unknown as string,
+                        label: commercial.name,
+                      })) as any
                   }
                   error={undefined}
                   isUniq={true}
@@ -2314,10 +2332,12 @@ export const Shape: FC<{}> = ({}) => {
                   }
                   id={`commercial`}
                   options={
-                    users?.map((commercial: User) => ({
-                      value: commercial.id as unknown as string,
-                      label: commercial.name,
-                    })) as any
+                    users
+                      ?.filter((user: User) => checkIfCommercial(user) && user)
+                      ?.map((commercial: User) => ({
+                        value: commercial.id as unknown as string,
+                        label: commercial.name,
+                      })) as any
                   }
                   error={undefined}
                   isUniq={true}
@@ -2743,7 +2763,6 @@ export const Shape: FC<{}> = ({}) => {
           </div>
         </Form>
       </BaseModal>
-
       <BaseModal open={openLockModal} classname={""}>
         <Form form={standByform} onSubmit={onSubmitLock}>
           <div className="w-[calc(80vh)] h-auto overflow-auto">
@@ -2801,7 +2820,6 @@ export const Shape: FC<{}> = ({}) => {
           </div>
         </Form>
       </BaseModal>
-
       {/* assign to user MODAL */}
       <BaseModal open={openAssignToUserModal} classname={""}>
         <Form form={assignForm} onSubmit={onSubmitAssign}>
@@ -2937,7 +2955,6 @@ export const Shape: FC<{}> = ({}) => {
           </div>
         </Form>
       </BaseModal>
-
       {/* lock MODAL */}
       <BaseModal open={openObservationModal} classname={""}>
         <Form form={observationForm} onSubmit={onSubmitOservation}>
