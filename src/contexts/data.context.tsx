@@ -116,6 +116,7 @@ export interface TaskInterface {
   status: string;
   updated_at: string | null;
   assignable_type: string;
+  user_id: number;
 }
 
 export interface User {
@@ -206,6 +207,13 @@ export interface ShapeInterface {
   logs: any[];
   status_id: number;
   rule_id: number;
+  dim_int: string;
+  compression_box: string;
+  theoretical_weight: string;
+  weight_code: string;
+  weight: string;
+  cardboard_junction: string;
+  plate_surface: string;
 }
 export interface FlexoShape {
   id: number;
@@ -251,7 +259,7 @@ const DataContext = createContext<DataContextType>({
   onRefreshingTask: false,
   onRefreshingUsers: false,
   onRefreshingData: false,
-  refreshShapeData: () => {},
+  refreshShapeData: (cb: Function) => {},
   refreshTaskData: () => {},
   refreshUsersData: () => {},
   refreshClientsData: () => {},
@@ -448,7 +456,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   // }, [user, getAllTasks]);
 
   const [onRefreshingShape, setOnRefreshingShape] = useState<boolean>(false);
-  const refreshShapeData = async () => {
+  const refreshShapeData = async (cb: Function) => {
     setOnRefreshingShape(true);
     const { data: departmentsData, success: depSuccess } =
       await getAllDepartments();
@@ -471,6 +479,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         message: "Synchronisation terminée",
         position: "top-center",
       });
+
+      cb();
     } else {
       showToast({
         type: "danger",

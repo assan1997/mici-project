@@ -190,7 +190,7 @@ export const Filter: FC<{
                 >
                   <div className="flex items-center gap-x-[10px]">
                     <CalendarIcon className={""} size={16} />
-                    <span className="text-[13px] text-[#000] font-poppins  leading-[20px]">
+                    <span className="text-[13px] text-[#000] font-poppins font-medium leading-[20px]">
                       {title}
                     </span>
                   </div>
@@ -198,7 +198,7 @@ export const Filter: FC<{
                   <div
                     ref={resetDateRef}
                     onClick={reset}
-                    className="border-black flex items-center justify-center"
+                    className="border-black flex items-center font-medium justify-center"
                   >
                     <CloseIcon size={10} />
                   </div>
@@ -252,12 +252,12 @@ export const Filter: FC<{
                       fillRule="evenodd"
                     ></path>
                   </svg>
-                  <div className="text-[13px] text-[#000] font-poppins leading-[20px]">
+                  <div className="text-[13px] text-[#000] font-medium font-poppins leading-[20px]">
                     {title}
                     {/* {selected ? ` - ${selected}` : ""} */}
                   </div>
                 </div>
-                <div onClick={reset} className="h-hull px-[4px]">
+                <div onClick={reset} className="h-hull font-medium px-[4px]">
                   <CloseIcon size={10} />
                 </div>
               </div>

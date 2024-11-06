@@ -72,7 +72,7 @@ const SideBar: FC<{ resize: boolean }> = ({ resize }) => {
   return (
     <div
       className={`h-full justify-between ${
-        resize ? "w-[108px]" : "w-[240px]"
+        resize ? "w-[108px]" : "w-[280px]"
       }  bg-[#060606] transition-all duration-300 overflow-scroll`}
     >
       <div
@@ -379,7 +379,7 @@ const Content: FC<{
   return (
     <div
       className={`h-full  ${
-        resize ? "w-[calc(100%-108px)]" : "w-[calc(100%-240px)]"
+        resize ? "w-[calc(100%-108px)]" : "w-[calc(100%-280px)]"
       } bg-slate-100 transition-all duration-300`}
     >
       <TopBar

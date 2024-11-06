@@ -39,86 +39,216 @@ export const Details = () => {
         content: (
           <div className="font-poppins">
             <div className="w-full h-auto flex flex-wrap items-center bg-white p-[20px] gap-[14px]">
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Code</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.code}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
                 </div>
-              </div>
-              <div className="border-b border-gray-100  w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Dim_lx_lh</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.dim_lx_lh}
+              ) : data?.code ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">Code</div>
+                  <div className="text-[14px]">{data?.code}</div>
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Dim_square</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.dim_square}
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Dim_plate</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.dim_plate}
+              ) : data?.theoretical_weight ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    Poids Théorique
+                  </div>
+                  <div className="text-[14px]">{data?.theoretical_weight}</div>
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Paper_type</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.paper_type}
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Pose_number</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.pose_number}
+              ) : data?.cardboard_junction ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    Jonction du carton
+                  </div>
+                  <div className="text-[14px]">{data?.cardboard_junction}</div>
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Part</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.part}
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Observations</div>
-                <div className="text-[14px]">Infos</div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Départment</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.department?.name}
+              ) : data?.compression_box ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    Box Compression
+                  </div>
+                  <div className="text-[14px]">{data?.compression_box}</div>
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Commercial</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.commercial?.name}
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Client</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.client?.name}
+              ) : data?.weight_code ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">Code Grammage</div>
+                  <div className="text-[14px]">{data?.weight_code}</div>
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Réference</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.reference}
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
                 </div>
-              </div>
+              ) : data?.weight ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    {`Grammage en (g)`}
+                  </div>
+                  <div className="text-[14px]">{data?.weight}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.plate_surface ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    Surface de la plaques en m
+                  </div>
+                  <div className="text-[14px]">{data?.plate_surface}</div>
+                </div>
+              ) : null}
 
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">
-                  Date de création
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
                 </div>
-                <div className="text-[14px]">
-                  {isLoading ? (
-                    <ColumnSkeleton />
-                  ) : (
-                    <>
+              ) : data?.dim_lx_lh ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    Dimension LxLxH
+                  </div>
+                  <div className="text-[14px]">{data?.dim_lx_lh}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.dim_square ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    Dimension Carré
+                  </div>
+                  <div className="text-[14px]">{data?.dim_square}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.dim_plate ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    Dimension Plaque
+                  </div>
+                  <div className="text-[14px]">{data?.dim_plate}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.paper_type ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">Type Papier</div>
+                  <div className="text-[14px]">{data?.paper_type}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.pose_number ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">N° des poses</div>
+                  <div className="text-[14px]">{data?.pose_number}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.part ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">1/3</div>
+                  <div className="text-[14px]">{data?.part}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.department ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">Départment</div>
+                  <div className="text-[14px]">{data?.department?.name}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.department ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">Commercial</div>
+                  <div className="text-[14px]">{data?.commercial?.name}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.client ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">Client</div>
+                  <div className="text-[14px]">{data?.commercial?.name}</div>
+                </div>
+              ) : null}
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.reference ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">Réference</div>
+                  <div className="text-[14px]">{data?.reference}</div>
+                </div>
+              ) : null}
+
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.rule_id ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">Règle</div>
+                  <div className="text-[14px]">{data?.rule_id}</div>
+                </div>
+              ) : null}
+
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
+                </div>
+              ) : data?.created_at ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    Date de création
+                  </div>
+                  <div className="text-[14px]">
+                    <div>
                       {formatTime(
                         new Date(data?.["created_at"]).getTime(),
                         "d:mo:y",
@@ -130,20 +260,22 @@ export const Details = () => {
                         "h:m",
                         "short"
                       )}
-                    </>
-                  )}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : null}
 
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">
-                  Date de de mise à jour
+              {isLoading ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <ColumnSkeleton />
                 </div>
-                <div className="text-[14px]">
-                  {isLoading ? (
-                    <ColumnSkeleton />
-                  ) : (
-                    <>
+              ) : data?.created_at ? (
+                <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                  <div className="text-[12px] text-gray-500">
+                    Date de de mise à jour
+                  </div>
+                  <div className="text-[14px]">
+                    <div>
                       {formatTime(
                         new Date(data?.["updated_at"]).getTime(),
                         "d:mo:y",
@@ -155,16 +287,10 @@ export const Details = () => {
                         "h:m",
                         "short"
                       )}
-                    </>
-                  )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                <div className="text-[12px] text-gray-500">Règle</div>
-                <div className="text-[14px]">
-                  {isLoading ? <ColumnSkeleton /> : data?.rule_id}
-                </div>
-              </div>
+              ) : null}
             </div>
           </div>
         ),

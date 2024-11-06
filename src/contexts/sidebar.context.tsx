@@ -20,6 +20,7 @@ import {
   PrintIcon2,
   TaskIcon,
   Home,
+  CardBoardIcon,
 } from "../components/svg";
 import uniqid from "uniqid";
 import { usePathname } from "next/navigation";
@@ -160,28 +161,28 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       navId: [""],
       icon: (color: string) => <PrintIcon2 color={color} size={22} />,
     },
-    // {
-    //   link: "/cartonnerie",
-    //   slug: "Cartonnerie",
-    //   active: false,
-    //   id: "subNav-1",
-    //   navId: ["nav-1", "nav-2", "nav-3"],
-    //   icon: (color: string) => <CardBoardIcon color={color} size={22} />,
-    // },
+    {
+      link: "/cartonnerie",
+      slug: "Cartonnerie",
+      active: false,
+      id: "subNav-1",
+      navId: ["nav-1", "nav-2", "nav-3"],
+      icon: (color: string) => <CardBoardIcon color={color} size={22} />,
+    },
     {
       link: "/imprimerie-offset",
       slug: "Imprimerie Offset",
       active: false,
       id: "subNav-2",
-      navId: [""],
+      navId: ["nav-2"],
       icon: (color: string) => <PrintIcon2 color={color} size={22} />,
     },
     {
       link: "/imprimerie-flexo",
-      slug: "Imprimerie Flexo",
+      slug: "Imprimerie  Flexo",
       active: false,
       id: "subNav-3",
-      navId: [""],
+      navId: ["nav-2"],
       icon: (color: string) => <PrintIcon2 color={color} size={22} />,
     },
   ]);

@@ -57,9 +57,9 @@ const BaseInput = React.forwardRef<HTMLInputElement, InputProps>(
             id={id}
             placeholder={placeholder}
             className={`
-                w-full border-[1px] font-poppins sm:hover:ring-primary-c1-50 border-neutral-grayscale-200 rounded-[14px] h-[40px] py-[12px] focus:outline-none focus:border-vermilion-300 focus:ring-2 focus:ring-vermilion-400
+                w-full border-[1px] font-poppins  sm:hover:ring-primary-c1-50 border-neutral-grayscale-200 rounded-[14px] h-[40px] py-[12px] focus:outline-none focus:border-vermilion-300 focus:ring-2 focus:ring-vermilion-400
                 bg-white focus:ring-offset-2 transition duration-300 ease-out disabled:cursor-not-allowed disabled:placeholder:text-grayscale-500 readOnly:cursor-not-allowed
-                text-[13px] leading-[24px] font-[400] pr-[40px] placeholder:text-black
+                text-[13px] leading-[24px] font-medium pr-[40px] placeholder:text-black
                 ${leftIcon ? "pl-[35px] pr-[12px]" : rightIcon ? "pr-[48px] pl-[12px]" : "px-[12px]"}
             `}
             {...props}

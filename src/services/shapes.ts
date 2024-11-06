@@ -18,6 +18,13 @@ export interface OffsetShapeEntry {
   code?: string;
   reference?: string;
   rule_id?: number;
+  dim_int?: string;
+  compression_box?: string;
+  plate_surface?: string;
+  weight_code?: string;
+  weight?: string;
+  cardboard_junction?: string;
+  theoretical_weight?: string;
 }
 
 export async function getShapeDetails(shapeId: string) {
@@ -38,7 +45,6 @@ export async function getShapeDetails(shapeId: string) {
     return { success: false };
   }
 }
-
 export async function endShape(shapeId: number) {
   //console.log("shapeId", shapeId);
   const token = await getToken();
@@ -307,7 +313,6 @@ export async function unlockShape(
     return { success: false };
   }
 }
-
 // FLEXO
 export async function createFlexoShape(entry: OffsetShapeEntry) {
   const token = await getToken();

@@ -221,7 +221,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = ({
                   placeholder="Recherche"
                   ref={inputRef}
                   onChange={handleSearch}
-                  className={`p-[.8rem] h-[24px] text-[14px] w-full border-none outline-none font-poppins`}
+                  className={`p-[.8rem] h-[24px] font-medium text-[14px] w-full border-none outline-none font-poppins`}
                 />
               ) : (
                 <div
@@ -237,7 +237,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = ({
                         key={idx}
                         className="border border-grayscale-100 rounded-[8px] p-[.8rem] w-fit h-[24px] flex items-center justify-between gap-2"
                       >
-                        <span className="text-[14px] font-poppins text-grayscale-700 font-[500] leading-[2rem] whitespace-nowrap">
+                        <span className="text-[14px] font-poppins font-medium text-grayscale-700 font-[500] leading-[2rem] whitespace-nowrap">
                           {el?.label}
                         </span>
                         <div
@@ -265,7 +265,7 @@ const ComboboxCheck: React.FC<FormikSelectFieldProps> = ({
                       </div>
                     ))
                   ) : (
-                    <span className="text-black text-[14px] leading-[24px] font-[400] font-poppins">
+                    <span className="text-black text-[14px] font-medium leading-[24px] font-poppins">
                       {placeholder || `Sélectionner`}
                     </span>
                   )}

@@ -36,13 +36,12 @@ export const Export: FC<{
 
   useEffect(() => {
     const embed = document.getElementsByTagName("iframe");
-    //console.log("entry.data?.code", entry.data?.code);
   }, [entry.data?.code]);
 
   if (type === "csv") {
     return (
       <CSVLink data={entry?.data} headers={entry?.headers}>
-        <div className="h-[40px] shrink-0 text-[14px] min-w-[150px]  bg-white gap-x-[4px] text-[#000] font-poppins leading-[20px] rounded-[14px] flex items-center justify-center px-[8px] border">
+        <div className="h-[40px] shrink-0 text-[13px] min-w-[150px]  bg-white gap-x-[4px] text-[#000] font-poppins font-medium leading-[20px] rounded-[14px] flex items-center justify-center px-[8px] border">
           <svg
             fill="none"
             height={16}
@@ -68,7 +67,7 @@ export const Export: FC<{
         <button
           type="button"
           onClick={handleDownloadPDF}
-          className="flex items-center justify-start w-full text-[14px] text-[#000] font-poppins font-medium leading-[20px gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+          className="flex items-center invisible justify-start w-full text-[14px] font-medium text-[#000] font-poppins leading-[20px gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
         >
           {title}
         </button>

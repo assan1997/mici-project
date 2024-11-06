@@ -65,6 +65,8 @@ export async function endAndAssignTask(
   }
 ) {
   const token = await getToken();
+
+  console.log("entryyyyy", entry);
   try {
     const { data } = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/tasks/${taskId}/complete`,

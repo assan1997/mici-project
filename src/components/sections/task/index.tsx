@@ -30,29 +30,36 @@ import { useRouter } from "next/navigation";
 
 export const Task: FC<{}> = ({}) => {
   const { roleAdmin } = useSideBar();
+  const { data, mutate, error, isLoading } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}/tasks`,
+    async () => {
+      const URL: string = `${process.env.NEXT_PUBLIC_API_URL}/${
+        roleAdmin ? "all-tasks" : "tasks"
+      }`;
+
+      const token = await getToken();
+      const reponse = await axios.get(URL, {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return reponse.data;
+    }
+  );
+
+  const allTasks: TaskInterface[] = useMemo(() => (data ? data : []), [data]);
+
   const {
-    data: allTasks,
-    mutate,
-    error,
-    isLoading,
-  } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, async () => {
-    const URL: string = `${process.env.NEXT_PUBLIC_API_URL}/${
-      roleAdmin ? "all-tasks" : "tasks"
-    }`;
-    const token = await getToken();
-    const reponse = await axios.get(URL, {
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    return reponse.data;
-  });
-
-  const { users, status, dispatchTasks, refreshTaskData, onRefreshingTask } =
-    useData();
+    users,
+    status,
+    departments,
+    dispatchTasks,
+    refreshTaskData,
+    onRefreshingTask,
+  } = useData();
 
   const endAndAssignTaskShema = z.object({
     reason: z.string(),
@@ -68,6 +75,7 @@ export const Task: FC<{}> = ({}) => {
     "Statut",
     "Reference",
     "Type",
+    "Departement",
     "Code",
     "Attribué à",
     "Description",
@@ -107,6 +115,8 @@ export const Task: FC<{}> = ({}) => {
   const onSubmitEndAndAssignTaskForm = async (
     data: z.infer<typeof endAndAssignTaskShema>
   ) => {
+    console.log("data", data);
+    console.log("users", users);
     setLoading(true);
     const { data: closeTaskData, success } = await endAndAssignTask(
       taskInEntry?.id as unknown as number,
@@ -123,15 +133,7 @@ export const Task: FC<{}> = ({}) => {
         position: "top-center",
       });
 
-      mutate({
-        data: [
-          ...allTasks.map((task: TaskInterface) =>
-            task.id === taskInEntry?.id
-              ? { ...task, completed_at: new Date() as unknown as string }
-              : { ...task }
-          ),
-        ],
-      });
+      mutate();
     } else {
       showToast({
         type: "danger",
@@ -155,15 +157,7 @@ export const Task: FC<{}> = ({}) => {
         message: "Terminé avec succès",
         position: "top-center",
       });
-      mutate({
-        data: [
-          ...allTasks.map((task: TaskInterface) =>
-            task.id === taskInEntry?.id
-              ? { ...task, completed_at: new Date() as unknown as string }
-              : { ...task }
-          ),
-        ],
-      });
+      mutate();
     } else {
       showToast({
         type: "danger",
@@ -217,20 +211,20 @@ export const Task: FC<{}> = ({}) => {
         sorted = tmp?.sort((a, b) => {
           if (
             (users
-              ?.find((user) => user.id === a.assignable.user_assignated_id)
+              ?.find((user) => user.id === a.user_id)
               ?.name?.toUpperCase() as unknown as string) >
             (users
-              ?.find((user) => user.id === b.assignable.user_assignated_id)
+              ?.find((user) => user.id === b.user_id)
               ?.name?.toUpperCase() as unknown as string)
           ) {
             return 1;
           }
           if (
             (users
-              ?.find((user) => user.id === a.assignable.user_assignated_id)
+              ?.find((user) => user.id === a.user_id)
               ?.name?.toUpperCase() as unknown as string) <
             (users
-              ?.find((user) => user.id === b.assignable.user_assignated_id)
+              ?.find((user) => user.id === b.user_id)
               ?.name?.toUpperCase() as unknown as string)
           ) {
             return -1;
@@ -268,6 +262,36 @@ export const Task: FC<{}> = ({}) => {
           if (
             a?.assignable_type.split("\\")[2].toLowerCase() <
             b?.assignable_type.split("\\")[2].toLowerCase()
+          ) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "Departement") {
+        sorted = tmp?.sort((a, b) => {
+          if (
+            (departments
+              ?.find(
+                (department) => department.id === a.assignable.department_id
+              )
+              ?.name?.toUpperCase() as unknown as string) >
+            (users
+              ?.find(
+                (department) => department.id === b.assignable.department_id
+              )
+              ?.name?.toUpperCase() as unknown as string)
+          ) {
+            return 1;
+          }
+          if (
+            (users
+              ?.find((user) => user.id === a.assignable.user_assignated_id)
+              ?.name?.toUpperCase() as unknown as string) <
+            (users
+              ?.find((user) => user.id === b.assignable.user_assignated_id)
+              ?.name?.toUpperCase() as unknown as string)
           ) {
             return -1;
           }
@@ -486,9 +510,8 @@ export const Task: FC<{}> = ({}) => {
       if (item.id === "Attribué à" && item?.selectedValues.length > 0) {
         combo = (combo.length === 0 ? allTasks : combo)?.filter(
           (task: any) =>
-            users?.find(
-              (user) => user.id === task.assignable.user_assignated_id
-            )?.name === item?.selectedValues[0]?.value
+            users?.find((user) => user.id === task.user_id)?.name ===
+            item?.selectedValues[0]?.value
         );
       }
 
@@ -503,8 +526,9 @@ export const Task: FC<{}> = ({}) => {
       if (item.id === "Departement" && item?.selectedValues.length > 0) {
         combo = (combo.length === 0 ? allTasks : combo)?.filter(
           (task: any) =>
-            task?.assignable?.department?.name ===
-            item?.selectedValues[0]?.value
+            departments?.find(
+              (department) => department.id === task.assignable.department_id
+            )?.name === item?.selectedValues[0]?.value
         );
       }
 
@@ -585,11 +609,7 @@ export const Task: FC<{}> = ({}) => {
           // if (row === "Client" && all?.assignable?.client?.name)
           //   mySet.add(all?.assignable?.client?.name);
           if (row === "Attribué à") {
-            mySet.add(
-              users?.find(
-                (user) => user.id === all.assignable.user_assignated_id
-              )?.name
-            );
+            mySet.add(users?.find((user) => user.id === all.user_id)?.name);
           }
 
           if (row === "Type" && all?.assignable_type) {
@@ -600,8 +620,12 @@ export const Task: FC<{}> = ({}) => {
             mySet.add(all?.assignable?.reference);
           // if (row === "Commercial" && all?.assignable?.name)
           //   mySet.add(all?.commercial?.name);
-          // if (row === "Departement" && all?.assignable?.name)
-          // mySet.add(all?.department?.name);
+          if (row === "Departement" && all?.assignable?.department_id)
+            mySet.add(
+              departments?.find(
+                (department) => department.id === all.assignable.department_id
+              )?.name
+            );
           if (row === "Dimension LxLxH" && all?.assignable?.dim_lx_lh)
             mySet.add(all?.assignable?.dim_lx_lh);
           if (row === "Dimensions Carré" && all?.assignable?.dim_square)
@@ -696,8 +720,8 @@ export const Task: FC<{}> = ({}) => {
             index={"status_id"}
             list={status.filter((st) => [1, 4].includes(st.id) && st)}
             filterDatas={
-              allTasks
-                ? allTasks.map((task: TaskInterface) => ({
+              Array.isArray(allTasks)
+                ? allTasks?.map((task: TaskInterface) => ({
                     ...task,
                     status_id: task.completed_at ? 4 : 1,
                   }))
@@ -745,7 +769,7 @@ export const Task: FC<{}> = ({}) => {
           />
         </div>
         <div className="relative w-full overflow-auto bg-white">
-          {!allTasks ? (
+          {!allTasks || isLoading ? (
             <TableSkeleton head={tableHead} />
           ) : currentDatas?.length > 0 ? (
             <motion.div
@@ -758,13 +782,13 @@ export const Task: FC<{}> = ({}) => {
               }}
             >
               <table className="w-full mb-[20rem] relative">
-                <thead className="bg-white/50">
-                  <tr className="border-b">
+                <thead className="bg-white/50 transition">
+                  <tr className="border-b bg-gray-50 cursor-pointer">
                     {tableHead?.map((head, index) => (
                       <th
                         key={index}
                         className={`relative w-fit ${
-                          index === 0 ? "w-0" : "min-w-[300px]"
+                          index === 0 ? "w-0" : "min-w-[300px] w-auto"
                         } text-[14px] py-[10px] font-medium  ${
                           index > 0 && index < tableHead.length
                         }  text-[#000000]`}
@@ -785,131 +809,152 @@ export const Task: FC<{}> = ({}) => {
                                 ].includes(head)
                               )
                                 return;
-
                               if (sortedBy === head.toLowerCase())
                                 resetSortedBy();
                               else sort(head.toLowerCase());
                             }}
-                            className={`w-full flex gap-x-[10px] ${
-                              head === "Options"
-                                ? "justify-end"
-                                : "justify-start"
-                            }`}
+                            className={`w-full flex items-center`}
                           >
-                            <div className="w-fit h-[40px] flex items-center">
+                            <div
+                              className={`w-full h-[40px] flex items-center  ${
+                                head === "Options"
+                                  ? "justify-end"
+                                  : "justify-start"
+                              }`}
+                            >
                               {head}
                             </div>
-                            {!excludedsTableHeadInActions.includes(head) ? (
-                              <div className="flex justify-between items-center w-full">
+
+                            <div>
+                              {![
+                                "Options",
+                                "Statut",
+                                "Date & Heure de création",
+                                "Date & Heure de mise à jour",
+                              ].includes(head) ? (
+                                <div className="flex justify-between items-center w-full">
+                                  <div
+                                    className={`cursor-pointer ${
+                                      sortedBy === head.toLowerCase()
+                                        ? "bg-blue-200"
+                                        : ""
+                                    } shrink-0 p-[8px] rounded-lg`}
+                                  >
+                                    <svg
+                                      version="1.1"
+                                      id="fi_690342"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width={15}
+                                      height={15}
+                                      viewBox="0 0 512 512"
+                                    >
+                                      <g>
+                                        <g>
+                                          <path
+                                            fill={
+                                              sortedBy === head.toLowerCase()
+                                                ? "#3b82f6"
+                                                : "#64748b"
+                                            }
+                                            d="M106.23,0H75.86L1.496,212.467h42.273l11.172-31.92h71.37l11.012,31.92h42.207L106.23,0z M68.906,140.647l21.976-62.791 l21.664,62.791H68.906z"
+                                          ></path>
+                                        </g>
+                                      </g>
+                                      <g>
+                                        <g>
+                                          <polygon
+                                            fill={
+                                              sortedBy === head.toLowerCase()
+                                                ? "#3b82f6"
+                                                : "#64748b"
+                                            }
+                                            points="483.288,359.814 407.478,435.624 407.478,0 367.578,0 367.578,435.624 291.768,359.814 263.555,388.027 387.528,512 511.501,388.027"
+                                          ></polygon>
+                                        </g>
+                                      </g>
+                                      <g>
+                                        <g>
+                                          <polygon
+                                            fill={
+                                              sortedBy === head.toLowerCase()
+                                                ? "#3b82f6"
+                                                : "#64748b"
+                                            }
+                                            points="182.043,299.247 0.499,299.247 0.499,339.147 122.039,339.147 0.499,480.372 0.499,511.717 180.048,511.717 .048,471.817 60.503,471.817 182.043,330.592"
+                                          ></polygon>
+                                        </g>
+                                      </g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                      <g></g>
+                                    </svg>
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
+                          <div>
+                            {![
+                              "Options",
+                              "Statut",
+                              "Date & Heure de création",
+                              "Date & Heure de mise à jour",
+                            ].includes(head) ? (
+                              <div className="flex justify-end items-center w-full">
                                 <div
                                   className={`cursor-pointer ${
-                                    sortedBy === head.toLowerCase()
+                                    combineSearch.some((cmb) => {
+                                      return cmb.id === head;
+                                    })
                                       ? "bg-blue-200"
                                       : ""
                                   } shrink-0 p-[8px] rounded-lg`}
+                                  onClick={(e) => {
+                                    combineSearch.find((cmb) => cmb.id === head)
+                                      ? deleteSearchCombinaison(e, head)
+                                      : createSearchCombinaison(e, head);
+                                  }}
                                 >
                                   <svg
-                                    version="1.1"
-                                    id="fi_690342"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
-                                    width={15}
-                                    height={15}
-                                    viewBox="0 0 512 512"
                                   >
-                                    <g>
-                                      <g>
-                                        <path
-                                          fill={
-                                            sortedBy === head.toLowerCase()
-                                              ? "#3b82f6"
-                                              : "#64748b"
-                                          }
-                                          d="M106.23,0H75.86L1.496,212.467h42.273l11.172-31.92h71.37l11.012,31.92h42.207L106.23,0z M68.906,140.647l21.976-62.791 l21.664,62.791H68.906z"
-                                        ></path>
-                                      </g>
-                                    </g>
-                                    <g>
-                                      <g>
-                                        <polygon
-                                          fill={
-                                            sortedBy === head.toLowerCase()
-                                              ? "#3b82f6"
-                                              : "#64748b"
-                                          }
-                                          points="483.288,359.814 407.478,435.624 407.478,0 367.578,0 367.578,435.624 291.768,359.814 263.555,388.027 387.528,512 511.501,388.027"
-                                        ></polygon>
-                                      </g>
-                                    </g>
-                                    <g>
-                                      <g>
-                                        <polygon
-                                          fill={
-                                            sortedBy === head.toLowerCase()
-                                              ? "#3b82f6"
-                                              : "#64748b"
-                                          }
-                                          points="182.043,299.247 0.499,299.247 0.499,339.147 122.039,339.147 0.499,480.372 0.499,511.717 180.048,511.717 .048,471.817 60.503,471.817 182.043,330.592"
-                                        ></polygon>
-                                      </g>
-                                    </g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
-                                    <g></g>
+                                    <path
+                                      d="M2 4.6C2 4.03995 2 3.75992 2.10899 3.54601C2.20487 3.35785 2.35785 3.20487 2.54601 3.10899C2.75992 3 3.03995 3 3.6 3H20.4C20.9601 3 21.2401 3 21.454 3.10899C21.6422 3.20487 21.7951 3.35785 21.891 3.54601C22 3.75992 22 4.03995 22 4.6V5.26939C22 5.53819 22 5.67259 21.9672 5.79756C21.938 5.90831 21.8901 6.01323 21.8255 6.10776C21.7526 6.21443 21.651 6.30245 21.4479 6.4785L15.0521 12.0215C14.849 12.1975 14.7474 12.2856 14.6745 12.3922C14.6099 12.4868 14.562 12.5917 14.5328 12.7024C14.5 12.8274 14.5 12.9618 14.5 13.2306V18.4584C14.5 18.6539 14.5 18.7517 14.4685 18.8363C14.4406 18.911 14.3953 18.9779 14.3363 19.0315C14.2695 19.0922 14.1787 19.1285 13.9971 19.2012L10.5971 20.5612C10.2296 20.7082 10.0458 20.7817 9.89827 20.751C9.76927 20.7242 9.65605 20.6476 9.58325 20.5377C9.5 20.4122 9.5 20.2142 9.5 19.8184V13.2306C9.5 12.9618 9.5 12.8274 9.46715 12.7024C9.43805 12.5917 9.39014 12.4868 9.32551 12.3922C9.25258 12.2856 9.15102 12.1975 8.94789 12.0215L2.55211 6.4785C2.34898 6.30245 2.24742 6.21443 2.17449 6.10776C2.10986 6.01323 2.06195 5.90831 2.03285 5.79756C2 5.67259 2 5.53819 2 5.26939V4.6Z"
+                                      stroke="black"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
                                   </svg>
                                 </div>
                               </div>
                             ) : null}
                           </div>
-                          {!excludedsTableHeadInActions.includes(head) ? (
-                            <div className="flex justify-end items-center w-full">
-                              <div
-                                className={`cursor-pointer ${
-                                  combineSearch.some((cmb) => {
-                                    return cmb.id === head;
-                                  })
-                                    ? "bg-blue-200"
-                                    : ""
-                                } shrink-0 p-[8px] rounded-lg`}
-                                onClick={(e) => {
-                                  combineSearch.find((cmb) => cmb.id === head)
-                                    ? deleteSearchCombinaison(e, head)
-                                    : createSearchCombinaison(e, head);
-                                }}
-                              >
-                                <svg
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M2 4.6C2 4.03995 2 3.75992 2.10899 3.54601C2.20487 3.35785 2.35785 3.20487 2.54601 3.10899C2.75992 3 3.03995 3 3.6 3H20.4C20.9601 3 21.2401 3 21.454 3.10899C21.6422 3.20487 21.7951 3.35785 21.891 3.54601C22 3.75992 22 4.03995 22 4.6V5.26939C22 5.53819 22 5.67259 21.9672 5.79756C21.938 5.90831 21.8901 6.01323 21.8255 6.10776C21.7526 6.21443 21.651 6.30245 21.4479 6.4785L15.0521 12.0215C14.849 12.1975 14.7474 12.2856 14.6745 12.3922C14.6099 12.4868 14.562 12.5917 14.5328 12.7024C14.5 12.8274 14.5 12.9618 14.5 13.2306V18.4584C14.5 18.6539 14.5 18.7517 14.4685 18.8363C14.4406 18.911 14.3953 18.9779 14.3363 19.0315C14.2695 19.0922 14.1787 19.1285 13.9971 19.2012L10.5971 20.5612C10.2296 20.7082 10.0458 20.7817 9.89827 20.751C9.76927 20.7242 9.65605 20.6476 9.58325 20.5377C9.5 20.4122 9.5 20.2142 9.5 19.8184V13.2306C9.5 12.9618 9.5 12.8274 9.46715 12.7024C9.43805 12.5917 9.39014 12.4868 9.32551 12.3922C9.25258 12.2856 9.15102 12.1975 8.94789 12.0215L2.55211 6.4785C2.34898 6.30245 2.24742 6.21443 2.17449 6.10776C2.10986 6.01323 2.06195 5.90831 2.03285 5.79756C2 5.67259 2 5.53819 2 5.26939V4.6Z"
-                                    stroke="black"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                </svg>
-                              </div>
-                            </div>
-                          ) : null}
                         </div>
 
                         <div className="relative h-auto w-full z-50">
-                          {!excludedsTableHeadInActions.includes(head) &&
+                          {![
+                            "Options",
+                            "Statut",
+                            "Date & Heure de création",
+                            "Date & Heure de mise à jour",
+                          ].includes(head) &&
                           combineSearch.some((cmb) => {
                             return cmb.id === head;
                           }) ? (
@@ -1020,8 +1065,9 @@ export const Task: FC<{}> = ({}) => {
                               <div className="flex flex-col items-center w-full">
                                 <button
                                   type="button"
-                                  onClick={() => {
+                                  onClick={(e) => {
                                     setEndAndAssignModal(true);
+                                    e.stopPropagation();
                                   }}
                                   className="flex items-center justify-start w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                 >
@@ -1033,8 +1079,9 @@ export const Task: FC<{}> = ({}) => {
                                 {roleAdmin ? (
                                   <button
                                     type="button"
-                                    onClick={() => {
+                                    onClick={(e) => {
                                       setEndModal(true);
+                                      e.stopPropagation();
                                     }}
                                     className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                   >
@@ -1084,16 +1131,20 @@ export const Task: FC<{}> = ({}) => {
                         </td>
 
                         <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
+                          {
+                            departments.find(
+                              (department) =>
+                                department.id === row?.assignable?.department_id
+                            )?.name
+                          }
+                        </td>
+
+                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
                           {row?.assignable?.code}
                         </td>
 
                         <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
-                          {
-                            users?.find(
-                              (user) =>
-                                user.id === row.assignable.user_assignated_id
-                            )?.name
-                          }
+                          {users?.find((user) => user.id === row.user_id)?.name}
                         </td>
 
                         <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
@@ -1164,7 +1215,12 @@ export const Task: FC<{}> = ({}) => {
                               "short"
                             )}
                         </td>
-                        <td className="text-[#636363] w-auto px-[20px] text-start font-poppins">
+                        <td
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          className="text-[#636363] w-auto px-[20px] text-start font-poppins"
+                        >
                           <div className="w-full h-full flex items-center justify-end">
                             <div ref={box}>
                               <MenuDropdown
@@ -1176,6 +1232,7 @@ export const Task: FC<{}> = ({}) => {
                                       onClick={(e) => {
                                         handleClick(e);
                                         setCurrentEntry(row.id);
+                                        e.stopPropagation();
                                       }}
                                       className={`h-[44px] w-full flex items-center justify-center`}
                                     >
@@ -1188,8 +1245,9 @@ export const Task: FC<{}> = ({}) => {
                                   <div className="flex flex-col items-center w-full">
                                     <button
                                       type="button"
-                                      onClick={() => {
+                                      onClick={(e) => {
                                         setEndAndAssignModal(true);
+                                        e.stopPropagation();
                                       }}
                                       className="flex items-center justify-start w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                     >
@@ -1201,8 +1259,9 @@ export const Task: FC<{}> = ({}) => {
                                     {roleAdmin ? (
                                       <button
                                         type="button"
-                                        onClick={() => {
+                                        onClick={(e) => {
                                           setEndModal(true);
+                                          e.stopPropagation();
                                         }}
                                         className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                       >
