@@ -151,7 +151,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
     ],
     []
   );
-  const [nav, setNav] = useState<Nav[]>([...navDatas]);
+  const [nav, setNav] = useState<Nav[]>([]);
   const [subNav, setSubNav] = useState<SubNav[]>([
     {
       link: "/imprimerie-flexo-offset",

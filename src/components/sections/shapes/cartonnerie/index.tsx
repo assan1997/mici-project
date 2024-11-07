@@ -59,10 +59,10 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   } = useData();
 
   const shapeSchema = z.object({
-    code: z.string(),
+    // code: z.string(),
     client: z.number(),
     commercial: z.number(),
-    department: z.number(),
+    // department: z.number(),
     part: z.string(),
     compression_box: z.string(),
     weight_code: z.string(),
@@ -135,9 +135,9 @@ export const ShapeCardboard: FC<{}> = ({}) => {
 
   const reset = () => {
     form.setValue("client", 0);
-    form.setValue("code", "");
+    // form.setValue("code", "");
     form.setValue("commercial", 0);
-    form.setValue("department", 0);
+    // form.setValue("department", 0);
     form.setValue("rule", 0);
     form.setValue("compression_box", "");
     form.setValue("dim_square", "");
@@ -189,10 +189,10 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   const onSubmit = async (data: z.infer<typeof shapeSchema>) => {
     setLoading(true);
     let {
-      code,
+      // code,
       client,
       commercial,
-      department,
+      // department,
       rule,
       compression_box,
       weight_code,
@@ -212,7 +212,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
       client_id: client,
       department_id: 3,
       commercial_id: commercial,
-      code,
+      // code,
       part,
       compression_box,
       dim_square,
@@ -233,9 +233,9 @@ export const ShapeCardboard: FC<{}> = ({}) => {
       reset();
       setCreationModal(false);
       createdOffsetShape.dim_plate = dim_plate;
-      createdOffsetShape.department = departments.find(
-        (dep) => dep.id === department && dep
-      );
+      // createdOffsetShape.department = departments.find(
+      //   (dep) => dep.id === department && dep
+      // );
       createdOffsetShape.commercial = users?.find(
         (use) => use.id === commercial
       );
@@ -317,7 +317,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     console.log("shape", shape);
 
     form.setValue("compression_box", shape.compression_box);
-    form.setValue("code", shape.code);
+    // form.setValue("code", shape.code);
     form.setValue("part", shape.part);
     form.setValue("dim_square", shape.dim_square);
     form.setValue("dim_plate", shape.dim_plate);
@@ -335,9 +335,9 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     return shape;
   }, [currentEntry]);
 
-  useEffect(() => {
-    form.setValue("department", department[0]?.value as unknown as number);
-  }, [department]);
+  // useEffect(() => {
+  //   form.setValue("department", department[0]?.value as unknown as number);
+  // }, [department]);
 
   useEffect(() => {
     form.setValue("commercial", commercial[0]?.value as unknown as number);
@@ -354,10 +354,10 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   const onSubmitUpdate = async (data: z.infer<typeof shapeSchema>) => {
     setLoading(true);
     let {
-      code,
+      // code,
       client,
       commercial,
-      department,
+      // department,
       rule,
       compression_box,
       weight_code,
@@ -374,14 +374,14 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     } = data;
     const entry: OffsetShapeEntry = {
       client_id: client,
-      department_id: department,
+      department_id: 3,
       commercial_id: commercial,
       compression_box,
       dim_square,
       dim_plate,
       dim_int,
       pose_number,
-      code,
+      // code,
       reference,
       rule_id: rule,
       weight_code,
@@ -504,9 +504,9 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     );
 
     if (success) {
-      updatedShape.department = departments.find(
-        (dep) => dep.id === department && dep
-      );
+      // updatedShape.department = departments.find(
+      //   (dep) => dep.id === department && dep
+      // );
       updatedShape.commercial = users?.find((use) => use.id === commercial);
       updatedShape.client = clients?.find((cli) => cli.id === client);
 
@@ -737,7 +737,6 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     setCurrentDatas((tmp) => {
       let sorted: any = [];
       setSortedBY(key);
-
       if (key === "client") {
         sorted = tmp?.sort((a, b) => {
           if (a?.client.name.toUpperCase() > b?.client?.name?.toUpperCase()) {
@@ -1235,6 +1234,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
           </button>
         </div>
       ) : null}
+
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -1314,7 +1314,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
           />
-          {cartonnerieShapes && cartonnerieShapes?.length > 0 ? (
+          {/* {cartonnerieShapes && cartonnerieShapes?.length > 0 ? (
             <Export
               title="Exporter en csv"
               type="csv"
@@ -1373,7 +1373,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   : [],
               }}
             />
-          ) : null}
+          ) : null} */}
         </div>
         <div className="relative w-full overflow-auto bg-white">
           {!cartonnerieShapes || isLoading ? (
@@ -1431,7 +1431,6 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                             >
                               {head}
                             </div>
-
                             <div>
                               {![
                                 "Options",
@@ -1688,14 +1687,14 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                   </button>
                                 ) : null}
 
-                                <Export
+                                {/* <Export
                                   title="Télécharger le pdf"
                                   type="pdf"
                                   entry={{
                                     headers: [],
                                     data: shapeInEntry,
                                   }}
-                                />
+                                /> */}
 
                                 <button
                                   type="button"
@@ -2001,14 +2000,14 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                       </button>
                                     ) : null}
 
-                                    <Export
+                                    {/* <Export
                                       title="Télécharger le pdf"
                                       type="pdf"
                                       entry={{
                                         headers: [],
                                         data: shapeInEntry,
                                       }}
-                                    />
+                                    /> */}
 
                                     <button
                                       type="button"
@@ -2172,7 +2171,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
             </div>
             <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-scroll relative py-[10px] px-[20px]">
               <div className="w-full gap-[20px] grid grid-cols-3">
-                <ComboboxMultiSelect
+                {/* <ComboboxMultiSelect
                   label={"Département"}
                   placeholder=""
                   className="w-full"
@@ -2205,7 +2204,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   selectedElementInDropdown={department}
                   setSelectedUniqElementInDropdown={setDepartment}
                   borderColor="border-grayscale-200"
-                />
+                /> */}
                 <ComboboxMultiSelect
                   label={"Client"}
                   placeholder=""
@@ -2276,14 +2275,14 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setCommercial}
                   borderColor="border-grayscale-200"
                 />
-                <BaseInput
+                {/* <BaseInput
                   label="Code"
                   id="code"
                   placeholder=""
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("code")}
-                />
+                /> */}
                 <BaseInput
                   label="Reference"
                   id="reference"
@@ -2537,7 +2536,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
             </div>
             <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-auto relative py-[10px] px-[20px]">
               <div className="w-full gap-[20px] grid grid-cols-3">
-                <ComboboxMultiSelect
+                {/* <ComboboxMultiSelect
                   label={"Département"}
                   placeholder=""
                   className="w-full"
@@ -2570,7 +2569,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   selectedElementInDropdown={department}
                   setSelectedUniqElementInDropdown={setDepartment}
                   borderColor="border-grayscale-200"
-                />
+                /> */}
                 <ComboboxMultiSelect
                   label={"Client"}
                   placeholder=""
@@ -2642,14 +2641,14 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   borderColor="border-grayscale-200"
                 />
 
-                <BaseInput
+                {/* <BaseInput
                   label="Code"
                   id="code"
                   placeholder=""
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("code")}
-                />
+                /> */}
                 <BaseInput
                   label="Reference"
                   id="reference"

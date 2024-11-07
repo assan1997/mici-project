@@ -9,6 +9,7 @@ import {
 } from "react";
 import { ChevronDown } from "@/components/icons";
 import { ChevronRigthIcon } from "../../svg";
+import { motion } from "framer-motion";
 
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -89,116 +90,129 @@ const SideBar: FC<{ resize: boolean }> = ({ resize }) => {
             alt="logo"
             fill
             className="object-contain"
-            src="/assets/logo/logo-red.png"
+            src="/assets/logo/logo-white.png"
           />
         </div>
       </div>
       <div className="flex flex-col gap-y-[8px] px-[30px] items-start mt-[100px] justify-start  w-full">
-        {nav?.map(({ active, slug, id, link, icon }, index) => (
-          <div className="" key={index}>
-            <button
-              onClick={() => {
-                handleActiveNav(
-                  id,
-                  setNav as Dispatch<
-                    SetStateAction<SubNav[]> | SetStateAction<Nav[]>
-                  >,
-                  () => {
-                    const subNavs = getSubnavs(id);
-                    if (subNavs.length > 0) {
-                      handleUpdateSubNavId(
-                        id,
-                        setSubNav as Dispatch<
-                          SetStateAction<SubNav[]> | SetStateAction<Nav[]>
-                        >
-                      );
-                      handleResetNavState(
-                        setSubNav as Dispatch<
-                          SetStateAction<SubNav[]> | SetStateAction<Nav[]>
-                        >
-                      );
-                    } else Router.push(`/workspace${link}`);
-                  }
-                );
-              }}
-              className={` ${
-                active ? "text-white" : "bg-inherit text-[#EBDFD7]/90"
-              } shrink-0 transition-all duration-100 ${
-                resize ? "w-[48px] justify-center" : "justify-start w-[184px]"
-              } h-[48px] flex items-center py-[30px] border-b border-[#EBDFD7]/10 hover:text-white/70 gap-x-[14px] hover:text-[#E65F2B]`}
-            >
-              {/* <div className="absolute bg-inherit text-white hover:bg-white/10 h-[40px] left-[300px] w-[200px]"></div> */}
-              <div className="shrink-0">
-                {icon(active ? "#E65F2B" : "white")}
-              </div>
-              {!resize ? (
-                <span
-                  className={`${
-                    resize ? "invisible absolute" : "visible"
-                  } transition-all font-poppins`}
+        <motion.div
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 1,
+            ease: [0.36, 0.01, 0, 0.99],
+            delay: 0.2,
+          }}
+        >
+          {nav.length > 0 &&
+            nav?.map(({ active, slug, id, link, icon }, index) => (
+              <div className="" key={index}>
+                <button
+                  onClick={() => {
+                    handleActiveNav(
+                      id,
+                      setNav as Dispatch<
+                        SetStateAction<SubNav[]> | SetStateAction<Nav[]>
+                      >,
+                      () => {
+                        const subNavs = getSubnavs(id);
+                        if (subNavs.length > 0) {
+                          handleUpdateSubNavId(
+                            id,
+                            setSubNav as Dispatch<
+                              SetStateAction<SubNav[]> | SetStateAction<Nav[]>
+                            >
+                          );
+                          handleResetNavState(
+                            setSubNav as Dispatch<
+                              SetStateAction<SubNav[]> | SetStateAction<Nav[]>
+                            >
+                          );
+                        } else Router.push(`/workspace${link}`);
+                      }
+                    );
+                  }}
+                  className={` ${
+                    active ? "text-white" : "bg-inherit text-[#EBDFD7]/90"
+                  } shrink-0 transition-all duration-100 ${
+                    resize
+                      ? "w-[48px] justify-center"
+                      : "justify-start w-[184px]"
+                  } h-[48px] flex items-center py-[30px] border-b border-[#EBDFD7]/10 hover:text-white/70 gap-x-[14px] hover:text-[#E65F2B]`}
                 >
-                  {slug}
-                </span>
-              ) : null}
-            </button>
-            <div
-              style={{
-                height: !active
-                  ? 0
-                  : getSubnavs(id).length > 0
-                  ? getSubnavs(id).length * 80
-                  : 0,
-              }}
-              className={`relative overflow-hidden flex flex-col items-start ${
-                resize ? "pl-[4px]" : "pl-[15px]"
-              }  justify-center transition-height duration-300`}
-            >
-              <div className="py-[6px] flex flex-col gap-y-[12px] pl-[15px] border-l border-[#EBDFD7]/10">
-                {getSubnavs(id)?.map(
-                  ({
-                    id: subNavId,
-                    slug: subNavSlug,
-                    active: subNavActive,
-                    link: subnavLink,
-                    icon: subNavIcon,
-                  }) => (
-                    <button
+                  {/* <div className="absolute bg-inherit text-white hover:bg-white/10 h-[40px] left-[300px] w-[200px]"></div> */}
+                  <div className="shrink-0">
+                    {icon(active ? "#E65F2B" : "white")}
+                  </div>
+                  {!resize ? (
+                    <span
                       className={`${
-                        subNavActive
-                          ? "bg-[#E65F2B]/10 text-[#E65F2B]"
-                          : "bg-inherit text-white hover:bg-[#E65F2B]/10"
-                      } shrink-0 transition-all duration-300 ${
-                        resize
-                          ? "w-[42px] h-[42px] justify-center"
-                          : "justify-start w-[184px] h-[50px]"
-                      }  relative flex items-center justify-start text-justify font-poppins text-[14px] py-[16px] px-[16px] gap-x-[14px] rounded-[12px]`}
-                      onClick={() => {
-                        handleActiveNav(
-                          subNavId,
-                          setSubNav as Dispatch<
-                            SetStateAction<SubNav[]> | SetStateAction<Nav[]>
-                          >
-                        );
-                        Router.push(`/workspace${link}${subnavLink}`);
-                      }}
-                      key={subNavId}
+                        resize ? "invisible absolute" : "visible"
+                      } transition-all font-poppins`}
                     >
-                      <div
-                        className={`absolute w-[8px] h-[8px] shrink-0 -left-[19px] ${
-                          subNavActive ? "bg-[#E65F2B]" : "bg-[#2a2a2a]"
-                        } rounded-full transition-all duration-200`}
-                      ></div>
-                      <div className="shrink-0">
-                        {subNavIcon(subNavActive ? "#E65F2B" : "white")}
-                      </div>
-                      {!resize ? subNavSlug : null}
-                    </button>
-                  )
-                )}
+                      {slug}
+                    </span>
+                  ) : null}
+                </button>
+                <div
+                  style={{
+                    height: !active
+                      ? 0
+                      : getSubnavs(id).length > 0
+                      ? getSubnavs(id).length * 80
+                      : 0,
+                  }}
+                  className={`relative overflow-hidden flex flex-col items-start ${
+                    resize ? "pl-[4px]" : "pl-[15px]"
+                  }  justify-center transition-height duration-300`}
+                >
+                  <div className="py-[6px] flex flex-col gap-y-[12px] pl-[15px] border-l border-[#EBDFD7]/10">
+                    {getSubnavs(id)?.map(
+                      ({
+                        id: subNavId,
+                        slug: subNavSlug,
+                        active: subNavActive,
+                        link: subnavLink,
+                        icon: subNavIcon,
+                      }) => (
+                        <button
+                          className={`${
+                            subNavActive
+                              ? "bg-[#E65F2B]/10 text-[#E65F2B]"
+                              : "bg-inherit text-white hover:bg-[#E65F2B]/10"
+                          } shrink-0 transition-all duration-300 ${
+                            resize
+                              ? "w-[42px] h-[42px] justify-center"
+                              : "justify-start w-[184px] h-[50px]"
+                          }  relative flex items-center justify-start text-justify font-poppins text-[14px] py-[16px] px-[16px] gap-x-[14px] rounded-[12px]`}
+                          onClick={() => {
+                            handleActiveNav(
+                              subNavId,
+                              setSubNav as Dispatch<
+                                SetStateAction<SubNav[]> | SetStateAction<Nav[]>
+                              >
+                            );
+                            Router.push(`/workspace${link}${subnavLink}`);
+                          }}
+                          key={subNavId}
+                        >
+                          <div
+                            className={`absolute w-[8px] h-[8px] shrink-0 -left-[19px] ${
+                              subNavActive ? "bg-[#E65F2B]" : "bg-[#2a2a2a]"
+                            } rounded-full transition-all duration-200`}
+                          ></div>
+                          <div className="shrink-0">
+                            {subNavIcon(subNavActive ? "#E65F2B" : "white")}
+                          </div>
+                          {!resize ? subNavSlug : null}
+                        </button>
+                      )
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            ))}
+        </motion.div>
       </div>
     </div>
   );

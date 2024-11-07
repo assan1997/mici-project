@@ -66,7 +66,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   const shapeSchema = z.object({
     client: z.number(),
     commercial: z.number(),
-    department: z.number(),
+    // department: z.number(),
     // part: z.string(),
     // dim_lx_lh: z.string(),
     // dim_square: z.string(),
@@ -104,11 +104,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     [allShapes?.data]
   );
 
-  useEffect(() => {
-    console.log("allShapes", allShapes);
-    console.log("departments", departments);
-  }, [allShapes]);
-
   const form = useForm({ schema: shapeSchema });
   const standByform = useForm({ schema: shapeStandBySchema });
   const observationForm = useForm({ schema: shapeObservationSchema });
@@ -136,7 +131,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   const reset = () => {
     form.setValue("client", 0);
     form.setValue("commercial", 0);
-    form.setValue("department", 0);
+    // form.setValue("department", 0);
     // form.setValue("dim_lx_lh", "");
     // form.setValue("dim_square", "");
     // form.setValue("dim_plate", "");
@@ -181,7 +176,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     let {
       client,
       commercial,
-      department,
+      // department,
       rule,
       // code,
       // dim_lx_lh,
@@ -196,7 +191,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
     const { data: createdOffsetShape, success } = await createOffsetShape({
       client_id: client,
-      department_id: department,
+      department_id: 2,
       commercial_id: commercial,
       // code,
       // dim_lx_lh,
@@ -295,9 +290,9 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     return shape;
   }, [currentEntry]);
 
-  useEffect(() => {
-    form.setValue("department", department[0]?.value as unknown as number);
-  }, [department]);
+  // useEffect(() => {
+  //   form.setValue("department", department[0]?.value as unknown as number);
+  // }, [department]);
 
   useEffect(() => {
     form.setValue("commercial", commercial[0]?.value as unknown as number);
@@ -312,11 +307,12 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   }, [selectedRule]);
 
   const onSubmitUpdate = async (data: z.infer<typeof shapeSchema>) => {
+    
     setLoading(true);
     let {
       client,
       commercial,
-      department,
+      // department,
       // dim_lx_lh,
       // dim_square,
       // dim_plate,
@@ -326,9 +322,10 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       // part,
       rule,
     } = data;
+    console.log("client", client);
     const entry: OffsetShapeEntry = {
       client_id: client,
-      department_id: department,
+      // department_id: department,
       commercial_id: commercial,
       // dim_lx_lh,
       // dim_square,
@@ -424,13 +421,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       currentEntry as number,
       entry
     );
-
     if (success) {
-      updatedShape.department = departments.find(
-        (dep) => dep.id === department && dep
-      );
-      updatedShape.commercial = users?.find((use) => use.id === commercial);
-      updatedShape.client = clients?.find((cli) => cli.id === client);
       mutate();
       setOpenEditionModal(false);
       showToast({
@@ -658,6 +649,15 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   const goToDetail = (id: any) => {
     Router.push(`/workspace/details/shapes/${id}`);
   };
+
+  const goToDoc = (data: ShapeInterface) => {
+    Router.push(`/workspace/document/${JSON.stringify(data)}`);
+  };
+
+  // const goToDoc = (data: ShapeInterface) => {
+  //   localStorage.setItem("doc-entry", JSON.stringify(data));
+  //   Router.push(`/workspace/doc/${data.id}`);
+  // };
   const [sortedBy, setSortedBY] = useState<string>("");
 
   const sort = (key: string) => {
@@ -1070,7 +1070,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
           />
-          <RenderDepartmentFilter />
+          {/* <RenderDepartmentFilter /> */}
           <Filter
             type="search"
             title={"Recherche"}
@@ -1091,7 +1091,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
           />
-          {allOffsetShapes && allOffsetShapes?.length > 0 ? (
+          {/* {allOffsetShapes && allOffsetShapes?.length > 0 ? (
             <Export
               title="Exporter en csv"
               type="csv"
@@ -1148,7 +1148,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                   : [],
               }}
             />
-          ) : null}
+          ) : null} */}
           {/* <Export
             title="Télécharger le pdf"
             type="pdf"
@@ -1444,7 +1444,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                           dropdown.id = "dropdown";
                           dropdown.style.boxShadow =
                             "0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)";
-                          dropdown.className = "w-[200px] h-[200px] absolute";
+                          dropdown.className = "w-[200px] h-auto absolute";
                           const target = e.target as HTMLElement;
                           target.appendChild(dropdown);
                           const root = createRoot(dropdown);
@@ -1468,14 +1468,14 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                   </button>
                                 ) : null}
 
-                                <Export
+                                {/* <Export
                                   title="Télécharger le pdf"
                                   type="pdf"
                                   entry={{
                                     headers: [],
                                     data: shapeInEntry,
                                   }}
-                                />
+                                /> */}
 
                                 <button
                                   type="button"
@@ -1717,7 +1717,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                 }
                               >
                                 <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-                                  <div className="flex flex-col items-center w-full">
+                                  <div className="flex flex-col items-center w-full overlow-hidden">
                                     {roleAdmin ? (
                                       <button
                                         type="button"
@@ -1734,14 +1734,22 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                       </button>
                                     ) : null}
 
-                                    <Export
+                                    {/* <Export
                                       title="Télécharger le pdf"
                                       type="pdf"
+                                      onClick={() => {
+                                        // (e) => {
+                                        //   e.stopPropagation();
+                                        //   handleDownloadPDF();
+                                        //   setModal(true);
+                                        // }
+                                        goToDoc(row);
+                                      }}
                                       entry={{
                                         headers: [],
                                         data: shapeInEntry,
                                       }}
-                                    />
+                                    /> */}
 
                                     <button
                                       type="button"
@@ -1756,22 +1764,23 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                         Voir les détails
                                       </span>
                                     </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenAssignToUserModal(true);
-                                      }}
-                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                    >
-                                      {/* <DetailsIcon color={""} /> */}
-                                      <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                        Assigner à un utilisateur
-                                      </span>
-                                    </button>
 
                                     {roleAdmin ? (
                                       <>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenAssignToUserModal(true);
+                                          }}
+                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                        >
+                                          {/* <DetailsIcon color={""} /> */}
+                                          <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                            Assigner à un utilisateur
+                                          </span>
+                                        </button>
+
                                         <button
                                           type="button"
                                           onClick={(e) => {
@@ -1905,7 +1914,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
             </div>
             <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-scroll relative py-[10px] px-[20px]">
               <div className="w-full grid gap-[20px] grid-cols-3">
-                <ComboboxMultiSelect
+                {/* <ComboboxMultiSelect
                   label={"Département"}
                   //placeholder="Selectionnez un département"
                   className="w-full"
@@ -1938,7 +1947,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                   selectedElementInDropdown={department}
                   setSelectedUniqElementInDropdown={setDepartment}
                   borderColor="border-grayscale-200"
-                />
+                /> */}
                 <ComboboxMultiSelect
                   label={"Client"}
                   //placeholder="Selectionnez un utilisateur"
@@ -2219,7 +2228,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
             </div>
             <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-auto relative py-[10px] px-[20px]">
               <div className="w-full grid gap-[20px] grid-cols-3">
-                <ComboboxMultiSelect
+                {/* <ComboboxMultiSelect
                   label={"Département"}
                   //placeholder="Selectionnez un département"
                   className="w-full"
@@ -2252,7 +2261,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                   selectedElementInDropdown={department}
                   setSelectedUniqElementInDropdown={setDepartment}
                   borderColor="border-grayscale-200"
-                />
+                /> */}
+
                 <ComboboxMultiSelect
                   label={"Client"}
                   //placeholder="Selectionnez un utilisateur"

@@ -115,8 +115,6 @@ export const Task: FC<{}> = ({}) => {
   const onSubmitEndAndAssignTaskForm = async (
     data: z.infer<typeof endAndAssignTaskShema>
   ) => {
-    console.log("data", data);
-    console.log("users", users);
     setLoading(true);
     const { data: closeTaskData, success } = await endAndAssignTask(
       taskInEntry?.id as unknown as number,
@@ -141,6 +139,7 @@ export const Task: FC<{}> = ({}) => {
         position: "top-center",
       });
     }
+
     setLoading(false);
     setEndAndAssignModal(false);
     reset();

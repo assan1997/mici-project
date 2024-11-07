@@ -52,9 +52,7 @@ export default function RootLayout({
           <NextUIProvider>
             <ToastProvider>
               <DataProvider>
-                <SideBarProvider>
-                  {children}
-                </SideBarProvider>
+                <SideBarProvider>{children}</SideBarProvider>
               </DataProvider>
             </ToastProvider>
           </NextUIProvider>

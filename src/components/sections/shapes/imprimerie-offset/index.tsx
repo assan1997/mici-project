@@ -66,7 +66,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
   const shapeSchema = z.object({
     client: z.number(),
     commercial: z.number(),
-    department: z.number(),
+    // department: z.number(),
     part: z.string(),
     dim_lx_lh: z.string(),
     dim_square: z.string(),
@@ -131,7 +131,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
   const reset = () => {
     form.setValue("client", 0);
     form.setValue("commercial", 0);
-    form.setValue("department", 0);
+    // form.setValue("department", 0);
     form.setValue("dim_lx_lh", "");
     form.setValue("dim_square", "");
     form.setValue("dim_plate", "");
@@ -177,7 +177,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
     let {
       client,
       commercial,
-      department,
+      // department,
       rule,
       // code,
       dim_lx_lh,
@@ -194,7 +194,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
 
     const { data: createdOffsetShape, success } = await createOffsetShape({
       client_id: client,
-      department_id: department,
+      department_id: 1,
       commercial_id: commercial,
       // code,
       dim_lx_lh,
@@ -212,9 +212,9 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
       reset();
       setCreationModal(false);
       createdOffsetShape.dim_plate = dim_plate;
-      createdOffsetShape.department = departments.find(
-        (dep) => dep.id === department && dep
-      );
+      // createdOffsetShape.department = departments.find(
+      //   (dep) => dep.id === department && dep
+      // );
       createdOffsetShape.commercial = users?.find(
         (use) => use.id === commercial
       );
@@ -301,9 +301,9 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
     return shape;
   }, [currentEntry]);
 
-  useEffect(() => {
-    form.setValue("department", department[0]?.value as unknown as number);
-  }, [department]);
+  // useEffect(() => {
+  //   form.setValue("department", department[0]?.value as unknown as number);
+  // }, [department]);
 
   useEffect(() => {
     form.setValue("commercial", commercial[0]?.value as unknown as number);
@@ -322,7 +322,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
     let {
       client,
       commercial,
-      department,
+      // department,
       dim_lx_lh,
       dim_square,
       dim_plate,
@@ -336,7 +336,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
     part = part.trim();
     const entry: OffsetShapeEntry = {
       client_id: client,
-      department_id: department,
+      department_id: 1,
       commercial_id: commercial,
       dim_lx_lh,
       dim_square,
@@ -434,9 +434,9 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
     );
 
     if (success) {
-      updatedShape.department = departments.find(
-        (dep) => dep.id === department && dep
-      );
+      // updatedShape.department = departments.find(
+      //   (dep) => dep.id === department && dep
+      // );
       updatedShape.commercial = users?.find((use) => use.id === commercial);
       updatedShape.client = clients?.find((cli) => cli.id === client);
       mutate();
@@ -1099,7 +1099,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
           />
-          {allOffsetShapes && allOffsetShapes?.length > 0 ? (
+          {/* {allOffsetShapes && allOffsetShapes?.length > 0 ? (
             <Export
               title="Exporter en csv"
               type="csv"
@@ -1156,7 +1156,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                   : [],
               }}
             />
-          ) : null}
+          ) : null} */}
           {/* <Export
             title="Télécharger le pdf"
             type="pdf"
@@ -1476,14 +1476,14 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                                   </button>
                                 ) : null}
 
-                                <Export
+                                {/* <Export
                                   title="Télécharger le pdf"
                                   type="pdf"
                                   entry={{
                                     headers: [],
                                     data: shapeInEntry,
                                   }}
-                                />
+                                /> */}
 
                                 <button
                                   type="button"
@@ -1742,14 +1742,14 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                                       </button>
                                     ) : null}
 
-                                    <Export
+                                    {/* <Export
                                       title="Télécharger le pdf"
                                       type="pdf"
                                       entry={{
                                         headers: [],
                                         data: shapeInEntry,
                                       }}
-                                    />
+                                    /> */}
 
                                     <button
                                       type="button"
@@ -1913,7 +1913,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
             </div>
             <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-scroll relative py-[10px] px-[20px]">
               <div className="w-full grid gap-[20px] grid-cols-3">
-                <ComboboxMultiSelect
+                {/* <ComboboxMultiSelect
                   label={"Département"}
                   //placeholder="Selectionnez un département"
                   className="w-full"
@@ -1946,7 +1946,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                   selectedElementInDropdown={department}
                   setSelectedUniqElementInDropdown={setDepartment}
                   borderColor="border-grayscale-200"
-                />
+                /> */}
                 <ComboboxMultiSelect
                   label={"Client"}
                   //placeholder="Selectionnez un utilisateur"
@@ -2227,7 +2227,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
             </div>
             <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-auto relative py-[10px] px-[20px]">
               <div className="w-full grid gap-[20px] grid-cols-3">
-                <ComboboxMultiSelect
+                {/* <ComboboxMultiSelect
                   label={"Département"}
                   //placeholder="Selectionnez un département"
                   className="w-full"
@@ -2260,7 +2260,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                   selectedElementInDropdown={department}
                   setSelectedUniqElementInDropdown={setDepartment}
                   borderColor="border-grayscale-200"
-                />
+                /> */}
                 <ComboboxMultiSelect
                   label={"Client"}
                   //placeholder="Selectionnez un utilisateur"
