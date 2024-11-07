@@ -30,27 +30,42 @@ import { useRouter } from "next/navigation";
 
 export const Task: FC<{}> = ({}) => {
   const { roleAdmin } = useSideBar();
+
+  const getAllTasks = async () => {
+    const URL: string = `${process.env.NEXT_PUBLIC_API_URL}/all-tasks`;
+    const token = await getToken();
+    const reponse = await axios.get(URL, {
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return reponse.data;
+  };
+
+  const getUserTasks = async () => {
+    const URL: string = `${process.env.NEXT_PUBLIC_API_URL}/tasks`;
+    const token = await getToken();
+    const reponse = await axios.get(URL, {
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return reponse.data;
+  };
+
   const { data, mutate, error, isLoading } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}/tasks`,
-    async () => {
-      const URL: string = `${process.env.NEXT_PUBLIC_API_URL}/${
-        roleAdmin ? "all-tasks" : "tasks"
-      }`;
-
-      const token = await getToken();
-      const reponse = await axios.get(URL, {
-        headers: {
-          accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      return reponse.data;
-    }
+    `${process.env.NEXT_PUBLIC_API_URL}/all-tasks`,
+    roleAdmin ? getAllTasks : getUserTasks
   );
 
-  const allTasks: TaskInterface[] = useMemo(() => (data ? data : []), [data]);
+  const allTasks: TaskInterface[] = useMemo(() => {
+    console.log("data===", data?.data);
+    return data ? data : [];
+  }, [data]);
 
   const {
     users,
@@ -1046,7 +1061,6 @@ export const Task: FC<{}> = ({}) => {
                   {tasks?.map((row, index) => {
                     return (
                       <tr
-                        onClick={() => goToDetail(row?.id)}
                         key={index}
                         onContextMenu={(e) => {
                           e.preventDefault();
@@ -1110,7 +1124,10 @@ export const Task: FC<{}> = ({}) => {
                         }}
                         className={`cursor-pointer border-b transition-all duration hover:bg-gray-100 checked:hover:bg-gray-100`}
                       >
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]"
+                        >
                           <div
                             className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
                               !row.completed_at
@@ -1121,15 +1138,24 @@ export const Task: FC<{}> = ({}) => {
                             {!row.completed_at ? "En cours" : "Terminé"}
                           </div>
                         </td>
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                        >
                           {row?.assignable?.reference}
                         </td>
 
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                        >
                           {row?.assignable_type.split("\\")[2]}
                         </td>
 
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                        >
                           {
                             departments.find(
                               (department) =>
@@ -1138,15 +1164,24 @@ export const Task: FC<{}> = ({}) => {
                           }
                         </td>
 
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                        >
                           {row?.assignable?.code}
                         </td>
 
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                        >
                           {users?.find((user) => user.id === row.user_id)?.name}
                         </td>
 
-                        <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                        >
                           <div
                             className={`flex w-fit justify-center py-[3px] rounded-full`}
                           >
@@ -1165,7 +1200,10 @@ export const Task: FC<{}> = ({}) => {
                           {row?.assignable?.dim_plate}
                         </td> */}
 
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {formatTime(
                             new Date(row?.["created_at"]).getTime(),
                             "d:mo:y",
@@ -1178,7 +1216,10 @@ export const Task: FC<{}> = ({}) => {
                             "short"
                           )}
                         </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {formatTime(
                             new Date(
                               row?.["updated_at"] as unknown as string
@@ -1195,7 +1236,10 @@ export const Task: FC<{}> = ({}) => {
                             "short"
                           )}
                         </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]">
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[13px]"
+                        >
                           {row?.completed_at &&
                             formatTime(
                               new Date(
@@ -1214,12 +1258,7 @@ export const Task: FC<{}> = ({}) => {
                               "short"
                             )}
                         </td>
-                        <td
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                          className="text-[#636363] w-auto px-[20px] text-start font-poppins"
-                        >
+                        <td className="text-[#636363] w-auto px-[20px] text-start font-poppins">
                           <div className="w-full h-full flex items-center justify-end">
                             <div ref={box}>
                               <MenuDropdown
@@ -1231,7 +1270,6 @@ export const Task: FC<{}> = ({}) => {
                                       onClick={(e) => {
                                         handleClick(e);
                                         setCurrentEntry(row.id);
-                                        e.stopPropagation();
                                       }}
                                       className={`h-[44px] w-full flex items-center justify-center`}
                                     >

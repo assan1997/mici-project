@@ -18,30 +18,9 @@ export const Export: FC<{
   };
   onClick?: () => void;
 }> = ({ title, type, entry, onClick }) => {
-  // Create styles
-  // Create Document Component
-
-  const handleDownloadPDF = async () => {
-    const element: any = document.getElementById("ficheEtude");
-    const canvas = await html2canvas(element);
-    const imgData = canvas.toDataURL("image/png");
-
-    const customWidth = 210; // largeur en mm
-    const customHeight = 297; // hauteur en mm
-
-    const pdf = new jsPDF("portrait", "mm", [customWidth, customHeight]);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("Fiche_etude_prototype.pdf");
-  };
-
   useEffect(() => {
     const embed = document.getElementsByTagName("iframe");
   }, [entry.data?.code]);
-
-  const [openModal, setModal] = useState<boolean>(false);
 
   if (type === "csv") {
     return (

@@ -31,10 +31,6 @@ export const Details = () => {
     }
   );
 
-  useEffect(() => {
-    console.log("data", data);
-  }, [data]);
-
   const tabs = useMemo(
     () => [
       {
@@ -83,126 +79,315 @@ export const Details = () => {
 
               {data?.assignable_type.split("\\")[2] === "Shape" ? (
                 <>
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Code</div>
-                    <div className="text-[14px]">
-                      {isLoading ? <ColumnSkeleton /> : data?.assignable?.code}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100  w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Reference</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        data?.assignable?.reference
-                      )}
+                  ) : data?.assignable.code ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">Code</div>
+                      <div className="text-[14px]">{data?.assignable.code}</div>
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100  w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Dim_lx_lh</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        data?.assignable?.dim_lx_lh
-                      )}
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Dim_square</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        data?.assignable?.dim_square
-                      )}
+                  ) : data?.assignable.theoretical_weight ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Poids Théorique
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.theoretical_weight}
+                      </div>
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Dim_plate</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        data?.assignable?.dim_plate
-                      )}
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Paper_type</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        data?.assignable?.paper_type
-                      )}
+                  ) : data?.assignable.cardboard_junction ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Jonction du carton
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.cardboard_junction}
+                      </div>
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Pose_number</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        data?.assignable?.pose_number
-                      )}
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Part</div>
-                    <div className="text-[14px]">
-                      {isLoading ? <ColumnSkeleton /> : data?.assignable?.part}
+                  ) : data?.assignable.compression_box ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Box Compression
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.compression_box}
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.weight_code ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Code Grammage
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.weight_code}
+                      </div>
+                    </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.weight ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        {`Grammage en (g)`}
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.weight}
+                      </div>
+                    </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.plate_surface ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Surface de la plaques en m
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.plate_surface}
+                      </div>
+                    </div>
+                  ) : null}
 
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Départment</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        departments.find(
-                          (department) =>
-                            department.id === data?.assignable?.department_id
-                        )?.name
-                      )}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Commercial</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        users?.find(
-                          (user) => user.id === data?.assignable?.commercial_id
-                        )?.name
-                      )}
+                  ) : data?.assignable.dim_lx_lh ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Dimension LxLxH
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.dim_lx_lh}
+                      </div>
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Client</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        clients?.find(
-                          (client) => client.id === data?.assignable?.client_id
-                        )?.name
-                      )}
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
                     </div>
-                  </div>
-                  <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
-                    <div className="text-[12px] text-gray-500">Réference</div>
-                    <div className="text-[14px]">
-                      {isLoading ? (
-                        <ColumnSkeleton />
-                      ) : (
-                        data?.assignable?.reference
-                      )}
+                  ) : data?.assignable.dim_square ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Dimension Carré
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.dim_square}
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.dim_plate ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Dimension Plaque
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.dim_plate}
+                      </div>
+                    </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.paper_type ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Type Papier
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.paper_type}
+                      </div>
+                    </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.pose_number ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        N° des poses
+                      </div>
+                      <div className="text-[14px]">
+                        {data?.assignable.pose_number}
+                      </div>
+                    </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.part ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">1/3</div>
+                      <div className="text-[14px]">{data?.assignable.part}</div>
+                    </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.department ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Départment
+                      </div>
+                      <div className="text-[14px]">
+                        {
+                          departments.find(
+                            (department) =>
+                              department.id === data?.assignable?.department_id
+                          )?.name
+                        }
+                      </div>
+                    </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.department ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Commercial
+                      </div>
+                      <div className="text-[14px]">
+                        {
+                          users?.find(
+                            (user) =>
+                              user.id === data?.assignable?.commercial_id
+                          )?.name
+                        }
+                      </div>
+                    </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.client ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">Client</div>
+                      <div className="text-[14px]">
+                        {
+                          clients?.find(
+                            (client) =>
+                              client.id === data?.assignable?.client_id
+                          )?.name
+                        }
+                      </div>
+                    </div>
+                  ) : null}
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.reference ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">Réference</div>
+                      <div className="text-[14px]">
+                        {data?.assignable.reference}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.rule_id ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">Règle</div>
+                      <div className="text-[14px]">
+                        {data?.assignable.rule_id}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.created_at ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Date de création
+                      </div>
+                      <div className="text-[14px]">
+                        <div>
+                          {formatTime(
+                            new Date(data?.assignable["created_at"]).getTime(),
+                            "d:mo:y",
+                            "short"
+                          )}
+                          {" à "}
+                          {formatTime(
+                            new Date(data?.assignable["created_at"]).getTime(),
+                            "h:m",
+                            "short"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.created_at ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">
+                        Date de de mise à jour
+                      </div>
+                      <div className="text-[14px]">
+                        <div>
+                          {formatTime(
+                            new Date(data?.assignable["updated_at"]).getTime(),
+                            "d:mo:y",
+                            "short"
+                          )}
+                          {" à "}
+                          {formatTime(
+                            new Date(data?.assignable["updated_at"]).getTime(),
+                            "h:m",
+                            "short"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </>
               ) : data?.assignable_type.split("\\")[2] === "Folder" ? (
                 <>
@@ -275,6 +460,18 @@ export const Details = () => {
                       )}
                     </div>
                   </div>
+                  {isLoading ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <ColumnSkeleton />
+                    </div>
+                  ) : data?.assignable.rule_id ? (
+                    <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
+                      <div className="text-[12px] text-gray-500">Règle</div>
+                      <div className="text-[14px]">
+                        {data?.assignable.rule_id}
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="border-b border-gray-100 w-[300px] min-h-[50px]">
                     <div className="text-[12px] text-gray-500">Départment</div>
                     <div className="text-[14px]">

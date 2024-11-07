@@ -307,7 +307,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   }, [selectedRule]);
 
   const onSubmitUpdate = async (data: z.infer<typeof shapeSchema>) => {
-    
     setLoading(true);
     let {
       client,
@@ -650,14 +649,11 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     Router.push(`/workspace/details/shapes/${id}`);
   };
 
-  const goToDoc = (data: ShapeInterface) => {
-    Router.push(`/workspace/document/${JSON.stringify(data)}`);
-  };
-
   // const goToDoc = (data: ShapeInterface) => {
-  //   localStorage.setItem("doc-entry", JSON.stringify(data));
-  //   Router.push(`/workspace/doc/${data.id}`);
+  //   Router.push(`/workspace/document/${JSON.stringify(data)}`);
   // };
+
+
   const [sortedBy, setSortedBY] = useState<string>("");
 
   const sort = (key: string) => {
@@ -1150,7 +1146,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
             />
           ) : null} */}
           {/* <Export
-            title="Télécharger le pdf"
+            title="Voir le pdf"
             type="pdf"
             entry={{ headers: [], data: [] }}
           /> */}
@@ -1468,14 +1464,14 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                   </button>
                                 ) : null}
 
-                                {/* <Export
-                                  title="Télécharger le pdf"
+                                <Export
+                                  title="Voir le pdf"
                                   type="pdf"
                                   entry={{
                                     headers: [],
                                     data: shapeInEntry,
                                   }}
-                                /> */}
+                                />
 
                                 <button
                                   type="button"
@@ -1735,7 +1731,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                     ) : null}
 
                                     {/* <Export
-                                      title="Télécharger le pdf"
+                                      title="Voir le pdf"
                                       type="pdf"
                                       onClick={() => {
                                         // (e) => {

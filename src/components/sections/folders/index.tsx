@@ -17,7 +17,7 @@ import {
   useData,
   User,
 } from "@/contexts/data.context";
-import { createOffsetShape, lockShape, resumeShape } from "@/services/shapes";
+// import { createOffsetShape, lockShape } from "@/services/shapes";
 import { formatTime } from "@/lib/utils/timestamp";
 import MenuDropdown from "@/components/ui/dropdown/MenuDropdown";
 import useActiveState from "@/lib/hooks/useActiveState";
@@ -38,9 +38,11 @@ import {
   closeFolder,
   updateFolder,
   deleteFolder,
-  standbyFolder,
   observationFolder,
   assignToAnUserFolder,
+  resumeShape,
+  standbyFolder,
+  lockShape,
 } from "@/services/folder";
 
 import { Spinner } from "@/components/ui/loader/spinner";
@@ -117,7 +119,7 @@ export const Folder: FC<{}> = ({}) => {
     "Etat",
     "Departement",
     // "Produit",
-    "Forme",
+    // "Forme",
     "Format",
     // "Fabrication",
     "Couleur",
@@ -268,7 +270,7 @@ export const Folder: FC<{}> = ({}) => {
       createdFolder.commercial = users?.find((use) => use.id === commercial);
       createdFolder.client = clients?.find((cli) => cli?.id === client);
 
-      mutate(createdFolder);
+      mutate();
 
       showToast({
         type: "success",
@@ -299,6 +301,7 @@ export const Folder: FC<{}> = ({}) => {
       reference,
       details,
     } = data;
+
     const entry: FolderEntry = {
       reference,
       format,
@@ -392,7 +395,8 @@ export const Folder: FC<{}> = ({}) => {
       );
       updatedFolder.commercial = users?.find((use) => use.id === commercial);
       updatedFolder.client = clients?.find((cli) => cli.id === client);
-      mutate(updatedFolder);
+
+      mutate();
       // let tmpDatas;
       // let tmpData;
 
@@ -475,6 +479,7 @@ export const Folder: FC<{}> = ({}) => {
     form.setValue("details", folder.details);
     form.setValue("state", folder.state);
     form.setValue("number", folder.file_number);
+    form.setValue("reference", folder.reference);
     // form.setValue("paper_type", shape.paper_type);
     // form.setValue("pose_number", shape.pose_number);
     // form.setValue("reference", shape.reference);
@@ -508,7 +513,7 @@ export const Folder: FC<{}> = ({}) => {
     const { success } = await deleteFolder(currentEntry as number);
     if (success) {
       let tmpDatas = allFolders.filter((t: any) => t.id !== currentEntry);
-      mutate(tmpDatas);
+      mutate();
       setDelationModal(false);
       showToast({
         type: "success",
@@ -542,7 +547,7 @@ export const Folder: FC<{}> = ({}) => {
         status_id,
       });
     } else {
-      standByShape = await standbyOffsetShape(currentEntry as number, {
+      standByShape = await standbyFolder(currentEntry as number, {
         type: "STANDBY",
         reason,
         status_id,
@@ -550,15 +555,7 @@ export const Folder: FC<{}> = ({}) => {
     }
     if (standByShape.success) {
       standByShape.data.status_id = status_id;
-      dispatchOffsetShapes((tmp: any) => {
-        let tmpDatas;
-        let tmpData;
-        if (tmp) {
-          tmpData = tmp.find((t: any) => t.id === standByShape.data.id);
-          tmpDatas = tmp.filter((t: any) => t.id !== standByShape.data.id);
-          return [{ ...tmpData, status_id }, ...tmpDatas];
-        }
-      });
+      mutate();
       standByform.setValue("reason", "");
       setOpenStandByModal(false);
       showToast({
@@ -599,15 +596,7 @@ export const Folder: FC<{}> = ({}) => {
     }
 
     if (blockShape.success) {
-      dispatchOffsetShapes((tmp: any) => {
-        let tmpDatas;
-        let tmpData;
-        if (tmp) {
-          tmpData = tmp.find((t: any) => t.id === blockShape.data.id);
-          tmpDatas = tmp.filter((t: any) => t.id !== blockShape.data.id);
-          return [{ ...tmpData, status_id }, ...tmpDatas];
-        }
-      });
+      mutate();
       standByform.setValue("reason", "");
       setOpenStandByModal(false);
       showToast({
@@ -622,6 +611,7 @@ export const Folder: FC<{}> = ({}) => {
         position: "top-center",
       });
     }
+    setOpenLockModal(false);
     setLoading(false);
     reset();
   };
@@ -670,6 +660,7 @@ export const Folder: FC<{}> = ({}) => {
       }
     );
     if (success) {
+      mutate();
       assignForm.setValue("user_id", 0);
       setOpenAssignToUserModal(false);
       showToast({
@@ -1028,7 +1019,7 @@ export const Folder: FC<{}> = ({}) => {
         row={"Departement"}
         index={"status_id"}
         list={departments
-          .filter((dep) => [1, 2].includes(dep.id))
+          // .filter((dep) => [1, 2].includes(dep.id))
           ?.map((dep) => ({
             id: dep.id,
             name: dep.name,
@@ -1610,20 +1601,20 @@ export const Folder: FC<{}> = ({}) => {
 
                                 {roleAdmin ? (
                                   <>
-                                    {/* <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenLockModal(true);
-                                  }}
-                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                >
-                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                    {folderInEntry?.status_id === 3
-                                      ? "Débloquer"
-                                      : "Bloquer"}
-                                  </span>
-                                </button> */}
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenLockModal(true);
+                                      }}
+                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                        {folderInEntry?.status_id === 3
+                                          ? "Débloquer"
+                                          : "Bloquer"}
+                                      </span>
+                                    </button>
 
                                     <button
                                       type="button"
@@ -1745,7 +1736,7 @@ export const Folder: FC<{}> = ({}) => {
                           {row?.department?.name}
                         </td>
 
-                        <td
+                        {/* <td
                           //  onClick={() => goToDetail(row?.id)}
                           className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
@@ -1754,7 +1745,7 @@ export const Folder: FC<{}> = ({}) => {
                               (shape) => shape.id === row?.shape_id
                             )?.reference
                           }
-                        </td>
+                        </td> */}
 
                         <td
                           //  onClick={() => goToDetail(row?.id)}
@@ -2240,7 +2231,6 @@ export const Folder: FC<{}> = ({}) => {
                   type="text"
                   {...form.register("state")}
                 />
-
                 <br />
               </div>
               <div className="flex gap-x-[10px] items-center">
@@ -2506,6 +2496,14 @@ export const Folder: FC<{}> = ({}) => {
                   {...form.register("state")}
                 />
 
+                <BaseInput
+                  label="Reference"
+                  id="reference"
+                  placeholder="Reference"
+                  // leftIcon={<FolderIcon size={18} color={""} />}
+                  type="text"
+                  {...form.register("reference")}
+                />
                 <br />
               </div>
               <div className="flex gap-x-[10px] items-center">
@@ -2762,7 +2760,7 @@ export const Folder: FC<{}> = ({}) => {
         </Form>
       </BaseModal> */}
 
-      {/* <BaseModal open={openLockModal} classname={""}>
+      <BaseModal open={openLockModal} classname={""}>
         <Form form={standByform} onSubmit={onSubmitLock}>
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
@@ -2792,13 +2790,11 @@ export const Folder: FC<{}> = ({}) => {
                 placeholder={`Dites pourquoi vous  ${
                   folderInEntry?.status_id !== 3 ? "bloquer" : "débloquer"
                 }  cette forme`}
-               
                 type="text"
                 {...standByform.register("reason")}
               />
             </div>
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-            
               <button
                 type="submit"
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
@@ -2812,7 +2808,7 @@ export const Folder: FC<{}> = ({}) => {
             </div>
           </div>
         </Form>
-      </BaseModal> */}
+      </BaseModal>
 
       {/* assign to user MODAL */}
       <BaseModal open={openAssignToUserModal} classname={""}>

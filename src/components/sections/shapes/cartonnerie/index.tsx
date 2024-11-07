@@ -1216,6 +1216,14 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     getAllShapes();
   }, []);
 
+  const goToDoc = (data: ShapeInterface) => {
+    localStorage.setItem(
+      "doc-entry",
+      JSON.stringify({ ...data, docType: "cartonnerie-shape-pdf" })
+    );
+    Router.push(`/workspace/doc/${data.id}`);
+  };
+
   return (
     <div className="w-full h-full">
       {roleAdmin ? (
@@ -1687,14 +1695,17 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                   </button>
                                 ) : null}
 
-                                {/* <Export
-                                  title="Télécharger le pdf"
+                                <Export
+                                  onClick={() => {
+                                    goToDoc(row);
+                                  }}
+                                  title="Voir le pdf"
                                   type="pdf"
                                   entry={{
                                     headers: [],
                                     data: shapeInEntry,
                                   }}
-                                /> */}
+                                />
 
                                 <button
                                   type="button"
@@ -2000,14 +2011,17 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                       </button>
                                     ) : null}
 
-                                    {/* <Export
-                                      title="Télécharger le pdf"
+                                    <Export
+                                      onClick={() => {
+                                        goToDoc(row);
+                                      }}
+                                      title="Voir le pdf"
                                       type="pdf"
                                       entry={{
                                         headers: [],
                                         data: shapeInEntry,
                                       }}
-                                    /> */}
+                                    />
 
                                     <button
                                       type="button"

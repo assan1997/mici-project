@@ -33,7 +33,7 @@ export interface FolderInterface {
   commercial: Client;
   department: Department;
   shape: ShapeInterface;
-  reference: String;
+  reference: string;
   bat: any;
   details: string;
   updated_at: string;
