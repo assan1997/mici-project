@@ -531,6 +531,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   const [openAssignToUserModal, setOpenAssignToUserModal] =
     useState<boolean>(false);
   const [openLogsModal, setOpenLogsModal] = useState<boolean>(false);
+
   const handleDeleteShape = async (id: number) => {
     setLoading(true);
     const { data: deletedShape, success } = await deleteShape(
@@ -538,7 +539,6 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     );
     if (success) {
       mutate();
-      setDelationModal(false);
       showToast({
         type: "success",
         message: `Supprimé avec succès`,
@@ -551,6 +551,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         position: "top-center",
       });
     }
+    setDelationModal(false);
     setLoading(false);
     reset();
   };
@@ -1671,7 +1672,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                           dropdown.id = "dropdown";
                           dropdown.style.boxShadow =
                             "0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)";
-                          dropdown.className = "w-[200px] h-[200px] absolute";
+                          dropdown.className = "w-[200px] h-auto absolute";
                           const target = e.target as HTMLElement;
                           target.appendChild(dropdown);
                           const root = createRoot(dropdown);

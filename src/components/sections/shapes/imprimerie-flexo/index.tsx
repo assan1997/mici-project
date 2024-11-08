@@ -448,14 +448,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       currentEntry as number
     );
     if (success) {
-      dispatchOffsetShapes((tmp: any) => {
-        let tmpDatas;
-        if (tmp) {
-          tmpDatas = tmp.filter((t: any) => t.id !== currentEntry);
-          return [...tmpDatas];
-        }
-      });
-      setDelationModal(false);
+      mutate();
       showToast({
         type: "success",
         message: `Supprimé avec succès`,
@@ -468,6 +461,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
         position: "top-center",
       });
     }
+    setDelationModal(false);
     setLoading(false);
     reset();
   };
@@ -652,7 +646,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   // const goToDoc = (data: ShapeInterface) => {
   //   Router.push(`/workspace/document/${JSON.stringify(data)}`);
   // };
-
 
   const [sortedBy, setSortedBY] = useState<string>("");
 

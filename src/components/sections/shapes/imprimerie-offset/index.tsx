@@ -460,20 +460,14 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
   const [openAssignToUserModal, setOpenAssignToUserModal] =
     useState<boolean>(false);
   const [openLogsModal, setOpenLogsModal] = useState<boolean>(false);
+
   const handleDeleteShape = async (id: number) => {
     setLoading(true);
     const { data: deletedShape, success } = await deleteShape(
       currentEntry as number
     );
     if (success) {
-      dispatchOffsetShapes((tmp: any) => {
-        let tmpDatas;
-        if (tmp) {
-          tmpDatas = tmp.filter((t: any) => t.id !== currentEntry);
-          return [...tmpDatas];
-        }
-      });
-      setDelationModal(false);
+      mutate();
       showToast({
         type: "success",
         message: `Supprimé avec succès`,
@@ -487,6 +481,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
       });
     }
     setLoading(false);
+    setDelationModal(false);
     reset();
   };
   const [openStandByModal, setOpenStandByModal] = useState<boolean>(false);
@@ -1460,7 +1455,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                           dropdown.id = "dropdown";
                           dropdown.style.boxShadow =
                             "0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)";
-                          dropdown.className = "w-[200px] h-[200px] absolute";
+                          dropdown.className = "w-[200px] h-auto absolute";
                           const target = e.target as HTMLElement;
                           target.appendChild(dropdown);
                           const root = createRoot(dropdown);
@@ -1778,22 +1773,22 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                                         Voir les détails
                                       </span>
                                     </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenAssignToUserModal(true);
-                                      }}
-                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                    >
-                                      {/* <DetailsIcon color={""} /> */}
-                                      <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                        Assigner à un utilisateur
-                                      </span>
-                                    </button>
 
                                     {roleAdmin ? (
                                       <>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenAssignToUserModal(true);
+                                          }}
+                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                        >
+                                          {/* <DetailsIcon color={""} /> */}
+                                          <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                            Assigner à un utilisateur
+                                          </span>
+                                        </button>
                                         <button
                                           type="button"
                                           onClick={(e) => {

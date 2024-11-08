@@ -291,6 +291,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [bats, setBats] = useState<BatInterface[] | undefined>();
   const [tasks, setTasks] = useState<TaskInterface[] | undefined>();
   const { showToast } = useToast();
+
   const status: Status[] = useMemo(
     () => [
       {

@@ -538,6 +538,8 @@ export const Folder: FC<{}> = ({}) => {
     setLoading(true);
     let { reason } = data;
     reason = reason.trim();
+
+    console.log('folderInEntry?.status_id',folderInEntry?.status_id)
     const status_id = folderInEntry?.status_id !== 2 ? 2 : 1;
     let standByShape: any;
     if (status_id === 2) {
@@ -557,7 +559,7 @@ export const Folder: FC<{}> = ({}) => {
       standByShape.data.status_id = status_id;
       mutate();
       standByform.setValue("reason", "");
-      setOpenStandByModal(false);
+
       showToast({
         type: "success",
         message: `${status_id === 2 ? "Mis" : "Enlevé"} en standby avec succès`,
@@ -570,6 +572,7 @@ export const Folder: FC<{}> = ({}) => {
         position: "top-center",
       });
     }
+    setOpenStandByModal(false);
     setLoading(false);
     reset();
   };
@@ -1676,6 +1679,7 @@ export const Folder: FC<{}> = ({}) => {
                           );
                         }}
                       >
+                        {row.status_id}
                         <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
                           <div
                             className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
@@ -2010,7 +2014,7 @@ export const Folder: FC<{}> = ({}) => {
               <div className="w-full grid gap-[8px] grid-cols-3">
                 <ComboboxMultiSelect
                   label={"Département"}
-                  placeholder="Selectionnez un département"
+                  // placeholder="Selectionnez un département"
                   className="w-full"
                   icon={
                     <svg
@@ -2044,7 +2048,7 @@ export const Folder: FC<{}> = ({}) => {
                 />
                 <ComboboxMultiSelect
                   label={"Client"}
-                  placeholder="Selectionnez un utilisateur"
+                  // placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg
@@ -2078,7 +2082,7 @@ export const Folder: FC<{}> = ({}) => {
                 />
                 <ComboboxMultiSelect
                   label={"Commercial"}
-                  placeholder="Selectionnez un utilisateur"
+                  // placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg
@@ -2149,7 +2153,7 @@ export const Folder: FC<{}> = ({}) => {
 
                 <ComboboxMultiSelect
                   label={"Règle"}
-                  placeholder="Sélectionnez la règle a appliquer"
+                  // placeholder="Sélectionnez la règle a appliquer"
                   className="w-full"
                   icon={
                     <svg
@@ -2182,7 +2186,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Numero de dossier"
                   id="doc nnumber"
-                  placeholder="Numero de dossier"
+                  // placeholder="Numero de dossier"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("number")}
@@ -2191,7 +2195,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Format"
                   id="format"
-                  placeholder="Format"
+                  // placeholder="Format"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("format")}
@@ -2200,7 +2204,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Reference"
                   id="reference"
-                  placeholder="Reference"
+                  // placeholder="Reference"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("reference")}
@@ -2208,7 +2212,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Support"
                   id="support"
-                  placeholder="Support"
+                  // placeholder="Support"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("support")}
@@ -2217,7 +2221,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Couleur"
                   id="color"
-                  placeholder="Couleur"
+                  // placeholder="Couleur"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("color")}
@@ -2226,7 +2230,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Etat"
                   id="state"
-                  placeholder="Etat"
+                  // placeholder="Etat"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("state")}
@@ -2237,7 +2241,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseTextArea
                   label="Details"
                   id="details"
-                  placeholder="Details"
+                  // placeholder="Details"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("details")}
@@ -2283,7 +2287,7 @@ export const Folder: FC<{}> = ({}) => {
               <div className="w-full grid gap-[8px] grid-cols-3">
                 <ComboboxMultiSelect
                   label={"Département"}
-                  placeholder="Selectionnez un département"
+                  // placeholder="Selectionnez un département"
                   className="w-full"
                   icon={
                     <svg
@@ -2317,7 +2321,7 @@ export const Folder: FC<{}> = ({}) => {
                 />
                 <ComboboxMultiSelect
                   label={"Client"}
-                  placeholder="Selectionnez un utilisateur"
+                  // placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg
@@ -2351,7 +2355,7 @@ export const Folder: FC<{}> = ({}) => {
                 />
                 <ComboboxMultiSelect
                   label={"Commercial"}
-                  placeholder="Selectionnez un utilisateur"
+                  // placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg
@@ -2422,7 +2426,7 @@ export const Folder: FC<{}> = ({}) => {
 
                 <ComboboxMultiSelect
                   label={"Règle"}
-                  placeholder="Sélectionnez la règle a appliquer"
+                  // placeholder="Sélectionnez la règle a appliquer"
                   className="w-full"
                   icon={
                     <svg
@@ -2455,7 +2459,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Numero de dossier"
                   id="doc nnumber"
-                  placeholder="Numero de dossier"
+                  // placeholder="Numero de dossier"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("number")}
@@ -2464,7 +2468,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Format"
                   id="format"
-                  placeholder="Format"
+                  // placeholder="Format"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("format")}
@@ -2472,7 +2476,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Support"
                   id="support"
-                  placeholder="Support"
+                  // placeholder="Support"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("support")}
@@ -2481,7 +2485,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Couleur"
                   id="color"
-                  placeholder="Couleur"
+                  // placeholder="Couleur"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("color")}
@@ -2490,7 +2494,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Etat"
                   id="state"
-                  placeholder="Etat"
+                  // placeholder="Etat"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("state")}
@@ -2499,7 +2503,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseInput
                   label="Reference"
                   id="reference"
-                  placeholder="Reference"
+                  // placeholder="Reference"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("reference")}
@@ -2510,7 +2514,7 @@ export const Folder: FC<{}> = ({}) => {
                 <BaseTextArea
                   label="Details"
                   id="details"
-                  placeholder="Details"
+                  // placeholder="Details"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("details")}

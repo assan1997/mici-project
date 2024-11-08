@@ -846,16 +846,16 @@ export const Clients: FC<{}> = ({}) => {
             <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-scroll relative py-[10px] px-[20px]">
               <div className="w-full grid gap-[8px] grid-cols-3">
                 <BaseInput
-                  label="Nom du commercial"
+                  label="Nom du client"
                   id="name"
-                  placeholder="Entrer un nom de client"
+                  // placeholder="Entrer un nom de client"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("name")}
                 />
                 <ComboboxMultiSelect
                   label={"Départements"}
-                  placeholder="Selectionnez un département"
+                  // placeholder="Selectionnez un département"
                   className="w-full"
                   icon={
                     <svg
@@ -887,7 +887,7 @@ export const Clients: FC<{}> = ({}) => {
 
                 <ComboboxMultiSelect
                   label={"Commercial"}
-                  placeholder="Selectionnez un utilisateur"
+                  // placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg
@@ -960,14 +960,14 @@ export const Clients: FC<{}> = ({}) => {
                 <BaseInput
                   label="Nom du client"
                   id="name"
-                  placeholder="Entrer un nom de client"
+                  // placeholder="Entrer un nom de client"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...editForm.register("name")}
                 />
                 <ComboboxMultiSelect
                   label={"Départements"}
-                  placeholder="Selectionnez un département"
+                  // placeholder="Selectionnez un département"
                   className="w-full"
                   icon={
                     <svg
@@ -999,7 +999,7 @@ export const Clients: FC<{}> = ({}) => {
 
                 <ComboboxMultiSelect
                   label={"Commercial"}
-                  placeholder="Selectionnez un utilisateur"
+                  // placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg

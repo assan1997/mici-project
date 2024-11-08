@@ -664,6 +664,8 @@ export const Shape: FC<{}> = ({}) => {
       });
     }
     setLoading(false);
+    setEndModal(false);
+    
   };
   useEffect(() => {
     assignForm.setValue("user_id", assignUser[0]?.value as unknown as number);

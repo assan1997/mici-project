@@ -21,6 +21,7 @@ import {
   TaskIcon,
   Home,
   CardBoardIcon,
+  PrintIcon,
 } from "../components/svg";
 import uniqid from "uniqid";
 import { usePathname } from "next/navigation";
@@ -87,8 +88,8 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
         id: "nav-10",
         icon: (color: string) => (
           <svg
-            width="22"
-            height="22"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -132,7 +133,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
         active: false,
         disable: true,
         id: "nav-3",
-        icon: (color: string) => <TaskIcon color={color} size={20} />,
+        icon: (color: string) => <TaskIcon color={color} size={24} />,
       },
       {
         link: "/users",
@@ -159,7 +160,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       active: false,
       id: "subNav-0",
       navId: [""],
-      icon: (color: string) => <PrintIcon2 color={color} size={22} />,
+      icon: (color: string) => <PrintIcon2 color={color} size={24} />,
     },
     {
       link: "/cartonnerie",
@@ -167,7 +168,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       active: false,
       id: "subNav-1",
       navId: ["nav-1", "nav-2", "nav-3"],
-      icon: (color: string) => <CardBoardIcon color={color} size={22} />,
+      icon: (color: string) => <CardBoardIcon color={color} size={24} />,
     },
     {
       link: "/imprimerie-offset",
@@ -175,7 +176,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       active: false,
       id: "subNav-2",
       navId: ["nav-2"],
-      icon: (color: string) => <PrintIcon2 color={color} size={22} />,
+      icon: (color: string) => <PrintIcon2 color={color} size={24} />,
     },
     {
       link: "/imprimerie-flexo",
@@ -183,7 +184,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       active: false,
       id: "subNav-3",
       navId: ["nav-2"],
-      icon: (color: string) => <PrintIcon2 color={color} size={22} />,
+      icon: (color: string) => <PrintIcon color={color} size={24} />,
     },
   ]);
   const pathName = usePathname();
@@ -191,7 +192,12 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
 
   const roleAdmin = useMemo(() => {
     const sectionsIds = user?.sections?.map((section) => section.id);
-    if (sectionsIds?.includes(1) || sectionsIds?.includes(2)) return true;
+    if (
+      sectionsIds?.includes(1) ||
+      sectionsIds?.includes(2) ||
+      sectionsIds?.includes(3)
+    )
+      return true;
     else return false;
   }, [user?.sections]);
 

@@ -71,6 +71,7 @@ export const Task: FC<{}> = ({}) => {
     users,
     status,
     departments,
+    clients,
     dispatchTasks,
     refreshTaskData,
     onRefreshingTask,
@@ -91,6 +92,7 @@ export const Task: FC<{}> = ({}) => {
     "Reference",
     "Type",
     "Departement",
+    "Client",
     "Code",
     "Attribué à",
     "Description",
@@ -283,7 +285,7 @@ export const Task: FC<{}> = ({}) => {
         });
       }
 
-      if (key === "Departement") {
+      if (key === "departement") {
         sorted = tmp?.sort((a, b) => {
           if (
             (departments
@@ -291,7 +293,7 @@ export const Task: FC<{}> = ({}) => {
                 (department) => department.id === a.assignable.department_id
               )
               ?.name?.toUpperCase() as unknown as string) >
-            (users
+            (departments
               ?.find(
                 (department) => department.id === b.assignable.department_id
               )
@@ -300,11 +302,37 @@ export const Task: FC<{}> = ({}) => {
             return 1;
           }
           if (
-            (users
-              ?.find((user) => user.id === a.assignable.user_assignated_id)
+            (departments
+              ?.find((user) => user.id === a.assignable.department_id)
               ?.name?.toUpperCase() as unknown as string) <
-            (users
-              ?.find((user) => user.id === b.assignable.user_assignated_id)
+            (departments
+              ?.find((user) => user.id === b.assignable.department_id)
+              ?.name?.toUpperCase() as unknown as string)
+          ) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (key === "client") {
+        sorted = tmp?.sort((a, b) => {
+          if (
+            (clients
+              ?.find((client) => client.id === a.assignable.client_id)
+              ?.name?.toUpperCase() as unknown as string) >
+            (clients
+              ?.find((client) => client.id === b.assignable.client_id)
+              ?.name?.toUpperCase() as unknown as string)
+          ) {
+            return 1;
+          }
+          if (
+            (clients
+              ?.find((client) => client.id === a.assignable.client_id)
+              ?.name?.toUpperCase() as unknown as string) <
+            (clients
+              ?.find((client) => client.id === b.assignable.client_id)
               ?.name?.toUpperCase() as unknown as string)
           ) {
             return -1;
@@ -546,6 +574,14 @@ export const Task: FC<{}> = ({}) => {
         );
       }
 
+      if (item.id === "Client" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? allTasks : combo)?.filter(
+          (task: any) =>
+            clients?.find((client) => client.id === task.assignable.client_id)
+              ?.name === item?.selectedValues[0]?.value
+        );
+      }
+
       if (item.id === "Dimensions LxLxH" && item?.selectedValues.length > 0) {
         combo = (combo.length === 0 ? allTasks : combo)?.filter(
           (task: any) =>
@@ -639,6 +675,12 @@ export const Task: FC<{}> = ({}) => {
               departments?.find(
                 (department) => department.id === all.assignable.department_id
               )?.name
+            );
+
+          if (row === "Client" && all?.assignable?.department_id)
+            mySet.add(
+              clients?.find((client) => client.id === all.assignable.client_id)
+                ?.name
             );
           if (row === "Dimension LxLxH" && all?.assignable?.dim_lx_lh)
             mySet.add(all?.assignable?.dim_lx_lh);
@@ -1157,9 +1199,21 @@ export const Task: FC<{}> = ({}) => {
                           className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
                         >
                           {
-                            departments.find(
+                            departments?.find(
                               (department) =>
                                 department.id === row?.assignable?.department_id
+                            )?.name
+                          }
+                        </td>
+
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {
+                            clients?.find(
+                              (client) =>
+                                client.id === row?.assignable?.client_id
                             )?.name
                           }
                         </td>
