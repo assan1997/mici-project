@@ -58,6 +58,7 @@ export const Clients: FC<{}> = ({}) => {
     refreshClientsData,
     status,
     getClients,
+    checkIfCommercial,
   } = useData();
 
   useEffect(() => {
@@ -830,13 +831,13 @@ export const Clients: FC<{}> = ({}) => {
         <Form form={form} onSubmit={onSubmit}>
           <div className="w-[calc(150vh)] h-[98vh]">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
-              <span className="text-[18px] font-medium font-poppins text-[#060606]">
+              <span className="text-[20px] font-medium font-poppins text-[#060606]">
                 Nouveau client
               </span>
               <button
                 type="button"
                 onClick={() => setCreationModal(false)}
-                className={`w-[30px] h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+                className={`w-[30px] h-[30px] flex items-center justify-center border rounded-lg bg-white transition-all`}
               >
                 <span className={``}>
                   <CloseIcon />
@@ -908,10 +909,12 @@ export const Clients: FC<{}> = ({}) => {
                   }
                   id={`commercial`}
                   options={
-                    users?.map((commercial: User) => ({
-                      value: commercial.id as unknown as string,
-                      label: commercial.name,
-                    })) as any
+                    users
+                      ?.filter((user: User) => checkIfCommercial(user) && user)
+                      ?.map((commercial: User) => ({
+                        value: commercial.id as unknown as string,
+                        label: commercial.name,
+                      })) as any
                   }
                   error={undefined}
                   isUniq={true}
@@ -942,7 +945,7 @@ export const Clients: FC<{}> = ({}) => {
         <Form form={editForm} onSubmit={onSubmitUpdate}>
           <div className="w-[calc(150vh)] h-[98vh]">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
-              <span className="text-[18px] font-medium font-poppins text-[#060606]">
+              <span className="text-[20px] font-medium font-poppins text-[#060606]">
                 Modifier client
               </span>
               <button
@@ -1020,10 +1023,12 @@ export const Clients: FC<{}> = ({}) => {
                   }
                   id={`commercial`}
                   options={
-                    users?.map((commercial: User) => ({
-                      value: commercial.id as unknown as string,
-                      label: commercial.name,
-                    })) as any
+                    users
+                      ?.filter((user: User) => checkIfCommercial(user) && user)
+                      ?.map((commercial: User) => ({
+                        value: commercial.id as unknown as string,
+                        label: commercial.name,
+                      })) as any
                   }
                   error={undefined}
                   isUniq={true}
@@ -1054,7 +1059,7 @@ export const Clients: FC<{}> = ({}) => {
         <div className="w-[calc(80vh)] h-auto overflow-auto">
           <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
-              <span className="text-[18px] font-poppins text-[#060606]">
+              <span className="text-[20px] font-poppins text-[#060606]">
                 Confirmer la suppression
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">

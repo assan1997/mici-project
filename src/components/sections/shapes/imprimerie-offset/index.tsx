@@ -1886,7 +1886,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                     }}
                   >
                     <div
-                      className={`h-[20px] w-[20px] shrink-0  flex items-center  justify-center`}
+                      className={`h-[20px] w-[20px] shrink-0 p-[20px] flex items-center  justify-center`}
                     >
                       <CloseIcon size={10} />
                     </div>
@@ -1907,13 +1907,13 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
         <Form form={form} onSubmit={onSubmit}>
           <div className="w-[calc(150vh)] h-[98vh]">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
-              <span className="text-[18px] font-medium font-poppins text-[#060606]">
+              <span className="text-[20px] font-medium font-poppins text-[#060606]">
                 Nouvelle forme
               </span>
               <button
                 type="button"
                 onClick={() => setCreationModal(false)}
-                className={`w-[30px] h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+                className={`w-[30px] h-[30px] flex items-center justify-center border rounded-lg bg-white transition-all`}
               >
                 <span className={``}>
                   <CloseIcon />
@@ -2221,7 +2221,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
         <Form form={form} onSubmit={onSubmitUpdate}>
           <div className="w-[calc(150vh)] h-[98vh]">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
-              <span className="text-[18px] font-medium font-poppins text-[#060606]">
+              <span className="text-[20px] font-medium font-poppins text-[#060606]">
                 Modification
               </span>
               <button
@@ -2530,7 +2530,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
         <div className="w-[calc(80vh)] h-auto overflow-auto">
           <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
-              <span className="text-[18px] font-poppins text-[#060606]">
+              <span className="text-[20px] font-poppins text-[#060606]">
                 Confirmer la suppression
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
@@ -2572,7 +2572,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
         <div className="w-[calc(80vh)] h-auto overflow-auto">
           <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
-              <span className="text-[18px] font-poppins text-[#060606]">
+              <span className="text-[20px] font-poppins text-[#060606]">
                 Terminer la forme
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
@@ -2604,7 +2604,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
         <div className="w-[calc(150vh)] h-auto ">
           <div className="w-full bg-white/80 sticky top-0 right-0 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
-              <span className="text-[18px] font-poppins text-[#060606]">
+              <span className="text-[20px] font-poppins text-[#060606]">
                 Historique
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
@@ -2700,7 +2700,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
+                <span className="text-[20px] font-poppins text-[#060606]">
                   {shapeInEntry?.status_id !== 2
                     ? "Mettre en standby"
                     : "Enlever en standby"}
@@ -2763,7 +2763,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
+                <span className="text-[20px] font-poppins text-[#060606]">
                   {shapeInEntry?.status_id !== 3 ? "Bloquer" : "Débloquer"}
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
@@ -2821,7 +2821,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
           <div className="w-[calc(80vh)] h-[80vh]">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
+                <span className="text-[20px] font-poppins text-[#060606]">
                   Assigner à un utilisateur
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
@@ -2901,7 +2901,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
+                <span className="text-[20px] font-poppins text-[#060606]">
                   Observation
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
@@ -2956,7 +2956,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
+                <span className="text-[20px] font-poppins text-[#060606]">
                   Obervation
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
@@ -3012,7 +3012,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
+                <span className="text-[20px] font-poppins text-[#060606]">
                   Bloquer
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">

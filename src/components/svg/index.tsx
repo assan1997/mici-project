@@ -19,3 +19,4 @@ export { DeleteShapeIcon } from "./delete-shape-icon";
 export { LogIcon } from "./log-icon";
 export { Calendar } from "./calendar";
 export { Home } from "./home";
+export { PlusIcon } from "./plus";

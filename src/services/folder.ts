@@ -6,20 +6,19 @@ export interface FolderEntry {
   client_id?: number;
   department_id?: number;
   commercial_id?: number;
-  // product_id?: number;
   reference?: string;
-  // fabrication_id?: number;
   file_number?: string;
   format?: string;
   color?: string;
   support?: string;
-  // bat_id?: number;
   details?: string;
   state?: string;
   rule_id?: number;
+  product?: string;
+  shape_id?: number;
+  printing_plate_id?: number;
 }
 
-// OFFSET
 export async function createFolder(entry: FolderEntry) {
   const token = await getToken();
   try {
@@ -115,7 +114,6 @@ export async function deleteFolder(id: number) {
     return { success: false };
   }
 }
-
 export async function updateFolder(id: number, entry: FolderEntry) {
   const token = await getToken();
   try {
@@ -130,10 +128,8 @@ export async function updateFolder(id: number, entry: FolderEntry) {
         },
       }
     );
-    //console.log("updatedUser", data);
     return { success: true, data };
   } catch (error) {
-    //console.log("error", error);
     return { success: false };
   }
 }
@@ -164,7 +160,6 @@ export async function standbyFolder(
     return { success: false };
   }
 }
-
 export async function resumeShape(
   id: number,
   entry: {
@@ -192,7 +187,6 @@ export async function resumeShape(
     return { success: false };
   }
 }
-
 export async function lockShape(
   id: number,
   entry: {
@@ -220,7 +214,6 @@ export async function lockShape(
     return { success: false };
   }
 }
-
 export async function observationFolder(
   id: number,
   entry: {
@@ -271,6 +264,92 @@ export async function assignToAnUserFolder(
     return { success: true, data };
   } catch (error) {
     //console.log("error", error);
+    return { success: false };
+  }
+}
+
+// printings plates
+
+export async function printingPlates(entry: { name: string; ref: string }) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/printing-plates`,
+      entry,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    //console.log("error", error);
+    return { success: false };
+  }
+}
+
+export async function getAllPrintingPlates() {
+  const token = await getToken();
+  try {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/printing-plates`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, allPrintingPlates: data };
+  } catch (error) {
+    return { success: false };
+  }
+}
+
+export async function deletePrintingPlates(id: number) {
+  const token = await getToken();
+  try {
+    const {
+      data: { message },
+    } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/printing-plates/${id}/delete`,
+      null,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true };
+  } catch (error) {
+    return { success: false };
+  }
+}
+
+export async function markAsReceivedPrintingPlates(id: number) {
+  const token = await getToken();
+  try {
+    const {
+      data: { message },
+    } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/printing-plates/${id}/received`,
+      null,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true };
+  } catch (error) {
     return { success: false };
   }
 }

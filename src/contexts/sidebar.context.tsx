@@ -175,7 +175,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       slug: "Imprimerie Offset",
       active: false,
       id: "subNav-2",
-      navId: ["nav-2"],
+      navId: ["nav-0", "nav-2"],
       icon: (color: string) => <PrintIcon2 color={color} size={24} />,
     },
     {
@@ -183,7 +183,7 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
       slug: "Imprimerie  Flexo",
       active: false,
       id: "subNav-3",
-      navId: ["nav-2"],
+      navId: ["nav-0", "nav-2"],
       icon: (color: string) => <PrintIcon color={color} size={24} />,
     },
   ]);
@@ -223,6 +223,14 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
               : { ...nav, active: false }
           )
       );
+
+    setSubNav((navs: SubNav[]) =>
+      navs?.map((nav: SubNav) =>
+        pathName.includes(nav.link)
+          ? { ...nav, active: true }
+          : { ...nav, active: false }
+      )
+    );
   }, [roleAdmin, pathName]);
 
   // useEffect(() => {

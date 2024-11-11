@@ -1405,7 +1405,7 @@ export const Task: FC<{}> = ({}) => {
                       }}
                     >
                       <div
-                        className={`h-[20px] w-[20px] shrink-0  flex items-center  justify-center`}
+                        className={`h-[20px] w-[20px] shrink-0 p-[20px]  flex items-center  justify-center`}
                       >
                         <CloseIcon size={10} />
                       </div>
@@ -1433,7 +1433,7 @@ export const Task: FC<{}> = ({}) => {
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
+                <span className="text-[20px] font-poppins text-[#060606]">
                   {`Attribuer à quelqu'un`}
                 </span>
               </div>
@@ -1518,7 +1518,7 @@ export const Task: FC<{}> = ({}) => {
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
-                <span className="text-[18px] font-poppins text-[#060606]">
+                <span className="text-[20px] font-poppins text-[#060606]">
                   {`Terminer`}
                 </span>
               </div>

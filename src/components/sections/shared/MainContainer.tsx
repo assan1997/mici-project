@@ -19,7 +19,6 @@ import { useData } from "@/contexts/data.context";
 import { logout } from "@/services/auth";
 import { ProfillSkeleton } from "@/components/ui/loader/Skeleton";
 import { Spinner } from "@/components/ui/loader/spinner";
-import { Fraunces } from "next/font/google";
 
 const MainContainer: FC<{ children: any; title: string }> = ({
   children,
@@ -36,7 +35,7 @@ const MainContainer: FC<{ children: any; title: string }> = ({
 
   const { user } = useData();
   return (
-    <div className="w-full h-screen  flex flex-row">
+    <div className="w-full h-screen flex flex-row">
       {!user ? (
         <div className="h-full w-full flex items-center justify-center">
           <Spinner color={"#000"} size={50} />
@@ -252,7 +251,7 @@ const TopBar: FC<{
         </span>
       </button>
       <div className="flex justify-between items-center w-full">
-        <h1 className="text-[#292D32] text-[18px] flex items-center gap-x-2 font-medium font-poppins">
+        <h1 className="text-[#292D32] text-[20px] flex items-center gap-x-2 font-medium font-poppins">
           {inDetailsPage || inDocPage ? (
             <>
               <button
@@ -405,7 +404,7 @@ const Content: FC<{
         subTitle={subTitle}
         title={title}
       />
-      <div className="content-container px-[20px] overflow-auto ">
+      <div className="content-container px-[20px] overflow-auto">
         {children}
       </div>
     </div>

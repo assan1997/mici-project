@@ -13,6 +13,30 @@ const DOC = () => {
     console.log("entry", entry);
   }, [entry]);
 
+  const handlePrintPDF = async () => {
+    const element: any = document.getElementById("ficheEtude");
+    const canvas = await html2canvas(element);
+    const imgData = canvas.toDataURL("image/png");
+
+    const customWidth = 210; // largeur en mm
+    const customHeight = 297; // hauteur en mm
+
+    const pdf = new jsPDF("portrait", "mm", [customWidth, customHeight]);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    const pdfBlob = pdf.output("blob");
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const printWindow = window.open(pdfUrl);
+
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+  };
+
   const handleDownloadPDF = async () => {
     const element: any = document.getElementById("ficheEtude");
     const canvas = await html2canvas(element);
@@ -31,11 +55,16 @@ const DOC = () => {
 
   if (entry?.docType === "offset-shape-pdf")
     return (
-      <OffsetShapePDF handleDownloadPDF={handleDownloadPDF} entry={entry} />
+      <OffsetShapePDF
+        handlePrintPDF={handlePrintPDF}
+        handleDownloadPDF={handleDownloadPDF}
+        entry={entry}
+      />
     );
   if (entry?.docType === "cartonnerie-shape-pdf")
     return (
       <CartonnerieShapePDF
+        handlePrintPDF={handlePrintPDF}
         handleDownloadPDF={handleDownloadPDF}
         entry={entry}
       />
@@ -46,17 +75,40 @@ const DOC = () => {
 
 const OffsetShapePDF = ({
   handleDownloadPDF,
+  handlePrintPDF,
   entry,
 }: {
   handleDownloadPDF: () => void;
+  handlePrintPDF: () => void;
   entry: any;
 }) => {
   return (
     <div className="">
       <div className="p-[20px] flex justify-end">
         <button
+          onClick={() => handlePrintPDF()}
+          className={`w-fit h-[48px] text-white transition-all text-[14px] font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+        >
+          Imprimer le document
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 7V5.2C18 4.0799 18 3.51984 17.782 3.09202C17.5903 2.71569 17.2843 2.40973 16.908 2.21799C16.4802 2 15.9201 2 14.8 2H9.2C8.0799 2 7.51984 2 7.09202 2.21799C6.71569 2.40973 6.40973 2.71569 6.21799 3.09202C6 3.51984 6 4.0799 6 5.2V7M6 18C5.07003 18 4.60504 18 4.22354 17.8978C3.18827 17.6204 2.37962 16.8117 2.10222 15.7765C2 15.395 2 14.93 2 14V11.8C2 10.1198 2 9.27976 2.32698 8.63803C2.6146 8.07354 3.07354 7.6146 3.63803 7.32698C4.27976 7 5.11984 7 6.8 7H17.2C18.8802 7 19.7202 7 20.362 7.32698C20.9265 7.6146 21.3854 8.07354 21.673 8.63803C22 9.27976 22 10.1198 22 11.8V14C22 14.93 22 15.395 21.8978 15.7765C21.6204 16.8117 20.8117 17.6204 19.7765 17.8978C19.395 18 18.93 18 18 18M15 10.5H18M9.2 22H14.8C15.9201 22 16.4802 22 16.908 21.782C17.2843 21.5903 17.5903 21.2843 17.782 20.908C18 20.4802 18 19.9201 18 18.8V17.2C18 16.0799 18 15.5198 17.782 15.092C17.5903 14.7157 17.2843 14.4097 16.908 14.218C16.4802 14 15.9201 14 14.8 14H9.2C8.0799 14 7.51984 14 7.09202 14.218C6.71569 14.4097 6.40973 14.7157 6.21799 15.092C6 15.5198 6 16.0799 6 17.2V18.8C6 19.9201 6 20.4802 6.21799 20.908C6.40973 21.2843 6.71569 21.5903 7.09202 21.782C7.51984 22 8.07989 22 9.2 22Z"
+              stroke="white"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <button
           onClick={() => handleDownloadPDF()}
-          className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+          className={`w-fit h-[48px] text-white transition-all text-[14px] font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
         >
           Télécharger le document
           <svg
@@ -95,12 +147,12 @@ const OffsetShapePDF = ({
             </div>
             <div className="col-span-2 border-x">
               <div className="h-[50px] border-b text-center">
-                <h2 className="uppercase text-black text-[18px] font-bold">
+                <h2 className="uppercase text-black text-[20px] font-bold">
                   {`Fiche d'étude prototype`}
                 </h2>
               </div>
               <div className="h-[50px] text-center">
-                <h2 className="uppercase text-black text-[18px] font-bold">
+                <h2 className="uppercase text-black text-[20px] font-bold">
                   {`Imprimerie offset`}
                 </h2>
               </div>
@@ -308,14 +360,37 @@ const OffsetShapePDF = ({
 
 const CartonnerieShapePDF = ({
   handleDownloadPDF,
+  handlePrintPDF,
   entry,
 }: {
   handleDownloadPDF: () => void;
+  handlePrintPDF: () => void;
   entry: any;
 }) => {
   return (
     <div className="">
       <div className="p-[20px] flex justify-end">
+        <button
+          onClick={() => handlePrintPDF()}
+          className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+        >
+          Imprimer le document
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 7V5.2C18 4.0799 18 3.51984 17.782 3.09202C17.5903 2.71569 17.2843 2.40973 16.908 2.21799C16.4802 2 15.9201 2 14.8 2H9.2C8.0799 2 7.51984 2 7.09202 2.21799C6.71569 2.40973 6.40973 2.71569 6.21799 3.09202C6 3.51984 6 4.0799 6 5.2V7M6 18C5.07003 18 4.60504 18 4.22354 17.8978C3.18827 17.6204 2.37962 16.8117 2.10222 15.7765C2 15.395 2 14.93 2 14V11.8C2 10.1198 2 9.27976 2.32698 8.63803C2.6146 8.07354 3.07354 7.6146 3.63803 7.32698C4.27976 7 5.11984 7 6.8 7H17.2C18.8802 7 19.7202 7 20.362 7.32698C20.9265 7.6146 21.3854 8.07354 21.673 8.63803C22 9.27976 22 10.1198 22 11.8V14C22 14.93 22 15.395 21.8978 15.7765C21.6204 16.8117 20.8117 17.6204 19.7765 17.8978C19.395 18 18.93 18 18 18M15 10.5H18M9.2 22H14.8C15.9201 22 16.4802 22 16.908 21.782C17.2843 21.5903 17.5903 21.2843 17.782 20.908C18 20.4802 18 19.9201 18 18.8V17.2C18 16.0799 18 15.5198 17.782 15.092C17.5903 14.7157 17.2843 14.4097 16.908 14.218C16.4802 14 15.9201 14 14.8 14H9.2C8.0799 14 7.51984 14 7.09202 14.218C6.71569 14.4097 6.40973 14.7157 6.21799 15.092C6 15.5198 6 16.0799 6 17.2V18.8C6 19.9201 6 20.4802 6.21799 20.908C6.40973 21.2843 6.71569 21.5903 7.09202 21.782C7.51984 22 8.07989 22 9.2 22Z"
+              stroke="black"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
         <button
           onClick={() => handleDownloadPDF()}
           className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
@@ -357,12 +432,12 @@ const CartonnerieShapePDF = ({
             </div>
             <div className="col-span-2 border-x">
               <div className="h-[50px] border-b text-center">
-                <h2 className="uppercase text-black text-[18px] font-bold">
+                <h2 className="uppercase text-black text-[20px] font-bold">
                   {`Fiche d'étude prototype`}
                 </h2>
               </div>
               <div className="h-[50px] text-center">
-                <h2 className="uppercase text-black text-[18px] font-bold">
+                <h2 className="uppercase text-black text-[20px] font-bold">
                   {`Cartonnerie`}
                 </h2>
               </div>

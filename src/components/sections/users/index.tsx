@@ -878,7 +878,7 @@ export const Users: FC<{}> = ({}) => {
         <Form form={form} onSubmit={onSubmit}>
           <div className="w-[calc(150vh)] h-[500px] overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
-              <span className="text-[18px] font-poppins text-[#060606]">
+              <span className="text-[20px] font-poppins text-[#060606]">
                 Création
               </span>
               <button
@@ -992,7 +992,7 @@ export const Users: FC<{}> = ({}) => {
         <Form form={editionForm} onSubmit={onSubmitUpdate}>
           <div className="w-[calc(150vh)] h-[500px] overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
-              <span className="text-[18px] font-poppins text-[#060606]">
+              <span className="text-[20px] font-poppins text-[#060606]">
                 Modification
               </span>
               <button
@@ -1109,7 +1109,7 @@ export const Users: FC<{}> = ({}) => {
         <div className="w-[calc(80vh)] h-auto overflow-auto">
           <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
-              <span className="text-[18px] font-poppins text-[#060606]">
+              <span className="text-[20px] font-poppins text-[#060606]">
                 Confirmer la suppression
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
