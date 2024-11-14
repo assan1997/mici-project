@@ -32,13 +32,17 @@ import {
   deleteFolder,
   observationFolder,
   assignToAnUserFolder,
-  resumeShape,
+  resumeFolder,
   standbyFolder,
   lockShape,
   printingPlates,
   getAllPrintingPlates,
   deletePrintingPlates,
   markAsReceivedPrintingPlates,
+  orderPrintingPlate,
+  orderShape,
+  receivedShape,
+  receivedPrintingPlate,
 } from "@/services/folder";
 
 import { Spinner } from "@/components/ui/loader/spinner";
@@ -52,6 +56,7 @@ import { useRouter } from "next/navigation";
 import { createRoot } from "react-dom/client";
 import useSWR from "swr";
 import { useSideBar } from "@/contexts/sidebar.context";
+import { Switch } from "@headlessui/react";
 
 export const ImprimerieFlexo: FC<{}> = ({}) => {
   const {
@@ -127,6 +132,9 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     ref: z.string(),
   });
 
+  const actionSchema = z.object({});
+  const actionForm = useForm({ schema: actionSchema });
+
   const printingPlateForm = useForm({ schema: printingPlateSchema });
   const form = useForm({ schema: folderSchema });
   const standByform = useForm({ schema: folderStandBySchema });
@@ -135,6 +143,14 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
   const tableHead = [
     "Statut",
+    "Statut de la forme",
+    "Statut du cliché",
+    "Forme commandé lé",
+    "Forme reçu lé",
+    "Cliché commandé lé",
+    "Cliché reçu lé",
+    "Forme",
+    "Cliché",
     "Numero",
     "Client",
     "Reference",
@@ -143,8 +159,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     "Etat",
     "Departement",
     "Produit",
-    "Forme",
-    "Cliché",
     "Format",
     // "Fabrication",
     "Couleur",
@@ -202,6 +216,24 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   const [openDelationModal, setDelationModal] = useState<boolean>(false);
   const [openEndModal, setEndModal] = useState<boolean>(false);
   const [openLockModal, setOpenLockModal] = useState<boolean>(false);
+  const [openMarkShapeIsOrderedModal, setOpenMarkShapeIsOrderedModal] =
+    useState<boolean>(false);
+  const [openMarkShapeIsReceivedModal, setOpenMarkShapeIsReceivedModal] =
+    useState<boolean>(false);
+
+  const [
+    openMarkIsPrintingPlateOrderedModal,
+    setOpenMarkIsPrintingPlateOrderedModal,
+  ] = useState<boolean>(false);
+
+  const [
+    openMarkIsPrintingPlateReceivedModal,
+    setOpenMarkIsPrintingPlateReceivedModal,
+  ] = useState<boolean>(false);
+
+  const [printingPlateToOrdered, setPrintingPlateToOrdered] =
+    useState<boolean>(false);
+  const [shapeToOrdered, setShapeToOrdered] = useState<boolean>(false);
 
   const { roleAdmin } = useSideBar();
   const [observationList, setObservationList] = useState<
@@ -250,6 +282,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       file_number: number,
       shape_id: shape,
       printing_plate_id,
+      plate_to_order: printingPlateToOrdered,
+      shape_to_order: shapeToOrdered,
     });
 
     if (success) {
@@ -602,7 +636,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       selectedPrintingPlate[0]?.value as unknown as number
     );
   }, [selectedPrintingPlate]);
-
   const [openAssignToUserModal, setOpenAssignToUserModal] =
     useState<boolean>(false);
   // const [openLogsModal, setOpenLogsModal] = useState<boolean>(false);
@@ -631,34 +664,55 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   const [openStandByModal, setOpenStandByModal] = useState<boolean>(false);
   // const [openObservationModal, setOpenObservationModal] =
   //   useState<boolean>(false);
-
   const onSubmitStandBy = async (data: z.infer<typeof folderStandBySchema>) => {
     setLoading(true);
     let { reason } = data;
     reason = reason.trim();
-    const status_id = folderInEntry?.status_id !== 2 ? 2 : 1;
     let standByShape: any;
-    if (status_id === 2) {
-      standByShape = await resumeShape(currentEntry as number, {
-        type: "RESUME-WORK",
-        reason,
-        status_id,
-      });
-    } else {
-      standByShape = await standbyFolder(currentEntry as number, {
-        type: "STANDBY",
-        reason,
-        status_id,
-      });
-    }
+    standByShape = await standbyFolder(currentEntry as number, {
+      type: "STANDBY",
+      reason,
+      status_id: 2,
+    });
+
     if (standByShape.success) {
-      standByShape.data.status_id = status_id;
       mutate();
       standByform.setValue("reason", "");
-
       showToast({
         type: "success",
-        message: `${status_id === 2 ? "Mis" : "Enlevé"} en standby avec succès`,
+        message: `Mis en standby avec succès`,
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setOpenStandByModal(false);
+    setLoading(false);
+    reset();
+  };
+
+  const onSubmitResume = async (data: z.infer<typeof folderStandBySchema>) => {
+    setLoading(true);
+    let { reason } = data;
+    reason = reason.trim();
+
+    let standByShape: any;
+    standByShape = await resumeFolder(currentEntry as number, {
+      type: "RESUME-WORK",
+      reason,
+      status_id: 1,
+    });
+
+    if (standByShape.success) {
+      mutate();
+      standByform.setValue("reason", "");
+      showToast({
+        type: "success",
+        message: `Enlevé en standby avec succès`,
         position: "top-center",
       });
     } else {
@@ -704,19 +758,11 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     const status_id = folderInEntry?.status_id !== 3 ? 3 : 1;
     let blockShape: any;
 
-    if (status_id === 3) {
-      blockShape = await resumeShape(currentEntry as number, {
-        type: "RESUME-WORK",
-        reason,
-        status_id,
-      });
-    } else {
-      blockShape = await lockShape(currentEntry as number, {
-        type: "BLOCK",
-        reason,
-        status_id,
-      });
-    }
+    blockShape = await lockShape(currentEntry as number, {
+      type: "BLOCK",
+      reason,
+      status_id: 3,
+    });
 
     if (blockShape.success) {
       mutate();
@@ -724,7 +770,40 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       setOpenStandByModal(false);
       showToast({
         type: "success",
-        message: `${status_id === 3 ? "Débloquée " : "Bloquée "} avec succès`,
+        message: `Bloquée avec succès`,
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setOpenLockModal(false);
+    setLoading(false);
+    reset();
+  };
+
+  const onSubmitUnlock = async (data: z.infer<typeof folderStandBySchema>) => {
+    setLoading(true);
+    let { reason } = data;
+    reason = reason.trim();
+    let blockShape: any;
+
+    blockShape = await resumeFolder(currentEntry as number, {
+      type: "RESUME-WORK",
+      reason,
+      status_id: 1,
+    });
+
+    if (blockShape.success) {
+      mutate();
+      standByform.setValue("reason", "");
+      setOpenStandByModal(false);
+      showToast({
+        type: "success",
+        message: `Débloquée avec succès`,
         position: "top-center",
       });
     } else {
@@ -832,13 +911,11 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   useEffect(() => {
     assignForm.setValue("user_id", assignUser[0]?.value as unknown as number);
   }, [assignUser]);
-
   const Router = useRouter();
   const goToDetail = (id: any) => {
     Router.push(`/workspace/details/folders/${id}`);
   };
   const [sortedBy, setSortedBY] = useState<string>("");
-
   const sort = (key: string) => {
     setCurrentDatas((tmp) => {
       let sorted: any = [];
@@ -1063,7 +1140,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
           return 0;
         });
       }
-
       // if (key === "n° des poses") {
       //   sorted = tmp?.sort((a, b) => {
       //     if (a.pose_number.toUpperCase() > b.pose_number.toUpperCase()) {
@@ -1087,7 +1163,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
           return 0;
         });
       }
-
       if (key === "1/3") {
         sorted = tmp?.sort((a, b) => {
           if (a.part?.toUpperCase() > b.part?.toUpperCase()) {
@@ -1099,18 +1174,15 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
           return 0;
         });
       }
-
       return [...(sorted as unknown as any)];
     });
   };
-
   const resetSortedBy = () => {
     setCurrentDatas(allFolders ? [...allFolders] : []);
     setSortedBY("");
   };
   const [combineSearch, setCombineSearch] = useState<any[]>([]);
   let combo: any = [];
-
   const handleCombineSearch = () => {
     combineSearch?.map((item) => {
       if (item.id === "Numero" && item?.selectedValues.length > 0) {
@@ -1209,13 +1281,11 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
     setCurrentDatas(combo);
   };
-
   useEffect(() => {
     if (combineSearch.some((cmb) => cmb.selectedValues.length > 0)) {
       handleCombineSearch();
     } else setCurrentDatas(allFolders as any);
   }, [combineSearch]);
-
   const createSearchCombinaison = (
     e: { stopPropagation: () => void },
     row: string
@@ -1274,7 +1344,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       return [...tmp];
     });
   };
-
   const deleteSearchCombinaison = (
     e: { stopPropagation: () => void },
     row: string
@@ -1291,6 +1360,98 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
   const [isRefreshingFolder, setIsRefreshingFolder] = useState<boolean>(false);
   const [openRightMenu, setOpenRightMenu] = useState<boolean>(false);
+
+  const makeOrderPrintingPlate = async (data: z.infer<typeof actionSchema>) => {
+    setLoading(true);
+    const { success } = await orderPrintingPlate(currentEntry as number);
+    if (success) {
+      showToast({
+        type: "success",
+        message: `Marqué comme commandé avec succès`,
+        position: "top-center",
+      });
+      mutate();
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setLoading(false);
+    setOpenMarkIsPrintingPlateOrderedModal(false);
+    reset();
+  };
+
+  const makeOrderShape = async (data: z.infer<typeof actionSchema>) => {
+    setLoading(true);
+    const { success } = await orderShape(currentEntry as number);
+
+    if (success) {
+      showToast({
+        type: "success",
+        message: `Marqué comme commandé avec succès`,
+        position: "top-center",
+      });
+      mutate();
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setLoading(false);
+    setOpenMarkShapeIsOrderedModal(false);
+    reset();
+  };
+
+  const makeReceivedShape = async (data: z.infer<typeof actionSchema>) => {
+    setLoading(true);
+    const { success } = await receivedShape(currentEntry as number);
+
+    if (success) {
+      showToast({
+        type: "success",
+        message: `Marqué comme commandé avec succès`,
+        position: "top-center",
+      });
+      mutate();
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setLoading(false);
+    setOpenMarkShapeIsReceivedModal(false);
+    reset();
+  };
+
+  const makeReceivedPrintingPlate = async (
+    data: z.infer<typeof actionSchema>
+  ) => {
+    setLoading(true);
+    const { success } = await receivedPrintingPlate(currentEntry as number);
+    if (success) {
+      showToast({
+        type: "success",
+        message: `Marqué comme commandé avec succès`,
+        position: "top-center",
+      });
+      mutate();
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setLoading(false);
+    setOpenMarkIsPrintingPlateReceivedModal(false);
+    reset();
+  };
 
   return (
     <>
@@ -1521,6 +1682,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                       "Statut",
                                       "Date & Heure de création",
                                       "Date & Heure de mise à jour",
+                                      "Forme commandé lé",
+                                      "Cliché commandé lé",
                                     ].includes(head)
                                   )
                                     return;
@@ -1539,13 +1702,14 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                 >
                                   {head}
                                 </div>
-
                                 <div>
                                   {![
                                     "Options",
                                     "Statut",
                                     "Date & Heure de création",
                                     "Date & Heure de mise à jour",
+                                    "Forme commandé lé",
+                                    "Cliché commandé lé",
                                   ].includes(head) ? (
                                     <div className="flex justify-between items-center w-full">
                                       <div
@@ -1629,6 +1793,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                   "Statut",
                                   "Date & Heure de création",
                                   "Date & Heure de mise à jour",
+                                  "Forme commandé lé",
+                                  "Cliché commandé lé",
                                 ].includes(head) ? (
                                   <div className="flex justify-end items-center w-full">
                                     <div
@@ -1667,13 +1833,14 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                 ) : null}
                               </div>
                             </div>
-
                             <div className="relative h-auto w-full z-50">
                               {![
                                 "Options",
                                 "Statut",
                                 "Date & Heure de création",
                                 "Date & Heure de mise à jour",
+                                "Forme commandé lé",
+                                "Cliché commandé lé",
                               ].includes(head) &&
                               combineSearch.some((cmb) => {
                                 return cmb.id === head;
@@ -1821,22 +1988,84 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                         Voir les détails
                                       </span>
                                     </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenAssignToUserModal(true);
-                                      }}
-                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                    >
-                                      {/* <DetailsIcon color={""} /> */}
-                                      <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                        Assigner à un utilisateur
-                                      </span>
-                                    </button>
 
                                     {roleAdmin ? (
                                       <>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenAssignToUserModal(true);
+                                          }}
+                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                        >
+                                          {/* <DetailsIcon color={""} /> */}
+                                          <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                            Assigner à un utilisateur
+                                          </span>
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenMarkShapeIsOrderedModal(
+                                              true
+                                            );
+                                          }}
+                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                        >
+                                          {/* <DetailsIcon color={""} /> */}
+                                          <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                            Forme commandé
+                                          </span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenMarkIsPrintingPlateOrderedModal(
+                                              true
+                                            );
+                                          }}
+                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                        >
+                                          {/* <DetailsIcon color={""} /> */}
+                                          <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                            Cliché commandé
+                                          </span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenMarkShapeIsReceivedModal(
+                                              true
+                                            );
+                                          }}
+                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                        >
+                                          {/* <DetailsIcon color={""} /> */}
+                                          <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                            Forme reçu
+                                          </span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenMarkIsPrintingPlateReceivedModal(
+                                              true
+                                            );
+                                          }}
+                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                        >
+                                          {/* <DetailsIcon color={""} /> */}
+                                          <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                            Cliché reçu
+                                          </span>
+                                        </button>
+
                                         <button
                                           type="button"
                                           onClick={(e) => {
@@ -1887,7 +2116,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                           }}
                                           className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                         >
-                                          <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                          <span className="text-[14px] text-left  text-red-500 font-medium font-poppins leading-[20px] ">
                                             Supprimer le dossier
                                           </span>
                                         </button>
@@ -1927,6 +2156,143 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                 {statut?.name}
                               </div>
                             </td>
+
+                            <td
+                              onClick={() => goToDetail(row?.id)}
+                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[12px]"
+                            >
+                              <div
+                                className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
+                                  row?.shape_status === "shape_to_order"
+                                    ? "bg-orange-200 text-orange-500"
+                                    : row?.shape_status === "shape_received"
+                                    ? "bg-green-200 text-green-500"
+                                    : row?.shape_status === "shape_ordered"
+                                    ? "bg-blue-200 text-blue-900"
+                                    : "bg-gray-200 text-gray-900"
+                                }`}
+                              >
+                                {row?.shape_status === "shape_to_order"
+                                  ? "Forme à commander"
+                                  : row?.shape_status === "shape_received"
+                                  ? "Forme reçu"
+                                  : row?.shape_status === "shape_ordered"
+                                  ? "Forme commandé"
+                                  : "Aucun"}
+                              </div>
+                            </td>
+
+                            <td
+                              onClick={() => goToDetail(row?.id)}
+                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[12px]"
+                            >
+                              <div
+                                className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
+                                  row?.plate_status === "plate_to_order"
+                                    ? "bg-orange-200 text-orange-500"
+                                    : row?.plate_status === "plate_received"
+                                    ? "bg-green-200 text-green-500"
+                                    : row?.plate_status === "plate_ordered"
+                                    ? "bg-blue-200 text-blue-900"
+                                    : "bg-gray-200 text-gray-900"
+                                }`}
+                              >
+                                {row?.plate_status === "plate_to_order"
+                                  ? "Cliché à commander"
+                                  : row?.plate_status === "plate_received"
+                                  ? "Cliché reçu"
+                                  : row?.plate_status === "plate_ordered"
+                                  ? "Cliché commandé"
+                                  : "Aucun"}
+                              </div>
+                            </td>
+                            <td
+                              onClick={() => goToDetail(row?.id)}
+                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                            >
+                              {formatTime(
+                                new Date(row?.["shape_ordered_at"]).getTime(),
+                                "d:mo:y",
+                                "short"
+                              )}{" "}
+                              {formatTime(
+                                new Date(row?.["shape_ordered_at"]).getTime(),
+                                "h:m",
+                                "short"
+                              )}
+                            </td>
+
+                            <td
+                              onClick={() => goToDetail(row?.id)}
+                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                            >
+                              {formatTime(
+                                new Date(row?.["shape_received_at"]).getTime(),
+                                "d:mo:y",
+                                "short"
+                              )}{" "}
+                              {formatTime(
+                                new Date(row?.["shape_received_at"]).getTime(),
+                                "h:m",
+                                "short"
+                              )}
+                            </td>
+
+                            <td
+                              onClick={() => goToDetail(row?.id)}
+                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                            >
+                              {formatTime(
+                                new Date(row?.["plate_ordered_at"]).getTime(),
+                                "d:mo:y",
+                                "short"
+                              )}{" "}
+                              {formatTime(
+                                new Date(row?.["plate_ordered_at"]).getTime(),
+                                "h:m",
+                                "short"
+                              )}
+                            </td>
+
+                            <td
+                              onClick={() => goToDetail(row?.id)}
+                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                            >
+                              {formatTime(
+                                new Date(row?.["plate_received_at"]).getTime(),
+                                "d:mo:y",
+                                "short"
+                              )}{" "}
+                              {formatTime(
+                                new Date(row?.["plate_received_at"]).getTime(),
+                                "h:m",
+                                "short"
+                              )}
+                            </td>
+
+                            <td
+                              onClick={() => goToDetail(row?.id)}
+                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                            >
+                              {
+                                allShapes?.find(
+                                  (shape) => shape.id === row?.shape_id
+                                )?.reference
+                              }
+                            </td>
+
+                            <td
+                              onClick={() => goToDetail(row?.id)}
+                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                            >
+                              {
+                                allPrintingPlates?.find(
+                                  (printing: any) =>
+                                    printing.id === row?.printing_plate_id
+                                )?.name
+                              }
+                            </td>
+
                             <td
                               onClick={() => goToDetail(row?.id)}
                               className="text-[#636363] relative min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
@@ -1978,28 +2344,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                             >
                               {row?.product}
                             </td>
-                            <td
-                              onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                            >
-                              {
-                                allShapes?.find(
-                                  (shape) => shape.id === row?.shape_id
-                                )?.reference
-                              }
-                            </td>
-
-                            <td
-                              onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                            >
-                              {
-                                allPrintingPlates?.find(
-                                  (printing: any) =>
-                                    printing.id === row?.printing_plate_id
-                                )?.name
-                              }
-                            </td>
 
                             <td
                               onClick={() => goToDetail(row?.id)}
@@ -2032,8 +2376,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                 new Date(row?.["created_at"]).getTime(),
                                 "d:mo:y",
                                 "short"
-                              )}
-                              {" à "}
+                              )}{" "}
                               {formatTime(
                                 new Date(row?.["created_at"]).getTime(),
                                 "h:m",
@@ -2048,8 +2391,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                 new Date(row?.["updated_at"]).getTime(),
                                 "d:mo:y",
                                 "short"
-                              )}
-                              {" à "}
+                              )}{" "}
                               {formatTime(
                                 new Date(row?.["updated_at"]).getTime(),
                                 "h:m",
@@ -2134,20 +2476,95 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
                                         {roleAdmin ? (
                                           <>
-                                            {/* <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenLockModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        {folderInEntry?.status_id === 3
-                                          ? "Débloquer"
-                                          : "Bloquer"}
-                                      </span>
-                                    </button> */}
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenAssignToUserModal(true);
+                                              }}
+                                              className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                            >
+                                              {/* <DetailsIcon color={""} /> */}
+                                              <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                Assigner à un utilisateur
+                                              </span>
+                                            </button>
+
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenMarkShapeIsOrderedModal(
+                                                  true
+                                                );
+                                              }}
+                                              className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                            >
+                                              {/* <DetailsIcon color={""} /> */}
+                                              <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                Forme commandé
+                                              </span>
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenMarkIsPrintingPlateOrderedModal(
+                                                  true
+                                                );
+                                              }}
+                                              className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                            >
+                                              {/* <DetailsIcon color={""} /> */}
+                                              <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                Cliché commandé
+                                              </span>
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenMarkShapeIsReceivedModal(
+                                                  true
+                                                );
+                                              }}
+                                              className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                            >
+                                              {/* <DetailsIcon color={""} /> */}
+                                              <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                Forme reçu
+                                              </span>
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenMarkIsPrintingPlateReceivedModal(
+                                                  true
+                                                );
+                                              }}
+                                              className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                            >
+                                              {/* <DetailsIcon color={""} /> */}
+                                              <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                Cliché reçu
+                                              </span>
+                                            </button>
+
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenLockModal(true);
+                                              }}
+                                              className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                            >
+                                              <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                                {folderInEntry?.status_id === 3
+                                                  ? "Débloquer"
+                                                  : "Bloquer"}
+                                              </span>
+                                            </button>
 
                                             <button
                                               type="button"
@@ -2164,17 +2581,17 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                               </span>
                                             </button>
                                             {/* <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setEndModal(true);
-                                      }}
-                                      className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        Terminer
-                                      </span>
-                                    </button> */}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEndModal(true);
+                                  }}
+                                  className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                >
+                                  <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
+                                    Terminer
+                                  </span>
+                                </button> */}
 
                                             <button
                                               type="button"
@@ -2184,7 +2601,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                               }}
                                               className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                             >
-                                              <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
+                                              <span className="text-[14px] text-left  text-red-500 font-medium font-poppins leading-[20px] ">
                                                 Supprimer le dossier
                                               </span>
                                             </button>
@@ -2332,7 +2749,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                       <th
                         key={index}
                         className={`relative min-w-[200px] w-auto text-[14px] py-[10px] font-medium  ${
-                          index > 0 && index < tableHead.length
+                          index > 0 && index < printingPlateTableHead.length
                         }  text-[#000000]`}
                       >
                         <div
@@ -2616,7 +3033,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
                                 {roleAdmin ? (
                                   <>
-                                    <button
+                                    {/* <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -2627,7 +3044,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                       <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
                                         Marquer comme recu
                                       </span>
-                                    </button>
+                                    </button> */}
 
                                     <button
                                       type="button"
@@ -2717,8 +3134,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                             new Date(row?.["created_at"]).getTime(),
                             "d:mo:y",
                             "short"
-                          )}
-                          {" à "}
+                          )}{" "}
                           {formatTime(
                             new Date(row?.["created_at"]).getTime(),
                             "h:m",
@@ -2730,8 +3146,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                             new Date(row?.["updated_at"]).getTime(),
                             "d:mo:y",
                             "short"
-                          )}
-                          {" à "}
+                          )}{" "}
                           {formatTime(
                             new Date(row?.["updated_at"]).getTime(),
                             "h:m",
@@ -2774,7 +3189,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
                                     {roleAdmin ? (
                                       <>
-                                        <button
+                                        {/* <button
                                           type="button"
                                           onClick={(e) => {
                                             e.stopPropagation();
@@ -2785,7 +3200,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                           <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
                                             Marquer comme recu
                                           </span>
-                                        </button>
+                                        </button> */}
 
                                         <button
                                           type="button"
@@ -2939,40 +3354,63 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setCommercial}
                   borderColor="border-grayscale-200"
                 />
-                <ComboboxMultiSelect
-                  label={"Forme"}
-                  placeholder="Selectionnez une forme"
-                  className="w-full"
-                  icon={
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+
+                <div className="flex flex-col gap-y-[10px]">
+                  <ComboboxMultiSelect
+                    label={"Forme"}
+                    placeholder="Selectionnez une forme"
+                    className="w-full"
+                    icon={
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                          stroke="black"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    }
+                    id={`shape`}
+                    options={
+                      allShapes?.map((shape: ShapeInterface) => ({
+                        value: shape.id as unknown as string,
+                        label: `${shape.code}`,
+                      })) as []
+                    }
+                    error={undefined}
+                    isUniq={true}
+                    selectedElementInDropdown={shapes}
+                    setSelectedUniqElementInDropdown={setShapes}
+                    borderColor="border-grayscale-200"
+                  />
+
+                  <div className="flex justify-between font-poppins font-medium items-center">
+                    <span className="text-[13px]">A commander</span>
+                    <Switch
+                      checked={shapeToOrdered}
+                      onChange={setShapeToOrdered}
+                      className={`${
+                        shapeToOrdered ? "bg-blue-600" : "bg-gray-200"
+                      } relative inline-flex h-6 w-11 items-center rounded-full`}
                     >
-                      <path
-                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
-                        stroke="black"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                      <span className="sr-only">Enable notifications</span>
+                      <span
+                        className={`${
+                          shapeToOrdered
+                            ? "translate-x-[1.30rem]"
+                            : "translate-x-1"
+                        } inline-block h-5 w-5 transform rounded-full bg-white transition`}
                       />
-                    </svg>
-                  }
-                  id={`shape`}
-                  options={
-                    allShapes?.map((shape: ShapeInterface) => ({
-                      value: shape.id as unknown as string,
-                      label: `${shape.code}`,
-                    })) as []
-                  }
-                  error={undefined}
-                  isUniq={true}
-                  selectedElementInDropdown={shapes}
-                  setSelectedUniqElementInDropdown={setShapes}
-                  borderColor="border-grayscale-200"
-                />
+                    </Switch>
+                  </div>
+                </div>
 
                 <ComboboxMultiSelect
                   label={"Règle"}
@@ -3006,39 +3444,59 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setSelectedRule}
                   borderColor="border-grayscale-200"
                 />
-
-                <ComboboxMultiSelect
-                  label={"Cliché"}
-                  // placeholder="Sélectionnez la règle a appliquer"
-                  className="w-full"
-                  icon={
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                <div className="flex flex-col gap-y-[10px]">
+                  <ComboboxMultiSelect
+                    label={"Cliché"}
+                    // placeholder="Sélectionnez la règle a appliquer"
+                    className="w-full"
+                    icon={
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                          stroke="black"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    }
+                    id={`cliche`}
+                    options={allPrintingPlates?.map((printingPlate: any) => ({
+                      value: printingPlate.id as unknown as string,
+                      label: printingPlate.name as unknown as string,
+                    }))}
+                    error={undefined}
+                    isUniq={true}
+                    selectedElementInDropdown={selectedPrintingPlate}
+                    setSelectedUniqElementInDropdown={setSelectedPrintingPlate}
+                    borderColor="border-grayscale-200"
+                  />
+                  <div className="flex justify-between font-poppins font-medium items-center">
+                    <span className="text-[13px]">A commander</span>
+                    <Switch
+                      checked={printingPlateToOrdered}
+                      onChange={setPrintingPlateToOrdered}
+                      className={`${
+                        printingPlateToOrdered ? "bg-blue-600" : "bg-gray-200"
+                      } relative inline-flex h-6 w-11 items-center rounded-full`}
                     >
-                      <path
-                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
-                        stroke="black"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                      <span className="sr-only">Enable notifications</span>
+                      <span
+                        className={`${
+                          printingPlateToOrdered
+                            ? "translate-x-[1.30rem]"
+                            : "translate-x-1"
+                        } inline-block h-5 w-5 transform rounded-full bg-white transition`}
                       />
-                    </svg>
-                  }
-                  id={`cliche`}
-                  options={allPrintingPlates?.map((printingPlate: any) => ({
-                    value: printingPlate.id as unknown as string,
-                    label: printingPlate.name as unknown as string,
-                  }))}
-                  error={undefined}
-                  isUniq={true}
-                  selectedElementInDropdown={selectedPrintingPlate}
-                  setSelectedUniqElementInDropdown={setSelectedPrintingPlate}
-                  borderColor="border-grayscale-200"
-                />
+                    </Switch>
+                  </div>
+                </div>
 
                 <BaseInput
                   label="Produit"
@@ -3471,7 +3929,12 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       </BaseModal>
 
       <BaseModal open={openLockModal} classname={""}>
-        <Form form={standByform} onSubmit={onSubmitLock}>
+        <Form
+          form={standByform}
+          onSubmit={
+            folderInEntry?.status_id !== 3 ? onSubmitLock : onSubmitUnlock
+          }
+        >
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
@@ -3645,7 +4108,12 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
 
       {/* standBy MODAL */}
       <BaseModal open={openStandByModal} classname={""}>
-        <Form form={standByform} onSubmit={onSubmitStandBy}>
+        <Form
+          form={standByform}
+          onSubmit={
+            folderInEntry?.status_id !== 2 ? onSubmitStandBy : onSubmitResume
+          }
+        >
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
@@ -3673,7 +4141,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
               <BaseInput
                 label="Raison"
                 id="reason"
-                placeholder={` Dites pourquoi vous ${
+                placeholder={`Dites pourquoi vous ${
                   folderInEntry?.status_id !== 2
                     ? "mettez en standBy"
                     : "enlevez en standby"
@@ -3708,6 +4176,133 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
         </Form>
       </BaseModal>
 
+      {/* MARQUÉ LA FORME COMMANDÉ */}
+      <BaseModal open={openMarkShapeIsOrderedModal} classname={""}>
+        <Form form={actionForm} onSubmit={makeOrderShape}>
+          <div className="w-[calc(80vh)] h-auto overflow-auto">
+            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
+              <div className="flex flex-col">
+                <span className="text-[20px] font-poppins text-[#060606]">
+                  Marquer la forme comme commandé
+                </span>
+              </div>
+              <button
+                disabled={loading}
+                type="button"
+                onClick={() => setOpenMarkShapeIsOrderedModal(false)}
+                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
+              <button
+                type="submit"
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+              >
+                {loading ? <Spinner color={"#fff"} size={20} /> : "Confirmer"}
+              </button>
+            </div>
+          </div>
+        </Form>
+      </BaseModal>
+
+      {/* MARQUÉ LE CLICHÉ COMMANDÉ */}
+      <BaseModal open={openMarkIsPrintingPlateOrderedModal} classname={""}>
+        <Form form={actionForm} onSubmit={makeOrderPrintingPlate}>
+          <div className="w-[calc(80vh)] h-auto overflow-auto">
+            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
+              <div className="flex flex-col">
+                <span className="text-[20px] font-poppins text-[#060606]">
+                  Marquer le cliché comme commandé
+                </span>
+              </div>
+              <button
+                disabled={loading}
+                type="button"
+                onClick={() => setOpenMarkIsPrintingPlateOrderedModal(false)}
+                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
+              <button
+                type="submit"
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90 `}
+              >
+                {loading ? <Spinner color={"#fff"} size={20} /> : "Confirmer"}
+              </button>
+            </div>
+          </div>
+        </Form>
+      </BaseModal>
+
+      {/* MARQUÉ LA FORME COMME REÇU */}
+      <BaseModal open={openMarkShapeIsReceivedModal} classname={""}>
+        <Form form={actionForm} onSubmit={makeReceivedShape}>
+          <div className="w-[calc(80vh)] h-auto overflow-auto">
+            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
+              <div className="flex flex-col">
+                <span className="text-[20px] font-poppins text-[#060606]">
+                  Marquer la forme comme recu
+                </span>
+              </div>
+              <button
+                disabled={loading}
+                type="button"
+                onClick={() => setOpenMarkShapeIsReceivedModal(false)}
+                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
+              <button
+                type="submit"
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90 `}
+              >
+                {loading ? <Spinner color={"#fff"} size={20} /> : "Confirmer"}
+              </button>
+            </div>
+          </div>
+        </Form>
+      </BaseModal>
+
+      {/* MARQUÉ LE CLICHÉ COMME REÇU */}
+      <BaseModal open={openMarkIsPrintingPlateReceivedModal} classname={""}>
+        <Form form={actionForm} onSubmit={makeReceivedPrintingPlate}>
+          <div className="w-[calc(80vh)] h-auto overflow-auto">
+            <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
+              <div className="flex flex-col">
+                <span className="text-[20px] font-poppins text-[#060606]">
+                  Marquer le cliché comme recu
+                </span>
+              </div>
+              <button
+                disabled={loading}
+                type="button"
+                onClick={() => setOpenMarkIsPrintingPlateReceivedModal(false)}
+                className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
+              <button
+                type="submit"
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90 `}
+              >
+                {loading ? <Spinner color={"#fff"} size={20} /> : "Confirmer"}
+              </button>
+            </div>
+          </div>
+        </Form>
+      </BaseModal>
+
       {/* Clichés Modal */}
 
       <BaseModal open={plateDelationModal} classname={""}>
@@ -3732,13 +4327,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
             </button>
           </div>
           <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-            <button
-              type="button"
-              onClick={() => setPlateDelationModal((tmp) => !tmp)}
-              className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-            >
-              Annuler
-            </button>
             <button
               type="button"
               onClick={() => {
@@ -3811,201 +4399,28 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
         </Form>
       </BaseModal>
 
-      {/* DELATION MODAL */}
-      {/* <BaseModal open={openDelationModal} classname={""}>
-        <div className="w-[calc(80vh)] h-auto overflow-auto">
-          <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
-            <div className="flex flex-col">
-              <span className="text-[20px] font-poppins text-[#060606]">
-                Confirmer la suppression
-              </span>
-              <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                Vous êtes sur point de supprimer <br /> une forme, cette action
-                est definitive !
-              </span>
-            </div>
-            <button
-              disabled={loading}
-              type="button"
-              onClick={() => setDelationModal(false)}
-              className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
-            >
-              <CloseIcon />
-            </button>
-          </div>
-          <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-            <button
-              type="button"
-              onClick={() => setDelationModal((tmp) => !tmp)}
-              className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-            >
-              Annuler
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                handledeleteFolder(currentEntry as unknown as number);
-              }}
-              className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
-            >
-              {loading ? <Spinner color={"#fff"} size={20} /> : "Supprimer"}
-            </button>
-          </div>
-        </div>
-      </BaseModal> */}
-      {/* DELATION MODAL */}
-      {/* <BaseModal open={openEndModal} classname={""}>
-        <div className="w-[calc(80vh)] h-auto overflow-auto">
-          <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
-            <div className="flex flex-col">
-              <span className="text-[20px] font-poppins text-[#060606]">
-                Terminer la forme
-              </span>
-              <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                Vous êtes sur point de terminer <br /> cette forme .
-              </span>
-            </div>
-            <button
-              disabled={loading}
-              type="button"
-              onClick={() => setEndModal(false)}
-              className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
-            >
-              <CloseIcon />
-            </button>
-          </div>
-          <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-            <button
-              type="button"
-              onClick={onSubmitClose}
-              className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
-            >
-              {loading ? <Spinner color={"#fff"} size={20} /> : "Terminer"}
-            </button>
-          </div>
-        </div>
-      </BaseModal> */}
-      {/* LOGS MODAL */}
-      {/* <BaseModal open={openLogsModal} classname={""}>
-        <div className="w-[calc(150vh)] h-auto ">
-          <div className="w-full bg-white/80 sticky top-0 right-0 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
-            <div className="flex flex-col">
-              <span className="text-[20px] font-poppins text-[#060606]">
-                Historique
-              </span>
-              <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                {
-                  "Vous consultez ici l'historique des actions menées sur cette forme."
-                }
-              </span>
-            </div>
-            <button
-              disabled={loading}
-              type="button"
-              onClick={() => setOpenLogsModal(false)}
-              className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
-            >
-              <CloseIcon />
-            </button>
-          </div>
-          <div className="overflow-auto max-h-[80vh]">
-            {!folderInEntry?.logs ? (
-              <div className="w-full flex justify-center items-center p-[20px]">
-                <span>Aucun log</span>
-              </div>
-            ) : (
-              <table className="w-full relative">
-                <thead className="bg-white/50">
-                  <tr className="">
-                    {[
-                      "Titre",
-                      "Description",
-                      "Type",
-                      "Date de création",
-                      "Utilisateur",
-                    ]?.map((head, index) => (
-                      <th
-                        key={index}
-                        className={`  ${
-                          head === "options" ? "w-auto" : "min-w-[150px]"
-                        } text-[14px] py-[10px] font-medium  ${
-                          index > 0 && index < tableHead.length
-                        }  text-[#636363]`}
-                      >
-                        <div className="h-full font-poppins relative flex items-center text-start py-[10px] px-[20px] justify-start">
-                          {head}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>{" "}
-                <tbody className="bg-white/80">
-                  {folderInEntry?.logs?.map((row, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
-                        {row?.title}
-                      </td>
-                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
-                        {row?.description}
-                      </td>
-                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
-                        {row?.type}
-                      </td>
-                      <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
-                        {formatTime(
-                          new Date(row?.["created_at"]).getTime(),
-                          "d:mo:y",
-                          "short"
-                        )}
-                        {" à "}
-                        {formatTime(
-                          new Date(row?.["created_at"]).getTime(),
-                          "h:m",
-                          "short"
-                        )}
-                      </td>
-                      <td className="text-[#636363] min-w-[100px] p-[20px] text-start font-poppins text-[14px]">
-                        {
-                          users?.find(
-                            (user: User) => user.id === row.user_treating_id
-                          )?.name
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      </BaseModal> */}
-      {/* standBy MODAL */}
-      {/* <BaseModal open={openStandByModal} classname={""}>
-        <Form form={standByform} onSubmit={onSubmitStandBy}>
+      <BaseModal open={plateReceivedModal} classname={""}>
+        <Form
+          form={standByform}
+          onSubmit={onSubmitMarkAsReceivedPrintingPlates}
+        >
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[20px] font-poppins text-[#060606]">
-                  {folderInEntry?.status_id !== 2
-                    ? "Mettre en standby"
-                    : "Enlever en standby"}
-                </span>
-                <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                  {`Vous êtes sur point ${
-                    folderInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "
-                  } une forme en standby`}
+                  Commandé
                 </span>
               </div>
               <button
                 disabled={loading}
                 type="button"
-                onClick={() => setOpenStandByModal(false)}
+                onClick={() => setPlateReceivedModal(false)}
                 className={`w-[30px] shrink-0 h-[30px] flex items-center justify-center border rounded-full bg-white transition-all`}
               >
                 <CloseIcon />
               </button>
             </div>
-            <div className="p-[20px]">
+            {/* <div className="p-[20px]">
               <BaseInput
                 label="Raison"
                 id="reason"
@@ -4014,28 +4429,34 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                     ? "mettez en standBy"
                     : "enlevez en standby"
                 } `}
+                // leftIcon={<RulerIcon color={""} size={20} />}
                 type="text"
                 {...standByform.register("reason")}
               />
-            </div>
+            </div> */}
             <div className="w-full bg-white/80 rounded-b-xl flex justify-end items-center gap-x-[8px] px-[20px] py-[10px] h-[80px]">
-             
+              {/* <button
+                type="button"
+                onClick={() => setOpenStandByModal((tmp) => !tmp)}
+                className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-[#060606] hover:bg-[#060606]/90`}
+              >
+                Annuler
+              </button> */}
               <button
-                type="submit"
+                type="button"
+                onClick={() => onSubmitMarkAsReceivedPrintingPlates()}
                 className={`w-fit h-[48px] text-white transition-all font-poppins px-[16px] flex items-center gap-x-2 justify-center border rounded-xl bg-red-500 bg-red-500/90 `}
               >
                 {loading ? (
                   <Spinner color={"#fff"} size={20} />
-                ) : folderInEntry?.status_id !== 2 ? (
-                  "Mettre en standBy"
                 ) : (
-                  "Enlever en standby"
+                  "Marquer comme recu"
                 )}
               </button>
             </div>
           </div>
         </Form>
-      </BaseModal> */}
+      </BaseModal>
     </>
   );
 };

@@ -1,43 +1,43 @@
-type Duration = '1min' | '5min';
-type TimeFormat = 'h:m' | 'h:m:s' | 'd:mo:y' | 'd:mo:y';
+type Duration = "1min" | "5min";
+type TimeFormat = "h:m" | "h:m:s" | "d:mo:y" | "d:mo:y";
 
-const dayShort = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+const dayShort = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
 const dayLong = [
-  'Dimanche',
-  'Lundi',
-  'Mardi',
-  'Mercredi',
-  'Jeudi',
-  'Vendredi',
-  'Samedi',
+  "Dimanche",
+  "Lundi",
+  "Mardi",
+  "Mercredi",
+  "Jeudi",
+  "Vendredi",
+  "Samedi",
 ];
 
 const monthLong = [
-  'Janvier',
-  'Février',
-  'Mars',
-  'Avril',
-  'Mai',
-  'Juin',
-  'Juillet',
-  'Août',
-  'Septembre',
-  'Octobre',
-  'Novembre',
-  'Décembre',
+  "Janvier",
+  "Février",
+  "Mars",
+  "Avril",
+  "Mai",
+  "Juin",
+  "Juillet",
+  "Août",
+  "Septembre",
+  "Octobre",
+  "Novembre",
+  "Décembre",
 ];
 
 export function compare(
   timestampA: number,
   timestampB: number,
-  duration: Duration,
+  duration: Duration
 ) {
   const differenceInSeconds = (timestampB - timestampA) / 1000;
   switch (duration) {
-    case '1min':
+    case "1min":
       return differenceInSeconds <= 60;
-    case '5min':
+    case "5min":
       return differenceInSeconds <= 300;
     default:
       return false;
@@ -79,7 +79,7 @@ export function sendedInTheDay(timestampA: number, timestampB: number) {
 export function formatTime(
   timestamp: number,
   format: TimeFormat,
-  type: 'long' | 'short',
+  type: "long" | "short"
 ) {
   const h = new Date(timestamp).getHours();
   const m = new Date(timestamp).getMinutes();
@@ -90,31 +90,33 @@ export function formatTime(
   const y = new Date(timestamp).getFullYear();
   const day = new Date(timestamp).getDay();
 
+  if (!timestamp) return "";
+
   switch (format) {
-    case 'h:m':
-      if (type === 'long')
-        return `${h < 10 ? `0` + h : h} ${h > 1 ? 'heures' : 'heure'} - ${
+    case "h:m":
+      if (type === "long")
+        return `${h < 10 ? `0` + h : h} ${h > 1 ? "heures" : "heure"} - ${
           m < 10 ? `0` + m : m
-        } ${m > 1 ? 'minutes' : 'minute'}`;
-      if (type === 'short')
+        } ${m > 1 ? "minutes" : "minute"}`;
+      if (type === "short")
         return `${h < 10 ? `0` + h : h}:${m < 10 ? `0` + m : m}`;
 
-    case 'h:m:s':
-      if (type === 'long')
-        return `${h < 10 ? `0` + h : h} ${h > 0 ? 'heures' : 'heure'} - ${
+    case "h:m:s":
+      if (type === "long")
+        return `${h < 10 ? `0` + h : h} ${h > 0 ? "heures" : "heure"} - ${
           m < 10 ? `0` + m : m
-        } ${m > 1 ? 'minutes' : 'minute'} - ${s < 10 ? `0` + s : s} ${
-          s > 1 ? 'secondes' : 'seconde'
+        } ${m > 1 ? "minutes" : "minute"} - ${s < 10 ? `0` + s : s} ${
+          s > 1 ? "secondes" : "seconde"
         }`;
-      if (type === 'short')
+      if (type === "short")
         return `${h < 10 ? `0` + h : h}:${m < 10 ? `0` + m : m}:${
           s < 10 ? `0` + s : s
         }`;
 
-    case 'd:mo:y':
-      if (type === 'short')
+    case "d:mo:y":
+      if (type === "short")
         return `${d < 10 ? `0` + d : d}/${mo < 10 ? `0` + mo : mo}/${y}`;
-      if (type === 'long') {
+      if (type === "long") {
         return `${dayLong[day]} ${d} ${monthLong[mo - 1]} ${y}`;
       }
 
@@ -126,7 +128,7 @@ export function formatTime(
 // time
 const formatShortDate = (date: Date) => {
   const _date = date.getUTCDate();
-  return dayShort[date.getUTCDay()] + ` ${_date < 10 ? '0' + _date : _date}`;
+  return dayShort[date.getUTCDay()] + ` ${_date < 10 ? "0" + _date : _date}`;
 };
 // format last message time
 const timeToSeconds = (date: Date) => {
@@ -139,12 +141,12 @@ export const formatLastMessageTime = (date: Date) => {
   const lastMessageTimestamp = new Date(
     date.getUTCFullYear(),
     date.getUTCMonth(),
-    date.getUTCDate(),
+    date.getUTCDate()
   ).getTime();
   const todayTimestamp = new Date(
     today.getUTCFullYear(),
     today.getUTCMonth(),
-    today.getUTCDate(),
+    today.getUTCDate()
   ).getTime();
   const diffTimestamp = todayTimestamp - lastMessageTimestamp;
   //time in seconds
@@ -156,7 +158,7 @@ export const formatLastMessageTime = (date: Date) => {
     // get difference of seconds between time;
     let diffTime = todayTime - lastMessageTime;
     // make conditions
-    if (diffTime === 0) return 'maintenant'; //dffTime equal to zero
+    if (diffTime === 0) return "maintenant"; //dffTime equal to zero
     // diffTime is between 0 and 3560 minutes
     if (diffTime >= 60 && diffTime < 3600)
       return `il y'a ${Math.floor(diffTime / 60)} min`;
@@ -167,6 +169,6 @@ export const formatLastMessageTime = (date: Date) => {
 
   // yesterday verificaton
   if (diffTimestamp === 86400)
-    return `hier ${formatTime(date.getTime(), 'h:m', 'short')}`;
+    return `hier ${formatTime(date.getTime(), "h:m", "short")}`;
   return `${formatShortDate(date)}`;
 };

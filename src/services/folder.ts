@@ -17,6 +17,8 @@ export interface FolderEntry {
   product?: string;
   shape_id?: number;
   printing_plate_id?: number;
+  plate_to_order?: boolean;
+  shape_to_order?: boolean;
 }
 
 export async function createFolder(entry: FolderEntry) {
@@ -160,7 +162,7 @@ export async function standbyFolder(
     return { success: false };
   }
 }
-export async function resumeShape(
+export async function resumeFolder(
   id: number,
   entry: {
     type: string;
@@ -169,6 +171,8 @@ export async function resumeShape(
   }
 ) {
   const token = await getToken();
+
+  console.log("entry::::entry", entry);
   try {
     const { data } = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/folders/${id}/resume-work`,
@@ -268,7 +272,89 @@ export async function assignToAnUserFolder(
   }
 }
 
-// printings plates
+export async function orderPrintingPlate(id: number) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/folders/${id}/printing-plates/order`,
+      null,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    //console.log("error", error);
+    return { success: false };
+  }
+}
+
+export async function receivedPrintingPlate(id: number) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/folders/${id}/printing-plates/received`,
+      null,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    //console.log("error", error);
+    return { success: false };
+  }
+}
+
+export async function receivedShape(id: number) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/folders/${id}/shapes/received`,
+      null,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    //console.log("error", error);
+    return { success: false };
+  }
+}
+
+export async function orderShape(id: number) {
+  const token = await getToken();
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/folders/${id}/shapes/order`,
+      null,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true, data };
+  } catch (error) {
+    //console.log("error", error);
+    return { success: false };
+  }
+}
 
 export async function printingPlates(entry: { name: string; ref: string }) {
   const token = await getToken();
@@ -339,6 +425,50 @@ export async function markAsReceivedPrintingPlates(id: number) {
       data: { message },
     } = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/printing-plates/${id}/received`,
+      null,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { success: true };
+  } catch (error) {
+    return { success: false };
+  }
+}
+// error
+
+export async function createError(entry: {
+  description: string;
+  folder_id: number;
+}) {
+  const token = await getToken();
+  try {
+    const {
+      data: { message },
+    } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/errors`, entry, {
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    return { success: false };
+  }
+}
+
+export async function resolveError(id: number) {
+  const token = await getToken();
+  try {
+    const {
+      data: { message },
+    } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/errors/${id}/resolve`,
       null,
       {
         headers: {
