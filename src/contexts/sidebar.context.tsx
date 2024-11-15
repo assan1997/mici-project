@@ -58,6 +58,8 @@ interface SideBarContextType {
   setSubNav: React.Dispatch<React.SetStateAction<SubNav[]>>;
   setResize: React.Dispatch<React.SetStateAction<boolean>>;
   roleAdmin: boolean;
+  roleEntry: boolean;
+  rolePrototype: boolean;
 }
 
 const SibeBarContext = createContext<SideBarContextType>({
@@ -72,6 +74,8 @@ const SibeBarContext = createContext<SideBarContextType>({
   setSubNav: () => {},
   setResize: () => {},
   roleAdmin: false,
+  roleEntry: false,
+  rolePrototype: false,
 });
 
 export const useSideBar = () => useContext(SibeBarContext);
@@ -190,30 +194,55 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
   const pathName = usePathname();
   const [resize, setResize] = useState<boolean>(false);
 
+  const roleSuperAdmin = useMemo(() => {
+    const sectionsIds = user?.sections?.map((section) => section.id);
+    if (sectionsIds?.includes(1)) return true;
+    else return false;
+  }, [user?.sections]);
+
   const roleAdmin = useMemo(() => {
     const sectionsIds = user?.sections?.map((section) => section.id);
-    if (
-      sectionsIds?.includes(1) ||
-      sectionsIds?.includes(2) ||
-      sectionsIds?.includes(3)
-    )
-      return true;
+    if (sectionsIds?.includes(1) || sectionsIds?.includes(2)) return true;
+    else return false;
+  }, [user?.sections]);
+
+  const roleEntry = useMemo(() => {
+    const sectionsIds = user?.sections?.map((section) => section.id);
+    if (sectionsIds?.includes(2)) return true;
+    else return false;
+  }, [user?.sections]);
+
+  const rolePrototype = useMemo(() => {
+    const sectionsIds = user?.sections?.map((section) => section.id);
+    if (sectionsIds?.includes(3)) return true;
     else return false;
   }, [user?.sections]);
 
   useEffect(() => {
-    if (!roleAdmin)
-      setNav(
-        navDatas
-          .filter((nav) => !nav.disable)
-          .filter((nav) => !["nav-4", "nav-5"].includes(nav.id))
-          .map((nav: Nav) =>
-            pathName.includes(nav.link)
-              ? { ...nav, active: true }
-              : { ...nav, active: false }
-          )
-      );
-    else
+    if (!roleSuperAdmin) {
+      if (roleEntry)
+        setNav(
+          navDatas
+            .filter((nav) => !nav.disable)
+            .filter((nav) => !["nav-4"].includes(nav.id))
+            .map((nav: Nav) =>
+              pathName.includes(nav.link)
+                ? { ...nav, active: true }
+                : { ...nav, active: false }
+            )
+        );
+      else
+        setNav(
+          navDatas
+            .filter((nav) => !nav.disable)
+            .filter((nav) => !["nav-4", "nav-5"].includes(nav.id))
+            .map((nav: Nav) =>
+              pathName.includes(nav.link)
+                ? { ...nav, active: true }
+                : { ...nav, active: false }
+            )
+        );
+    } else
       setNav(
         navDatas
           .filter((nav) => !nav.disable)
@@ -298,6 +327,8 @@ export const SideBarProvider: React.FC<{ children: ReactNode }> = ({
         setResize,
         resize,
         roleAdmin,
+        roleEntry,
+        rolePrototype,
       }}
     >
       {children}

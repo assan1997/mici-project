@@ -93,7 +93,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   const standByform = useForm({ schema: shapeStandBySchema });
   const observationForm = useForm({ schema: shapeObservationSchema });
   const assignForm = useForm({ schema: shapeAssignSchema });
-  const { roleAdmin } = useSideBar();
+  const { roleAdmin, rolePrototype } = useSideBar();
 
   const {
     data: allShapes,
@@ -1680,7 +1680,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                           root.render(
                             <div className="bg-white w-[200px] z-[50] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                               <div className="flex flex-col items-center w-full">
-                                {roleAdmin ? (
+                                {roleAdmin || rolePrototype ? (
                                   <button
                                     type="button"
                                     onClick={(e) => {
@@ -1996,7 +1996,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                               >
                                 <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                                   <div className="flex flex-col items-center w-full">
-                                    {roleAdmin ? (
+                                    {roleAdmin || rolePrototype ? (
                                       <button
                                         type="button"
                                         onClick={(e) => {

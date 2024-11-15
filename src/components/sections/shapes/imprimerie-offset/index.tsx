@@ -92,7 +92,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
     mutate,
     error,
     isLoading,
-  } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, getAllOffsetShapes);
+  } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/shapes`, getAllOffsetShapes);
 
   const allOffsetShapes: ShapeInterface[] = useMemo(
     () =>
@@ -108,7 +108,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
   const standByform = useForm({ schema: shapeStandBySchema });
   const observationForm = useForm({ schema: shapeObservationSchema });
   const assignForm = useForm({ schema: shapeAssignSchema });
-  const { roleAdmin } = useSideBar();
+  const { roleAdmin, rolePrototype } = useSideBar();
 
   const tableHead = [
     "Statut",
@@ -1463,7 +1463,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                           root.render(
                             <div className="bg-white w-[200px] z-[50] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                               <div className="flex flex-col items-center w-full">
-                                {roleAdmin ? (
+                                {roleAdmin || rolePrototype ? (
                                   <button
                                     type="button"
                                     onClick={(e) => {
@@ -1732,7 +1732,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                               >
                                 <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                                   <div className="flex flex-col items-center w-full">
-                                    {roleAdmin ? (
+                                    {roleAdmin || rolePrototype ? (
                                       <button
                                         type="button"
                                         onClick={(e) => {

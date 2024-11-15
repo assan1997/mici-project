@@ -75,7 +75,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   } = useData();
 
   const [loading, setLoading] = useState<boolean>(false);
-
   const { data, mutate, error, isLoading } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}/folders`,
     getAllFolders
@@ -142,6 +141,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   const assignForm = useForm({ schema: folderAssignSchema });
 
   const tableHead = [
+    "Code",
     "Statut",
     "Statut de la forme",
     "Statut du cliché",
@@ -154,7 +154,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     "Numero",
     "Client",
     "Reference",
-    "Code",
     "Commercial",
     "Etat",
     "Departement",
@@ -235,7 +234,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
     useState<boolean>(false);
   const [shapeToOrdered, setShapeToOrdered] = useState<boolean>(false);
 
-  const { roleAdmin } = useSideBar();
+  const { roleAdmin, rolePrototype } = useSideBar();
   const [observationList, setObservationList] = useState<
     {
       id: number;
@@ -396,6 +395,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
       file_number: number,
       shape_id: shape,
       printing_plate_id,
+      plate_to_order: printingPlateToOrdered,
+      shape_to_order: shapeToOrdered,
     };
 
     if (
@@ -1466,7 +1467,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
           } h-full`}
         >
           {roleAdmin ? (
-            <div className="w-full flex py-[10px] justify-end">
+            <div className="w-full flex py-[10px] gap-x-[10px] justify-end">
               <button
                 disabled={!allFolders}
                 type="button"
@@ -1661,11 +1662,10 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                         {tableHead?.map((head, index) => (
                           <th
                             key={index}
-                            className={`relative w-fit ${
-                              index === 0 ? "w-0" : "min-w-[300px] w-auto"
-                            } text-[14px] py-[10px] font-medium  ${
-                              index > 0 && index < tableHead.length
-                            }  text-[#000000]`}
+                            className={`relative min-w-[300px] w-auto
+                             text-[14px] py-[10px] font-medium  ${
+                               index > 0 && index < tableHead.length
+                             }  text-[#000000]`}
                           >
                             <div
                               className={`h-full font-poppins relative flex items-center text-start gap-x-[10px] px-[20px] ${
@@ -1680,6 +1680,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                     [
                                       "Options",
                                       "Statut",
+                                      "Statut de la forme",
+                                      "Statut du cliché",
                                       "Date & Heure de création",
                                       "Date & Heure de mise à jour",
                                       "Forme commandé lé",
@@ -1706,6 +1708,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                   {![
                                     "Options",
                                     "Statut",
+                                    "Statut de la forme",
+                                    "Statut du cliché",
                                     "Date & Heure de création",
                                     "Date & Heure de mise à jour",
                                     "Forme commandé lé",
@@ -1791,6 +1795,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                 {![
                                   "Options",
                                   "Statut",
+                                  "Statut de la forme",
+                                  "Statut du cliché",
                                   "Date & Heure de création",
                                   "Date & Heure de mise à jour",
                                   "Forme commandé lé",
@@ -1837,6 +1843,8 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                               {![
                                 "Options",
                                 "Statut",
+                                "Statut de la forme",
+                                "Statut du cliché",
                                 "Date & Heure de création",
                                 "Date & Heure de mise à jour",
                                 "Forme commandé lé",
@@ -1951,7 +1959,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                               root.render(
                                 <div className="bg-white w-[200px] z-[50] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                                   <div className="flex flex-col items-center w-full">
-                                    {roleAdmin ? (
+                                    {roleAdmin || rolePrototype ? (
                                       <button
                                         type="button"
                                         onClick={(e) => {
@@ -1965,15 +1973,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                         </span>
                                       </button>
                                     ) : null}
-
-                                    {/* <Export
-                                  title="Télécharger le pdf"
-                                  type="pdf"
-                                  entry={{
-                                    headers: [],
-                                    data: folderInEntry,
-                                  }}
-                                /> */}
 
                                     <button
                                       type="button"
@@ -2005,66 +2004,79 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                           </span>
                                         </button>
 
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setOpenMarkShapeIsOrderedModal(
-                                              true
-                                            );
-                                          }}
-                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                        >
-                                          {/* <DetailsIcon color={""} /> */}
-                                          <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                            Forme commandé
-                                          </span>
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setOpenMarkIsPrintingPlateOrderedModal(
-                                              true
-                                            );
-                                          }}
-                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                        >
-                                          {/* <DetailsIcon color={""} /> */}
-                                          <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                            Cliché commandé
-                                          </span>
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setOpenMarkShapeIsReceivedModal(
-                                              true
-                                            );
-                                          }}
-                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                        >
-                                          {/* <DetailsIcon color={""} /> */}
-                                          <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                            Forme reçu
-                                          </span>
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setOpenMarkIsPrintingPlateReceivedModal(
-                                              true
-                                            );
-                                          }}
-                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                        >
-                                          {/* <DetailsIcon color={""} /> */}
-                                          <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                            Cliché reçu
-                                          </span>
-                                        </button>
+                                        {row?.shape_to_order_at &&
+                                        !row?.shape_ordered_at ? (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenMarkShapeIsOrderedModal(
+                                                true
+                                              );
+                                            }}
+                                            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                          >
+                                            {/* <DetailsIcon color={""} /> */}
+                                            <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                              Commander la forme
+                                            </span>
+                                          </button>
+                                        ) : null}
+
+                                        {row?.plate_to_order_at &&
+                                        !row?.plate_ordered_at ? (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenMarkIsPrintingPlateOrderedModal(
+                                                true
+                                              );
+                                            }}
+                                            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                          >
+                                            {/* <DetailsIcon color={""} /> */}
+                                            <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                              Commander le cliché
+                                            </span>
+                                          </button>
+                                        ) : null}
+
+                                        {row?.shape_ordered_at ? (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenMarkShapeIsReceivedModal(
+                                                true
+                                              );
+                                            }}
+                                            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                          >
+                                            {/* <DetailsIcon color={""} /> */}
+                                            <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                              Marquer la forme comme reçu
+                                            </span>
+                                          </button>
+                                        ) : null}
+
+                                        {row?.plate_ordered_at ? (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenMarkIsPrintingPlateReceivedModal(
+                                                true
+                                              );
+                                            }}
+                                            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                          >
+                                            {/* <DetailsIcon color={""} /> */}
+                                            <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                              Marquer le cliché comme reçu
+                                            </span>
+                                          </button>
+                                        ) : null}
 
                                         <button
                                           type="button"
@@ -2141,6 +2153,12 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                               );
                             }}
                           >
+                            <td
+                              onClick={() => goToDetail(row?.id)}
+                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                            >
+                              {row?.code}
+                            </td>
                             <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
                               <div
                                 className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
@@ -2237,7 +2255,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                 "short"
                               )}
                             </td>
-
                             <td
                               onClick={() => goToDetail(row?.id)}
                               className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
@@ -2311,13 +2328,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                               className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.reference}
-                            </td>
-
-                            <td
-                              onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                            >
-                              {row?.code}
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
@@ -2421,16 +2431,16 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                       </div>
                                     }
                                   >
-                                    <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
+                                    <div className="bg-white w-[200px] z-[50] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                                       <div className="flex flex-col items-center w-full">
-                                        {roleAdmin ? (
+                                        {roleAdmin || rolePrototype ? (
                                           <button
                                             type="button"
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               setOpenEditionModal(true);
                                             }}
-                                            className="flex items-center justify-start  w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                            className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
                                           >
                                             <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
                                               Modifier les entrées
@@ -2438,18 +2448,9 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                           </button>
                                         ) : null}
 
-                                        {/* <Export
-                                      title="Télécharger le pdf"
-                                      type="pdf"
-                                      entry={{
-                                        headers: [],
-                                        data: folderInEntry,
-                                      }}
-                                    /> */}
-
                                         <button
                                           type="button"
-                                          onClick={(e) => {
+                                          onClick={(e: any) => {
                                             e.stopPropagation();
                                             goToDetail(row?.id);
                                           }}
@@ -2458,19 +2459,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                           {/* <DetailsIcon color={""} /> */}
                                           <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
                                             Voir les détails
-                                          </span>
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setOpenAssignToUserModal(true);
-                                          }}
-                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                        >
-                                          {/* <DetailsIcon color={""} /> */}
-                                          <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                            Assigner à un utilisateur
                                           </span>
                                         </button>
 
@@ -2490,66 +2478,79 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                               </span>
                                             </button>
 
-                                            <button
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setOpenMarkShapeIsOrderedModal(
-                                                  true
-                                                );
-                                              }}
-                                              className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                            >
-                                              {/* <DetailsIcon color={""} /> */}
-                                              <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                                Forme commandé
-                                              </span>
-                                            </button>
-                                            <button
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setOpenMarkIsPrintingPlateOrderedModal(
-                                                  true
-                                                );
-                                              }}
-                                              className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                            >
-                                              {/* <DetailsIcon color={""} /> */}
-                                              <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                                Cliché commandé
-                                              </span>
-                                            </button>
-                                            <button
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setOpenMarkShapeIsReceivedModal(
-                                                  true
-                                                );
-                                              }}
-                                              className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                            >
-                                              {/* <DetailsIcon color={""} /> */}
-                                              <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                                Forme reçu
-                                              </span>
-                                            </button>
-                                            <button
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setOpenMarkIsPrintingPlateReceivedModal(
-                                                  true
-                                                );
-                                              }}
-                                              className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                            >
-                                              {/* <DetailsIcon color={""} /> */}
-                                              <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                                Cliché reçu
-                                              </span>
-                                            </button>
+                                            {row?.shape_to_order_at &&
+                                            !row?.shape_ordered_at ? (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setOpenMarkShapeIsOrderedModal(
+                                                    true
+                                                  );
+                                                }}
+                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                              >
+                                                {/* <DetailsIcon color={""} /> */}
+                                                <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                  Commander la forme
+                                                </span>
+                                              </button>
+                                            ) : null}
+
+                                            {row?.plate_to_order_at &&
+                                            !row?.plate_ordered_at ? (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setOpenMarkIsPrintingPlateOrderedModal(
+                                                    true
+                                                  );
+                                                }}
+                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                              >
+                                                {/* <DetailsIcon color={""} /> */}
+                                                <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                  Commander le cliché
+                                                </span>
+                                              </button>
+                                            ) : null}
+
+                                            {row?.shape_ordered_at ? (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setOpenMarkShapeIsReceivedModal(
+                                                    true
+                                                  );
+                                                }}
+                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                              >
+                                                {/* <DetailsIcon color={""} /> */}
+                                                <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                  Marquer la forme comme reçu
+                                                </span>
+                                              </button>
+                                            ) : null}
+
+                                            {row?.plate_ordered_at ? (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setOpenMarkIsPrintingPlateReceivedModal(
+                                                    true
+                                                  );
+                                                }}
+                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                              >
+                                                {/* <DetailsIcon color={""} /> */}
+                                                <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                  Marquer le cliché comme reçu
+                                                </span>
+                                              </button>
+                                            ) : null}
 
                                             <button
                                               type="button"
@@ -3719,72 +3720,120 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setCommercial}
                   borderColor="border-grayscale-200"
                 />
-                <ComboboxMultiSelect
-                  label={"Forme"}
-                  className="w-full"
-                  icon={
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
-                        stroke="black"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  }
-                  id={`shape`}
-                  options={
-                    allShapes?.map((shape: ShapeInterface) => ({
-                      value: shape.id as unknown as string,
-                      label: `${shape.code}`,
-                    })) as []
-                  }
-                  error={undefined}
-                  isUniq={true}
-                  selectedElementInDropdown={shapes}
-                  setSelectedUniqElementInDropdown={setShapes}
-                  borderColor="border-grayscale-200"
-                />
+                <div className="flex flex-col gap-y-[10px]">
+                  <ComboboxMultiSelect
+                    label={"Forme"}
+                    placeholder="Selectionnez une forme"
+                    className="w-full"
+                    icon={
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                          stroke="black"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    }
+                    id={`shape`}
+                    options={
+                      allShapes?.map((shape: ShapeInterface) => ({
+                        value: shape.id as unknown as string,
+                        label: `${shape.code}`,
+                      })) as []
+                    }
+                    error={undefined}
+                    isUniq={true}
+                    selectedElementInDropdown={shapes}
+                    setSelectedUniqElementInDropdown={setShapes}
+                    borderColor="border-grayscale-200"
+                  />
 
-                <ComboboxMultiSelect
-                  label={"Cliché"}
-                  // placeholder="Sélectionnez la règle a appliquer"
-                  className="w-full"
-                  icon={
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
-                        stroke="black"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  }
-                  id={`cliche`}
-                  options={allPrintingPlates?.map((printingPlate: any) => ({
-                    value: printingPlate.id as unknown as string,
-                    label: printingPlate.name as unknown as string,
-                  }))}
-                  error={undefined}
-                  isUniq={true}
-                  selectedElementInDropdown={selectedPrintingPlate}
-                  setSelectedUniqElementInDropdown={setSelectedPrintingPlate}
-                  borderColor="border-grayscale-200"
-                />
+                  {!folderInEntry?.shape_to_order_at ? (
+                    <div className="flex justify-between font-poppins font-medium items-center">
+                      <span className="text-[13px]">A commander</span>
+                      <Switch
+                        checked={shapeToOrdered}
+                        onChange={setShapeToOrdered}
+                        className={`${
+                          shapeToOrdered ? "bg-blue-600" : "bg-gray-200"
+                        } relative inline-flex h-6 w-11 items-center rounded-full`}
+                      >
+                        <span className="sr-only">Enable notifications</span>
+                        <span
+                          className={`${
+                            shapeToOrdered
+                              ? "translate-x-[1.30rem]"
+                              : "translate-x-1"
+                          } inline-block h-5 w-5 transform rounded-full bg-white transition`}
+                        />
+                      </Switch>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="flex flex-col gap-y-[10px]">
+                  <ComboboxMultiSelect
+                    label={"Cliché"}
+                    // placeholder="Sélectionnez la règle a appliquer"
+                    className="w-full"
+                    icon={
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M6.24996 5.83333H8.54163M6.24996 9.16667H8.54163M6.24996 12.5H8.54163M11.4583 5.83333H13.75M11.4583 9.16667H13.75M11.4583 12.5H13.75M16.6666 17.5V5.16667C16.6666 4.23325 16.6666 3.76654 16.485 3.41002C16.3252 3.09641 16.0702 2.84144 15.7566 2.68166C15.4001 2.5 14.9334 2.5 14 2.5H5.99996C5.06654 2.5 4.59983 2.5 4.24331 2.68166C3.92971 2.84144 3.67474 3.09641 3.51495 3.41002C3.33329 3.76654 3.33329 4.23325 3.33329 5.16667V17.5M18.3333 17.5H1.66663"
+                          stroke="black"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    }
+                    id={`cliché`}
+                    options={allPrintingPlates?.map((printingPlate: any) => ({
+                      value: printingPlate.id as unknown as string,
+                      label: printingPlate.name as unknown as string,
+                    }))}
+                    error={undefined}
+                    isUniq={true}
+                    selectedElementInDropdown={selectedPrintingPlate}
+                    setSelectedUniqElementInDropdown={setSelectedPrintingPlate}
+                    borderColor="border-grayscale-200"
+                  />
+                  {!folderInEntry?.plate_to_order_at ? (
+                    <div className="flex justify-between font-poppins font-medium items-center">
+                      <span className="text-[13px]">A commander</span>
+                      <Switch
+                        checked={printingPlateToOrdered}
+                        onChange={setPrintingPlateToOrdered}
+                        className={`${
+                          printingPlateToOrdered ? "bg-blue-600" : "bg-gray-200"
+                        } relative inline-flex h-6 w-11 items-center rounded-full`}
+                      >
+                        <span className="sr-only">Enable notifications</span>
+                        <span
+                          className={`${
+                            printingPlateToOrdered
+                              ? "translate-x-[1.30rem]"
+                              : "translate-x-1"
+                          } inline-block h-5 w-5 transform rounded-full bg-white transition`}
+                        />
+                      </Switch>
+                    </div>
+                  ) : null}
+                </div>
 
                 <ComboboxMultiSelect
                   label={"Règle"}
@@ -4062,6 +4111,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
           </div>
         </Form>
       </BaseModal>
+
       {/*  */}
 
       <BaseModal open={openDelationModal} classname={""}>

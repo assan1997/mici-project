@@ -44,6 +44,8 @@ export interface FolderInterface {
   rule_id: number;
   printing_plate_id: number;
   logs: any[];
+  shape_to_order_at: string | null;
+  plate_to_order_at: string | null;
 }
 
 export interface BatInterface {
@@ -137,6 +139,7 @@ export interface User {
   departments: Department[];
   clients: Client[];
 }
+
 export interface DataContextType {
   bats: BatInterface[] | undefined;
   folders: FolderInterface[] | undefined;
@@ -160,7 +163,6 @@ export interface DataContextType {
   dispatchTasks: React.Dispatch<
     React.SetStateAction<TaskInterface[] | undefined>
   >;
-
   loadUsers: LoadUsers;
   status: Status[];
   tasks: TaskInterface[] | undefined;
@@ -276,6 +278,7 @@ const DataContext = createContext<DataContextType>({
   getBats: () => {},
   checkIfCommercial: (arg) => false,
 });
+
 export const useData = () => useContext(DataContext);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({
   children,
