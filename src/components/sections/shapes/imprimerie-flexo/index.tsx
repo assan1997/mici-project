@@ -1865,9 +1865,9 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                     }}
                   >
                     <div
-                      className={`h-[20px] w-[20px] shrink-0 p-[20px] flex items-center  justify-center`}
+                      className={`h-[30px] w-[30px]  shrink-0  flex items-center  justify-center`}
                     >
-                      <CloseIcon size={10} />
+                      <CloseIcon size={14} color="black" />
                     </div>
                   </Filter>
                 ) : null}

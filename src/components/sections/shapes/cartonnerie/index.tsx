@@ -100,7 +100,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     mutate,
     error,
     isLoading,
-  } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, getAllOffsetShapes);
+  } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/shapes`, getAllOffsetShapes);
 
   const cartonnerieShapes = useMemo(
     () =>
@@ -2150,9 +2150,9 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                     }}
                   >
                     <div
-                      className={`h-[20px] w-[20px] p-[20px] shrink-0  flex items-center  justify-center`}
+                      className={`h-[30px] w-[30px]  shrink-0  flex items-center  justify-center`}
                     >
-                      <CloseIcon size={10} />
+                      <CloseIcon size={14} color="black" />
                     </div>
                   </Filter>
                 ) : null}

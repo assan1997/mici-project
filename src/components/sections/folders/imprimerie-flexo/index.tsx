@@ -1960,68 +1960,19 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                 <div className="bg-white w-[200px] z-[50] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                                   <div className="flex flex-col items-center w-full">
                                     {roleAdmin || rolePrototype ? (
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setOpenEditionModal(true);
-                                        }}
-                                        className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                      >
-                                        <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-                                          Modifier les entrées
-                                        </span>
-                                      </button>
-                                    ) : null}
-
-                                    <button
-                                      type="button"
-                                      onClick={(e: any) => {
-                                        e.stopPropagation();
-                                        goToDetail(row?.id);
-                                      }}
-                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                    >
-                                      {/* <DetailsIcon color={""} /> */}
-                                      <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
-                                        Voir les détails
-                                      </span>
-                                    </button>
-
-                                    {roleAdmin ? (
                                       <>
                                         <button
                                           type="button"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            setOpenAssignToUserModal(true);
+                                            setOpenEditionModal(true);
                                           }}
-                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                          className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
                                         >
-                                          {/* <DetailsIcon color={""} /> */}
-                                          <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                            Assigner à un utilisateur
+                                          <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                            Modifier les entrées
                                           </span>
                                         </button>
-
-                                        {row?.shape_to_order_at &&
-                                        !row?.shape_ordered_at ? (
-                                          <button
-                                            type="button"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setOpenMarkShapeIsOrderedModal(
-                                                true
-                                              );
-                                            }}
-                                            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                          >
-                                            {/* <DetailsIcon color={""} /> */}
-                                            <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                              Commander la forme
-                                            </span>
-                                          </button>
-                                        ) : null}
 
                                         {row?.plate_to_order_at &&
                                         !row?.plate_ordered_at ? (
@@ -2074,6 +2025,57 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                             {/* <DetailsIcon color={""} /> */}
                                             <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
                                               Marquer le cliché comme reçu
+                                            </span>
+                                          </button>
+                                        ) : null}
+                                      </>
+                                    ) : null}
+
+                                    <button
+                                      type="button"
+                                      onClick={(e: any) => {
+                                        e.stopPropagation();
+                                        goToDetail(row?.id);
+                                      }}
+                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                    >
+                                      {/* <DetailsIcon color={""} /> */}
+                                      <span className="text-[14px] font-poppins text-grayscale-900 font-medium leading-[20px] ">
+                                        Voir les détails
+                                      </span>
+                                    </button>
+
+                                    {roleAdmin ? (
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenAssignToUserModal(true);
+                                          }}
+                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                        >
+                                          {/* <DetailsIcon color={""} /> */}
+                                          <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                            Assigner à un utilisateur
+                                          </span>
+                                        </button>
+
+                                        {row?.shape_to_order_at &&
+                                        !row?.shape_ordered_at ? (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenMarkShapeIsOrderedModal(
+                                                true
+                                              );
+                                            }}
+                                            className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                          >
+                                            {/* <DetailsIcon color={""} /> */}
+                                            <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                              Commander la forme
                                             </span>
                                           </button>
                                         ) : null}
@@ -2434,18 +2436,91 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                     <div className="bg-white w-[200px] z-[50] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
                                       <div className="flex flex-col items-center w-full">
                                         {roleAdmin || rolePrototype ? (
-                                          <button
-                                            type="button"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setOpenEditionModal(true);
-                                            }}
-                                            className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
-                                          >
-                                            <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
-                                              Modifier les entrées
-                                            </span>
-                                          </button>
+                                          <>
+                                            {" "}
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenEditionModal(true);
+                                              }}
+                                              className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                            >
+                                              <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
+                                                Modifier les entrées
+                                              </span>
+                                            </button>
+                                            {row?.shape_to_order_at &&
+                                            !row?.shape_ordered_at ? (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setOpenMarkShapeIsOrderedModal(
+                                                    true
+                                                  );
+                                                }}
+                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                              >
+                                                {/* <DetailsIcon color={""} /> */}
+                                                <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                  Commander la forme
+                                                </span>
+                                              </button>
+                                            ) : null}
+                                            {row?.plate_to_order_at &&
+                                            !row?.plate_ordered_at ? (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setOpenMarkIsPrintingPlateOrderedModal(
+                                                    true
+                                                  );
+                                                }}
+                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                              >
+                                                {/* <DetailsIcon color={""} /> */}
+                                                <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                  Commander le cliché
+                                                </span>
+                                              </button>
+                                            ) : null}
+                                            {row?.shape_ordered_at ? (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setOpenMarkShapeIsReceivedModal(
+                                                    true
+                                                  );
+                                                }}
+                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                              >
+                                                {/* <DetailsIcon color={""} /> */}
+                                                <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                  Marquer la forme comme reçu
+                                                </span>
+                                              </button>
+                                            ) : null}
+                                            {row?.plate_ordered_at ? (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setOpenMarkIsPrintingPlateReceivedModal(
+                                                    true
+                                                  );
+                                                }}
+                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
+                                              >
+                                                {/* <DetailsIcon color={""} /> */}
+                                                <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                                  Marquer le cliché comme reçu
+                                                </span>
+                                              </button>
+                                            ) : null}
+                                          </>
                                         ) : null}
 
                                         <button
@@ -2477,80 +2552,6 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                                                 Assigner à un utilisateur
                                               </span>
                                             </button>
-
-                                            {row?.shape_to_order_at &&
-                                            !row?.shape_ordered_at ? (
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  setOpenMarkShapeIsOrderedModal(
-                                                    true
-                                                  );
-                                                }}
-                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                              >
-                                                {/* <DetailsIcon color={""} /> */}
-                                                <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                                  Commander la forme
-                                                </span>
-                                              </button>
-                                            ) : null}
-
-                                            {row?.plate_to_order_at &&
-                                            !row?.plate_ordered_at ? (
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  setOpenMarkIsPrintingPlateOrderedModal(
-                                                    true
-                                                  );
-                                                }}
-                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                              >
-                                                {/* <DetailsIcon color={""} /> */}
-                                                <span className="text-[14px] text-left font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                                  Commander le cliché
-                                                </span>
-                                              </button>
-                                            ) : null}
-
-                                            {row?.shape_ordered_at ? (
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  setOpenMarkShapeIsReceivedModal(
-                                                    true
-                                                  );
-                                                }}
-                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                              >
-                                                {/* <DetailsIcon color={""} /> */}
-                                                <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                                  Marquer la forme comme reçu
-                                                </span>
-                                              </button>
-                                            ) : null}
-
-                                            {row?.plate_ordered_at ? (
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  setOpenMarkIsPrintingPlateReceivedModal(
-                                                    true
-                                                  );
-                                                }}
-                                                className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
-                                              >
-                                                {/* <DetailsIcon color={""} /> */}
-                                                <span className="text-[14px] text-left  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                                  Marquer le cliché comme reçu
-                                                </span>
-                                              </button>
-                                            ) : null}
 
                                             <button
                                               type="button"
@@ -2648,8 +2649,10 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                         });
                       }}
                     >
-                      <div className="w-[40px] h-[40px] flex items-center justify-center rounded-lg">
-                        <CloseIcon />
+                      <div
+                        className={`h-[30px] w-[30px]  shrink-0  flex items-center  justify-center`}
+                      >
+                        <CloseIcon size={14} color="black" />
                       </div>
                     </Filter>
                   </div>
