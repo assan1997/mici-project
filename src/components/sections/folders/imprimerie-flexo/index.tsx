@@ -91,7 +91,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
   );
 
   const allFolders = useMemo(
-    () => data?.allFolders.filter((folder: any) => folder.department.id === 2),
+    () => data?.allFolders?.filter((folder: any) => folder.department.id === 2),
     [data]
   );
   const allPrintingPlates = useMemo(
@@ -1516,8 +1516,21 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                 filterHandler={setFolders}
                 onClick={async () => {
                   setIsRefreshingFolder(true);
-                  const { allFolders } = await getAllFolders();
-                  mutate(allFolders);
+                  const { allFolders, success } = await getAllFolders();
+                  if (success) {
+                    showToast({
+                      type: "success",
+                      message: `Synchronisation terminée`,
+                      position: "top-center",
+                    });
+                    mutate();
+                  } else {
+                    showToast({
+                      type: "danger",
+                      message: "L'opération a échoué",
+                      position: "top-center",
+                    });
+                  }
                   setIsRefreshingFolder(false);
                 }}
               >
