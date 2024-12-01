@@ -13,121 +13,118 @@ import {
   Client,
   Department,
   Section,
-  ShapeInterface,
+  BatInterface,
   useData,
   User,
 } from "@/contexts/data.context";
-import { createOffsetShape, lockShape, resumeShape } from "@/services/shapes";
+
 import { formatTime } from "@/lib/utils/timestamp";
 import MenuDropdown from "@/components/ui/dropdown/MenuDropdown";
 import useActiveState from "@/lib/hooks/useActiveState";
 import {
-  OffsetShapeEntry,
-  updateOffsetShape,
-  standbyOffsetShape,
-  observationOffsetShape,
-  assignToAnUserOffsetShape,
-  endShape,
-} from "@/services/shapes";
+  BatEntry,
+  getBatDetails,
+  endBat,
+  createBat,
+  getAllBats,
+  deleteBat,
+  updateBat,
+  standbyBat,
+  observationBat,
+  assignToAnUserBat,
+  lockBat,
+  resumeBat,
+  unlockBat,
+} from "@/services/bats";
 import { Spinner } from "@/components/ui/loader/spinner";
 import { TableSkeleton } from "@/components/ui/loader/Skeleton";
 import { useToast } from "@/contexts/toast.context";
-import { AcceleratedAnimation, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Pagination } from "@/components/ui/pagination";
 import { Filter } from "@/components/ui/filter";
 import { Export } from "@/components/ui/export";
 import { useRouter } from "next/navigation";
-import { deleteShape } from "@/services/shapes";
 import { createRoot } from "react-dom/client";
+
 import { useSideBar } from "@/contexts/sidebar.context";
 import useSWR from "swr";
-import { getAllOffsetShapes } from "@/services/shapes";
 
-export const ShapeCardboard: FC<{}> = ({}) => {
+export const ImprimerieOffset: FC<{}> = ({}) => {
   const {
     users,
     clients,
     departments,
+    // offsetShapes: bats,
     user,
     dispatchOffsetShapes,
     status,
     rules,
-    onRefreshingShape,
-    refreshShapeData,
+    onRefreshData,
+    refreshData,
     getAllShapes,
     checkIfCommercial,
   } = useData();
-
   const shapeSchema = z.object({
-    // code: z.string(),
     client: z.number(),
     commercial: z.number(),
     // department: z.number(),
-    part: z.string(),
-    compression_box: z.string(),
-    weight_code: z.string(),
-    weight: z.string(),
-    cardboard_junction: z.string(),
-    theoretical_weight: z.string(),
-    dim_square: z.string(),
-    dim_plate: z.string(),
-    dim_int: z.string(),
-    pose_number: z.string(),
+    // part: z.string(),
+    // dim_lx_lh: z.string(),
+    // dim_square: z.string(),
+    // dim_plate: z.string(),
+    // paper_type: z.string(),
+    // pose_number: z.string(),
+    // reference: z.string(),
+    details: z.string(),
+    product: z.string(),
     reference: z.string(),
-    plate_surface: z.string(),
     rule: z.number(),
   });
-
-  const shapeStandBySchema = z.object({
+  const batStandBySchema = z.object({
     reason: z.string(),
   });
-  const shapeObservationSchema = z.object({
+  const batObservationSchema = z.object({
     observation: z.string(),
   });
-  const shapeAssignSchema = z.object({
+  const batAssignSchema = z.object({
     user_id: z.number(),
     description: z.string(),
   });
 
-  const form = useForm({ schema: shapeSchema });
-  const standByform = useForm({ schema: shapeStandBySchema });
-  const observationForm = useForm({ schema: shapeObservationSchema });
-  const assignForm = useForm({ schema: shapeAssignSchema });
-  const { roleAdmin, rolePrototype } = useSideBar();
-
   const {
-    data: allShapes,
+    data: allBats,
     mutate,
     error,
     isLoading,
-  } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/shapes`, getAllOffsetShapes);
+  } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/bats`, getAllBats);
 
-  const cartonnerieShapes = useMemo(
+  const bats: BatInterface[] = useMemo(
     () =>
-      allShapes?.data?.filter(
-        (shape: ShapeInterface) => shape.department.id === 3
-      ),
-    [allShapes?.data]
+      allBats?.data
+        ? allBats?.data.filter((bat: BatInterface) => bat.department.id === 1)
+        : [],
+    [allBats?.data]
   );
+
+  const form = useForm({ schema: shapeSchema });
+  const standByform = useForm({ schema: batStandBySchema });
+  const observationForm = useForm({ schema: batObservationSchema });
+  const assignForm = useForm({ schema: batAssignSchema });
+  const { roleAdmin, rolePrototype } = useSideBar();
 
   const tableHead = [
     "Statut",
     "Code",
-    "Reference",
-    "Poids Théorique",
-    "Box Compression",
-    "Dimension Carré",
-    "Dimension plaque",
-    "Dimension Interieur",
-    "Code Grammage",
-    "Grammage en (g)",
-    "Jonction du carton",
-    "Surface de la plaques en m",
     "Client",
+    "Reference",
     "Commercial",
     "Departement",
-    "N° des poses",
-    "1/3",
+    "Produit",
+    "Détails",
+    // "Dimensions Plaque",
+    // "Type Papier",
+    // "N° des poses",
+    // "1/3",
     "Date & Heure de création",
     "Date & Heure de mise à jour",
     "Options",
@@ -135,28 +132,19 @@ export const ShapeCardboard: FC<{}> = ({}) => {
 
   const reset = () => {
     form.setValue("client", 0);
-    // form.setValue("code", "");
     form.setValue("commercial", 0);
     // form.setValue("department", 0);
-    form.setValue("rule", 0);
-    form.setValue("compression_box", "");
-    form.setValue("dim_square", "");
-    form.setValue("dim_plate", "");
-    form.setValue("dim_int", "");
-    form.setValue("pose_number", "");
+    // form.setValue("dim_lx_lh", "");
+    // form.setValue("dim_square", "");
+    form.setValue("details", "");
+    // form.setValue("rule", "");
+    form.setValue("product", "");
     form.setValue("reference", "");
-    form.setValue("weight_code", "");
-    form.setValue("weight", "");
-    form.setValue("theoretical_weight", "");
-    form.setValue("dim_square", "");
-    form.setValue("plate_surface", "");
-    form.setValue("cardboard_junction", "");
-    form.setValue("part", "");
+
     standByform.setValue("reason", "");
     observationForm.setValue("observation", "");
     assignForm.setValue("description", "");
     assignForm.setValue("user_id", 0);
-
     setCurrentEntry(undefined);
     setCommercial([]);
     setDepartment([]);
@@ -165,9 +153,9 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     setSelectedRule([]);
   };
   const { box, handleClick } = useActiveState();
-  const [offsetShapes, setOffsetShapes] = useState<
-    ShapeInterface[] | undefined
-  >([]);
+  const [offsetShapes, setOffsetShapes] = useState<BatInterface[] | undefined>(
+    []
+  );
 
   const [openCreationModal, setCreationModal] = useState<boolean>(false);
   const [openEditionModal, setOpenEditionModal] = useState<boolean>(false);
@@ -188,43 +176,14 @@ export const ShapeCardboard: FC<{}> = ({}) => {
 
   const onSubmit = async (data: z.infer<typeof shapeSchema>) => {
     setLoading(true);
-    let {
-      // code,
-      client,
-      commercial,
-      // department,
-      rule,
-      compression_box,
-      weight_code,
-      weight,
-      cardboard_junction,
-      theoretical_weight,
-      dim_square,
-      dim_plate,
-      dim_int,
-      pose_number,
-      reference,
-      plate_surface,
-      part,
-    } = data;
-
-    const { data: createdOffsetShape, success } = await createOffsetShape({
+    let { client, commercial, rule, reference, product, details } = data;
+    const { data: createdOffsetShape, success } = await createBat({
       client_id: client,
-      department_id: 3,
+      department_id: 1,
       commercial_id: commercial,
-      // code,
-      part,
-      compression_box,
-      dim_square,
-      dim_plate,
-      dim_int,
-      pose_number,
+      product,
+      details,
       reference,
-      plate_surface,
-      weight_code,
-      weight,
-      cardboard_junction,
-      theoretical_weight,
       rule_id: rule,
       user_id: user?.id as unknown as number,
       observations: observationList?.map((obs) => obs.text),
@@ -232,16 +191,8 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     if (success) {
       reset();
       setCreationModal(false);
-      createdOffsetShape.dim_plate = dim_plate;
-      // createdOffsetShape.department = departments.find(
-      //   (dep) => dep.id === department && dep
-      // );
-      createdOffsetShape.commercial = users?.find(
-        (use) => use.id === commercial
-      );
-      createdOffsetShape.client = clients?.find((cli) => cli?.id === client);
 
-      mutate(allShapes);
+      mutate();
 
       showToast({
         type: "success",
@@ -261,11 +212,6 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     label: string;
     value: string;
   }
-
-  useEffect(() => {
-    console.log("allShapes", allShapes);
-  }, [allShapes]);
-
   const [commercial, setCommercial] = useState<ComboSelect[]>([]);
   const [assignUser, setAssignUser] = useState<ComboSelect[]>([]);
   const [client, setClient] = useState<ComboSelect[]>([]);
@@ -273,40 +219,38 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   const [currentEntry, setCurrentEntry] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [currentDatas, setCurrentDatas] = useState<any[]>(
-    cartonnerieShapes ? cartonnerieShapes : []
-  );
+  const [currentDatas, setCurrentDatas] = useState<any[]>(bats ? bats : []);
   const [selectedRule, setSelectedRule] = useState<ComboSelect[]>([]);
 
   useEffect(() => {
-    setCurrentDatas(cartonnerieShapes ? cartonnerieShapes : []);
-  }, [cartonnerieShapes]);
+    setCurrentDatas(bats ? bats : []);
+  }, [bats]);
 
   const { showToast } = useToast();
-  const shapeInEntry = useMemo(() => {
-    const shape: ShapeInterface | undefined = offsetShapes?.find(
-      (shape: ShapeInterface) => shape.id === currentEntry
+  const batInEntry = useMemo(() => {
+    const bat: BatInterface | undefined = offsetShapes?.find(
+      (bat: BatInterface) => bat.id === currentEntry
     );
-    if (!shape) return;
+    if (!bat) return;
 
     const dep = {
-      value: shape?.department?.id,
-      label: shape?.department?.name,
+      value: bat?.department?.id,
+      label: bat?.department?.name,
     };
 
     const comm = {
-      value: shape?.commercial?.id,
-      label: shape?.commercial?.name,
+      value: bat?.commercial?.id,
+      label: bat?.commercial?.name,
     };
 
     const cli = {
-      value: shape?.client?.id,
-      label: shape?.client?.name,
+      value: bat?.client?.id,
+      label: bat?.client?.name,
     };
 
     const rule = {
-      value: shape?.rule_id,
-      label: `Règle ${shape?.rule_id}`,
+      value: bat?.rule_id,
+      label: `Règle ${bat?.rule_id}`,
     };
 
     if (dep?.value) setDepartment([dep as any]);
@@ -314,25 +258,17 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     if (cli?.value) setClient([cli as any]);
     if (rule?.value) setSelectedRule([rule as any]);
 
-    console.log("shape", shape);
+    // form.setValue("code", bat.code);
+    // form.setValue("dim_lx_lh", bat.dim_lx_lh);
+    // form.setValue("dim_square", bat.dim_square);
+    // form.setValue("dim_plate", bat.dim_plate);
+    // form.setValue("paper_type", bat.paper_type);
+    form.setValue("details", bat.details);
+    form.setValue("reference", bat.reference);
+    form.setValue("product", bat.product);
 
-    form.setValue("compression_box", shape.compression_box);
-    // form.setValue("code", shape.code);
-    form.setValue("part", shape.part);
-    form.setValue("dim_square", shape.dim_square);
-    form.setValue("dim_plate", shape.dim_plate);
-    form.setValue("dim_int", shape.dim_int);
-    form.setValue("pose_number", shape.pose_number);
-    form.setValue("reference", shape.reference);
-    form.setValue("weight_code", shape.weight_code);
-    form.setValue("weight", shape.weight);
-    form.setValue("theoretical_weight", shape.theoretical_weight);
-    form.setValue("dim_square", shape.dim_square);
-    form.setValue("plate_surface", shape.plate_surface);
-    form.setValue("cardboard_junction", shape.cardboard_junction);
-
-    // setObservationList(shape?.observations?.map((observation) => ({ id: observation.id, text: observation.observation })))
-    return shape;
+    // setObservationList(bat?.observations?.map((observation) => ({ id: observation.id, text: observation.observation })))
+    return bat;
   }, [currentEntry]);
 
   // useEffect(() => {
@@ -353,165 +289,60 @@ export const ShapeCardboard: FC<{}> = ({}) => {
 
   const onSubmitUpdate = async (data: z.infer<typeof shapeSchema>) => {
     setLoading(true);
-    let {
-      // code,
-      client,
-      commercial,
-      // department,
-      rule,
-      compression_box,
-      weight_code,
-      weight,
-      cardboard_junction,
-      theoretical_weight,
-      dim_square,
-      dim_plate,
-      dim_int,
-      pose_number,
-      reference,
-      plate_surface,
-      part,
-    } = data;
-    const entry: OffsetShapeEntry = {
+    let { client, commercial, product, details, reference, rule } = data;
+    console.log("client", client);
+    const entry: BatEntry = {
       client_id: client,
-      department_id: 3,
       commercial_id: commercial,
-      compression_box,
-      dim_square,
-      dim_plate,
-      dim_int,
-      pose_number,
-      // code,
+      details,
       reference,
+      product,
       rule_id: rule,
-      weight_code,
-      weight,
-      cardboard_junction,
-      theoretical_weight,
-      plate_surface,
-      part,
       observations: observationList?.map((obs) => obs.text),
     };
 
     if (
-      !entry.cardboard_junction ||
-      JSON.stringify(entry.cardboard_junction) ===
-        JSON.stringify(shapeInEntry?.cardboard_junction)
-    )
-      delete entry.cardboard_junction;
-
-    if (
-      !entry.theoretical_weight ||
-      JSON.stringify(entry.theoretical_weight) ===
-        JSON.stringify(shapeInEntry?.theoretical_weight)
-    )
-      delete entry.theoretical_weight;
-
-    if (
-      !entry.weight ||
-      JSON.stringify(entry.weight) === JSON.stringify(shapeInEntry?.weight)
-    )
-      delete entry.weight;
-
-    if (
-      !entry.compression_box ||
-      JSON.stringify(entry.compression_box) ===
-        JSON.stringify(shapeInEntry?.compression_box)
-    )
-      delete entry.compression_box;
-
-    if (
       !entry.rule_id ||
-      JSON.stringify(entry.rule_id) === JSON.stringify(shapeInEntry?.rule_id)
+      JSON.stringify(entry.rule_id) === JSON.stringify(batInEntry?.rule_id)
     )
       delete entry.client_id;
     if (
       !entry.client_id ||
-      JSON.stringify(entry.client_id) ===
-        JSON.stringify(shapeInEntry?.client?.id)
+      JSON.stringify(entry.client_id) === JSON.stringify(batInEntry?.client?.id)
     )
       delete entry.client_id;
     if (
       !entry.department_id ||
       JSON.stringify(entry.department_id) ===
-        JSON.stringify(shapeInEntry?.department.id)
+        JSON.stringify(batInEntry?.department.id)
     )
       delete entry.department_id;
 
     if (
       !entry.commercial_id ||
       JSON.stringify(entry?.commercial_id) ===
-        JSON.stringify(shapeInEntry?.commercial?.id)
+        JSON.stringify(batInEntry?.commercial?.id)
     )
       delete entry.commercial_id;
 
     if (
-      !entry.compression_box ||
-      JSON.stringify(entry.compression_box) ===
-        JSON.stringify(shapeInEntry?.compression_box)
+      !entry.product ||
+      JSON.stringify(entry.product) === JSON.stringify(batInEntry?.product)
     )
-      delete entry.compression_box;
-
-    if (
-      !entry.dim_square ||
-      JSON.stringify(entry.dim_square) ===
-        JSON.stringify(shapeInEntry?.dim_square)
-    )
-      delete entry.dim_square;
-
-    if (
-      !entry.dim_plate ||
-      JSON.stringify(entry.dim_plate) ===
-        JSON.stringify(shapeInEntry?.dim_plate)
-    )
-      delete entry.dim_plate;
-
-    if (
-      !entry.dim_int ||
-      JSON.stringify(entry.dim_int) === JSON.stringify(shapeInEntry?.dim_int)
-    )
-      delete entry.dim_int;
-
-    if (
-      !entry.pose_number ||
-      JSON.stringify(entry.pose_number) ===
-        JSON.stringify(shapeInEntry?.pose_number)
-    )
-      delete entry.pose_number;
+      delete entry.product;
 
     if (
       !entry.reference ||
-      JSON.stringify(entry.reference) ===
-        JSON.stringify(shapeInEntry?.reference)
+      JSON.stringify(entry.reference) === JSON.stringify(batInEntry?.reference)
     )
       delete entry.reference;
 
-    if (
-      !entry.part ||
-      JSON.stringify(entry.part) === JSON.stringify(shapeInEntry?.part)
-    )
-      delete entry.part;
-
-    if (
-      !entry.code ||
-      JSON.stringify(entry.code) === JSON.stringify(shapeInEntry?.code)
-    )
-      delete entry.code;
-
-    const { data: updatedShape, success } = await updateOffsetShape(
+    const { data: updatedShape, success } = await updateBat(
       currentEntry as number,
       entry
     );
-
     if (success) {
-      // updatedShape.department = departments.find(
-      //   (dep) => dep.id === department && dep
-      // );
-      updatedShape.commercial = users?.find((use) => use.id === commercial);
-      updatedShape.client = clients?.find((cli) => cli.id === client);
-
       mutate();
-
       setOpenEditionModal(false);
       showToast({
         type: "success",
@@ -519,6 +350,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         position: "top-center",
       });
     } else {
+      //console.log("error");
       showToast({
         type: "danger",
         message: "L'opération a échoué",
@@ -531,12 +363,9 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   const [openAssignToUserModal, setOpenAssignToUserModal] =
     useState<boolean>(false);
   const [openLogsModal, setOpenLogsModal] = useState<boolean>(false);
-
   const handleDeleteShape = async (id: number) => {
     setLoading(true);
-    const { data: deletedShape, success } = await deleteShape(
-      currentEntry as number
-    );
+    const { success } = await deleteBat(currentEntry as number);
     if (success) {
       mutate();
       showToast({
@@ -559,32 +388,23 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   const [openObservationModal, setOpenObservationModal] =
     useState<boolean>(false);
 
-  const onSubmitStandBy = async (data: z.infer<typeof shapeStandBySchema>) => {
+  const onSubmitStandBy = async (data: z.infer<typeof batStandBySchema>) => {
     setLoading(true);
     let { reason } = data;
     reason = reason.trim();
-    const status_id = shapeInEntry?.status_id !== 2 ? 2 : 1;
     let standByShape: any;
-    if (status_id === 2) {
-      standByShape = await resumeShape(currentEntry as number, {
-        type: "RESUME-WORK",
-        reason,
-        status_id,
-      });
-    } else {
-      standByShape = await standbyOffsetShape(currentEntry as number, {
-        type: "STANDBY",
-        reason,
-        status_id,
-      });
-    }
+    standByShape = await standbyBat(currentEntry as number, {
+      type: "STANDBY",
+      reason,
+      status_id: 2,
+    });
+
     if (standByShape.success) {
-      standByform.setValue("reason", "");
       mutate();
-      setOpenStandByModal(false);
+      standByform.setValue("reason", "");
       showToast({
         type: "success",
-        message: `${status_id === 2 ? "Mis" : "Enlevé"} en standby avec succès`,
+        message: `Mis en standby avec succès`,
         position: "top-center",
       });
     } else {
@@ -594,38 +414,29 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         position: "top-center",
       });
     }
+    setOpenStandByModal(false);
     setLoading(false);
     reset();
   };
 
-  const onSubmitLock = async (data: z.infer<typeof shapeStandBySchema>) => {
+  const onSubmitResume = async (data: z.infer<typeof batStandBySchema>) => {
     setLoading(true);
     let { reason } = data;
     reason = reason.trim();
-    const status_id = shapeInEntry?.status_id !== 3 ? 3 : 1;
-    let blockShape: any;
 
-    if (status_id === 3) {
-      blockShape = await resumeShape(currentEntry as number, {
-        type: "RESUME-WORK",
-        reason,
-        status_id,
-      });
-    } else {
-      blockShape = await lockShape(currentEntry as number, {
-        type: "BLOCK",
-        reason,
-        status_id,
-      });
-    }
+    let standByShape: any;
+    standByShape = await resumeBat(currentEntry as number, {
+      type: "RESUME-WORK",
+      reason,
+      status_id: 1,
+    });
 
-    if (blockShape.success) {
+    if (standByShape.success) {
       mutate();
       standByform.setValue("reason", "");
-      setOpenStandByModal(false);
       showToast({
         type: "success",
-        message: `${status_id === 3 ? "Débloquée " : "Bloquée "} avec succès`,
+        message: `Enlevé en standby avec succès`,
         position: "top-center",
       });
     } else {
@@ -635,17 +446,84 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         position: "top-center",
       });
     }
+    setOpenStandByModal(false);
+    setLoading(false);
+    reset();
+  };
+
+  const onSubmitLock = async (data: z.infer<typeof batStandBySchema>) => {
+    setLoading(true);
+    let { reason } = data;
+    reason = reason.trim();
+    let blockBat: any;
+
+    blockBat = await lockBat(currentEntry as number, {
+      type: "BLOCK",
+      reason,
+      status_id: 3,
+    });
+
+    if (blockBat.success) {
+      mutate();
+      standByform.setValue("reason", "");
+      setOpenStandByModal(false);
+      showToast({
+        type: "success",
+        message: `Bloquée avec succès`,
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setOpenLockModal(false);
+    setLoading(false);
+    reset();
+  };
+
+  const onSubmitUnlock = async (data: z.infer<typeof batStandBySchema>) => {
+    setLoading(true);
+    let { reason } = data;
+    reason = reason.trim();
+    let blockBat: any;
+
+    blockBat = await resumeBat(currentEntry as number, {
+      type: "RESUME-WORK",
+      reason,
+      status_id: 1,
+    });
+
+    if (blockBat.success) {
+      mutate();
+      standByform.setValue("reason", "");
+      setOpenStandByModal(false);
+      showToast({
+        type: "success",
+        message: `Débloquée avec succès`,
+        position: "top-center",
+      });
+    } else {
+      showToast({
+        type: "danger",
+        message: "L'opération a échoué",
+        position: "top-center",
+      });
+    }
+    setOpenLockModal(false);
     setLoading(false);
     reset();
   };
 
   const onSubmitOservation = async (
-    data: z.infer<typeof shapeObservationSchema>
+    data: z.infer<typeof batObservationSchema>
   ) => {
     let { observation } = data;
     setLoading(true);
     observation = observation.trim();
-    const { data: observationData, success } = await observationOffsetShape(
+    const { data: observationData, success } = await observationBat(
       currentEntry as number,
       {
         type: "OBSERVATION",
@@ -671,10 +549,10 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     setLoading(false);
     reset();
   };
-  const onSubmitAssign = async (data: z.infer<typeof shapeAssignSchema>) => {
+  const onSubmitAssign = async (data: z.infer<typeof batAssignSchema>) => {
     setLoading(true);
     let { user_id } = data;
-    const { data: assignShape, success } = await assignToAnUserOffsetShape(
+    const { data: assignShape, success } = await assignToAnUserBat(
       currentEntry as number,
       {
         type: "ASSIGNATION",
@@ -684,6 +562,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     );
     if (success) {
       assignForm.setValue("user_id", 0);
+      mutate();
       setOpenAssignToUserModal(false);
       showToast({
         type: "success",
@@ -700,11 +579,10 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     setLoading(false);
     reset();
   };
-
   const onSubmitClose = async () => {
     setLoading(true);
-    const { data: closeShapeData, success } = await endShape(
-      shapeInEntry?.id as unknown as number
+    const { data: closeShapeData, success } = await endBat(
+      batInEntry?.id as unknown as number
     );
     if (success) {
       mutate();
@@ -729,7 +607,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
 
   const Router = useRouter();
   const goToDetail = (id: any) => {
-    Router.push(`/workspace/details/shapes/${id}`);
+    Router.push(`/workspace/details/bats/${id}`);
   };
 
   const [sortedBy, setSortedBY] = useState<string>("");
@@ -737,7 +615,9 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   const sort = (key: string) => {
     setCurrentDatas((tmp) => {
       let sorted: any = [];
+
       setSortedBY(key);
+
       if (key === "client") {
         sorted = tmp?.sort((a, b) => {
           if (a?.client.name.toUpperCase() > b?.client?.name?.toUpperCase()) {
@@ -792,24 +672,6 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         });
       }
 
-      if (key === "poids théorique") {
-        sorted = tmp?.sort((a, b) => {
-          if (
-            a?.theoretical_weight?.toUpperCase() >
-            b?.theoretical_weight?.toUpperCase()
-          ) {
-            return 1;
-          }
-          if (
-            a?.theoretical_weight?.toUpperCase() <
-            b?.theoretical_weight?.toUpperCase()
-          ) {
-            return -1;
-          }
-          return 0;
-        });
-      }
-
       if (key === "departement") {
         sorted = tmp?.sort((a, b) => {
           if (
@@ -828,25 +690,19 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         });
       }
 
-      if (key === "box compression") {
+      if (key === "dimension lxlxh") {
         sorted = tmp?.sort((a, b) => {
-          if (
-            a?.compression_box?.toUpperCase() >
-            b?.compression_box?.toUpperCase()
-          ) {
+          if (a?.dim_lx_lh?.toUpperCase() > b?.dim_lx_lh?.toUpperCase()) {
             return 1;
           }
-          if (
-            a?.compression_box?.toUpperCase() <
-            b?.compression_box?.toUpperCase()
-          ) {
+          if (a?.dim_lx_lh?.toUpperCase() < b?.dim_lx_lh?.toUpperCase()) {
             return -1;
           }
           return 0;
         });
       }
 
-      if (key === "dimension carré") {
+      if (key === "dimensions carré") {
         sorted = tmp?.sort((a, b) => {
           if (a?.dim_square?.toUpperCase() > b?.dim_square?.toUpperCase()) {
             return 1;
@@ -858,19 +714,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         });
       }
 
-      if (key === "dimension interieur") {
-        sorted = tmp?.sort((a, b) => {
-          if (a?.dim_int?.toUpperCase() > b?.dim_int?.toUpperCase()) {
-            return 1;
-          }
-          if (a?.dim_int?.toUpperCase() < b?.dim_int?.toUpperCase()) {
-            return -1;
-          }
-          return 0;
-        });
-      }
-
-      if (key === "dimension plaque") {
+      if (key === "dimensions plaque") {
         sorted = tmp?.sort((a, b) => {
           if (a?.dim_plate?.toUpperCase() > b?.dim_plate?.toUpperCase()) {
             return 1;
@@ -882,78 +726,36 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         });
       }
 
-      if (key === "grammage en (g)") {
+      if (key === "type papier") {
         sorted = tmp?.sort((a, b) => {
-          if (a?.weight?.toUpperCase() > b?.weight?.toUpperCase()) {
+          if (a.paper_type?.toUpperCase() > b.paper_type?.toUpperCase()) {
             return 1;
           }
-          if (a?.weight?.toUpperCase() < b?.weight?.toUpperCase()) {
+          if (a.paper_type?.toUpperCase() < b.paper_type?.toUpperCase()) {
             return -1;
           }
           return 0;
         });
       }
 
-      if (key === "code grammage") {
-        sorted = tmp?.sort((a, b) => {
-          if (a?.weight_code?.toUpperCase() > b?.weight_code?.toUpperCase()) {
-            return 1;
-          }
-          if (a?.weight_code?.toUpperCase() < b?.weight_code?.toUpperCase()) {
-            return -1;
-          }
-          return 0;
-        });
-      }
+      // if (key === "n° des poses") {
+      //   sorted = tmp?.sort((a, b) => {
+      //     if (a.pose_number.toUpperCase() > b.pose_number.toUpperCase()) {
+      //       return 1;
+      //     }
+      //     if (a.pose_number.toUpperCase() < b.pose_number.toUpperCase()) {
+      //       return -1;
+      //     }
+      //     return 0;
+      //   });
+      // }
 
-      if (key === "type Papier") {
+      if (key === "produit") {
         sorted = tmp?.sort((a, b) => {
-          if (a.dim_int?.toUpperCase() > b.dim_int?.toUpperCase()) {
+          if (a.product?.toUpperCase() > b.product?.toUpperCase()) {
             return 1;
           }
-          if (a.dim_int?.toUpperCase() < b.dim_int?.toUpperCase()) {
-            return -1;
-          }
-          return 0;
-        });
-      }
-
-      if (key === "jonction du carton") {
-        sorted = tmp?.sort((a, b) => {
-          if (
-            a.cardboard_junction?.toUpperCase() >
-            b.cardboard_junction?.toUpperCase()
-          ) {
-            return 1;
-          }
-          if (
-            a.cardboard_junction?.toUpperCase() <
-            b.cardboard_junction?.toUpperCase()
-          ) {
-            return -1;
-          }
-          return 0;
-        });
-      }
-
-      if (key === "surface de la plaques en m") {
-        sorted = tmp?.sort((a, b) => {
-          if (a.plate_surface?.toUpperCase() > b.plate_surface?.toUpperCase()) {
-            return 1;
-          }
-          if (a.plate_surface?.toUpperCase() < b.plate_surface?.toUpperCase()) {
-            return -1;
-          }
-          return 0;
-        });
-      }
-
-      if (key === "n° des Poses") {
-        sorted = tmp?.sort((a, b) => {
-          if (a.pose_number?.toUpperCase() > b.pose_number?.toUpperCase()) {
-            return 1;
-          }
-          if (a.pose_number?.toUpperCase() < b.pose_number?.toUpperCase()) {
+          if (a.product?.toUpperCase() < b.product?.toUpperCase()) {
             return -1;
           }
           return 0;
@@ -977,7 +779,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   };
 
   const resetSortedBy = () => {
-    setCurrentDatas(cartonnerieShapes ? [...cartonnerieShapes] : []);
+    setCurrentDatas(bats ? [...bats] : []);
     setSortedBY("");
   };
 
@@ -987,110 +789,68 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   const handleCombineSearch = () => {
     combineSearch?.map((item) => {
       if (item.id === "Code" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape.code === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat.code === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "Client" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape?.client?.name === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.client?.name === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "Reference" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape?.reference === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.reference === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "Commercial" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) =>
-            shape?.commercial?.name === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.commercial?.name === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "Departement" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) =>
-            shape?.department?.name === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.department?.name === item?.selectedValues[0]?.value
         );
       }
 
-      if (item.id === "Poids Théorique" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) =>
-            shape?.theoretical_weight === item?.selectedValues[0]?.value
+      if (item.id === "Dimensions LxLxH" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.dim_lx_lh === item?.selectedValues[0]?.value
         );
       }
 
-      if (item.id === "Box Compression" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) =>
-            shape?.compression_box === item?.selectedValues[0]?.value
+      if (item.id === "Détails" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.dim_square === item?.selectedValues[0]?.value
         );
       }
 
-      if (item.id === "Code Grammage" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape?.weight_code === item?.selectedValues[0]?.value
+      if (item.id === "Produit" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.product === item?.selectedValues[0]?.value
         );
       }
 
-      if (item.id === "Grammage en (g)" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape?.weight === item?.selectedValues[0]?.value
-        );
-      }
-
-      if (item.id === "Dimension Carré" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape?.dim_square === item?.selectedValues[0]?.value
-        );
-      }
-
-      if (item.id === "Dimension plaque" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape?.dim_plate === item?.selectedValues[0]?.value
-        );
-      }
-
-      if (item.id === "Jonction du carton" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) =>
-            shape?.cardboard_junction === item?.selectedValues[0]?.value
-        );
-      }
-
-      if (
-        item.id === "Surface de la plaques en m" &&
-        item?.selectedValues.length > 0
-      ) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) =>
-            shape?.plate_surface === item?.selectedValues[0]?.value
-        );
-      }
-
-      if (
-        item.id === "Dimension Interieur" &&
-        item?.selectedValues.length > 0
-      ) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape?.dim_int === item?.selectedValues[0]?.value
+      if (item.id === "Type Papier" && item?.selectedValues.length > 0) {
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.paper_type === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "N° des poses" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape?.pose_number === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.pose_number === item?.selectedValues[0]?.value
         );
       }
 
       if (item.id === "1/3" && item?.selectedValues.length > 0) {
-        combo = (combo.length === 0 ? cartonnerieShapes : combo)?.filter(
-          (shape: any) => shape?.part === item?.selectedValues[0]?.value
+        combo = (combo.length === 0 ? bats : combo)?.filter(
+          (bat: any) => bat?.part === item?.selectedValues[0]?.value
         );
       }
     });
@@ -1101,7 +861,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
   useEffect(() => {
     if (combineSearch.some((cmb) => cmb.selectedValues.length > 0)) {
       handleCombineSearch();
-    } else setCurrentDatas(cartonnerieShapes as any);
+    } else setCurrentDatas(bats as any);
   }, [combineSearch]);
 
   const RenderDepartmentFilter = useCallback(
@@ -1119,12 +879,12 @@ export const ShapeCardboard: FC<{}> = ({}) => {
             id: dep.id,
             name: dep.name,
           }))}
-        filterDatas={cartonnerieShapes ? cartonnerieShapes : []}
+        filterDatas={bats ? bats : []}
         dataHandler={setCurrentDatas}
         filterHandler={setOffsetShapes}
       />
     ),
-    [departments, cartonnerieShapes]
+    [departments, bats]
   );
 
   const createSearchCombinaison = (
@@ -1141,61 +901,21 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         selectedValues: [],
       };
 
-      if (cartonnerieShapes)
-        cartonnerieShapes.forEach(
-          (all: {
-            code: string;
-            client: { name: string };
-            reference: string;
-            commercial: { name: string };
-            department: { name: string };
-            compression_box: string;
-            dim_square: string;
-            dim_plate: string;
-            dim_int: string;
-            pose_number: string;
-            part: string;
-            theoretical_weight: string;
-            weight_code: string;
-            weight: string;
-            plate_surface: string;
-            cardboard_junction: string;
-          }) => {
-            if (row === "Code") {
-              mySet.add(all.code);
-            }
-            if (row === "Client" && all?.client?.name)
-              mySet.add(all?.client?.name);
-            if (row === "Poids Théorique" && all?.theoretical_weight)
-              mySet.add(all?.theoretical_weight);
-
-            if (row === "Reference" && all?.reference)
-              mySet.add(all?.reference);
-            if (row === "Commercial" && all?.commercial?.name)
-              mySet.add(all?.commercial?.name);
-            if (row === "Departement" && all?.department?.name)
-              mySet.add(all?.department?.name);
-            if (row === "Box Compression" && all?.compression_box)
-              mySet.add(all?.compression_box);
-            if (row === "Code Grammage" && all?.weight_code)
-              mySet.add(all?.weight_code);
-            if (row === "Grammage en (g)" && all?.weight)
-              mySet.add(all?.weight);
-            if (row === "Surface de la plaques en m" && all?.plate_surface)
-              mySet.add(all?.plate_surface);
-            if (row === "Jonction du carton" && all?.cardboard_junction)
-              mySet.add(all?.cardboard_junction);
-            if (row === "Dimension Carré" && all?.dim_square)
-              mySet.add(all?.dim_square);
-            if (row === "Dimension plaque" && all?.dim_plate)
-              mySet.add(all?.dim_plate);
-            if (row === "Dimension Interieur" && all?.dim_int)
-              mySet.add(all?.dim_int);
-            if (row === "N° des poses" && all?.pose_number)
-              mySet.add(all?.pose_number);
-            if (row === "1/3" && all?.part) mySet.add(all?.part);
+      if (bats)
+        bats.forEach((all) => {
+          if (row === "Code") {
+            mySet.add(all.code);
           }
-        );
+          if (row === "Client" && all?.client?.name)
+            mySet.add(all?.client?.name);
+          if (row === "Reference" && all?.reference) mySet.add(all?.reference);
+          if (row === "Commercial" && all?.commercial?.name)
+            mySet.add(all?.commercial?.name);
+          if (row === "Departement" && all?.department?.name)
+            mySet.add(all?.department?.name);
+          if (row === "Produit" && all?.product) mySet.add(all?.product);
+          if (row === "Détails" && all?.details) mySet.add(all?.details);
+        });
 
       obj.fields = Array.from(mySet) as any;
       tmp.push(obj);
@@ -1217,14 +937,6 @@ export const ShapeCardboard: FC<{}> = ({}) => {
     getAllShapes();
   }, []);
 
-  const goToDoc = (data: ShapeInterface) => {
-    localStorage.setItem(
-      "doc-entry",
-      JSON.stringify({ ...data, docType: "cartonnerie-shape-pdf" })
-    );
-    Router.push(`/workspace/doc/${data.id}`);
-  };
-
   return (
     <div className="w-full h-full">
       {roleAdmin ? (
@@ -1243,7 +955,6 @@ export const ShapeCardboard: FC<{}> = ({}) => {
           </button>
         </div>
       ) : null}
-
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -1261,17 +972,15 @@ export const ShapeCardboard: FC<{}> = ({}) => {
             row={""}
             index={""}
             list={[]}
-            filterDatas={cartonnerieShapes ? cartonnerieShapes : []}
+            filterDatas={bats ? bats : []}
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
             onClick={() => {
-              refreshShapeData(() => {
-                mutate();
-              });
+              refreshData(mutate);
             }}
           >
             <div className="w-[40px] h-[40px] flex items-center justify-center">
-              {onRefreshingShape ? (
+              {onRefreshData ? (
                 <Spinner color={"#000"} size={16} />
               ) : (
                 <svg
@@ -1298,7 +1007,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
             row={"Status"}
             index={"status_id"}
             list={status}
-            filterDatas={cartonnerieShapes ? cartonnerieShapes : []}
+            filterDatas={bats ? bats : []}
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
           />
@@ -1307,9 +1016,9 @@ export const ShapeCardboard: FC<{}> = ({}) => {
             type="search"
             title={"Recherche"}
             row={""}
-            indexs={["code", "reference", "compression_box", "commercial.name"]}
+            indexs={["code", "reference", "dim_lx_lh", "commercial.name"]}
             list={status}
-            filterDatas={cartonnerieShapes ? cartonnerieShapes : []}
+            filterDatas={bats ? bats : []}
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
           />
@@ -1319,18 +1028,16 @@ export const ShapeCardboard: FC<{}> = ({}) => {
             row={"Status"}
             index={"status_id"}
             list={status}
-            filterDatas={cartonnerieShapes ? cartonnerieShapes : []}
+            filterDatas={bats ? bats : []}
             dataHandler={setCurrentDatas}
             filterHandler={setOffsetShapes}
           />
-          {/* {cartonnerieShapes && cartonnerieShapes?.length > 0 ? (
+          {/* {bats && bats?.length > 0 ? (
             <Export
               title="Exporter en csv"
               type="csv"
               entry={{
-                headers: Object.keys(
-                  cartonnerieShapes ? cartonnerieShapes[0] : {}
-                )
+                headers: Object.keys(bats ? bats[0] : {})
                   .flatMap((shapeKey) => shapeKey)
                   .filter((shapeKey) => {
                     if (
@@ -1354,27 +1061,27 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                     label: shapeKey.toUpperCase().replaceAll("_", " "),
                     key: shapeKey.toLocaleLowerCase(),
                   })),
-                data: cartonnerieShapes
-                  ? cartonnerieShapes?.map((shape: any) => ({
-                      ...shape,
-                      department: shape?.department?.name,
-                      client: shape?.client?.name,
-                      commercial: shape?.commercial?.name,
+                data: bats
+                  ? bats?.map((bat: any) => ({
+                      ...bat,
+                      department: bat?.department?.name,
+                      client: bat?.client?.name,
+                      commercial: bat?.commercial?.name,
                       created_at: ` ${formatTime(
-                        new Date(shape?.["created_at"]).getTime(),
+                        new Date(bat?.["created_at"]).getTime(),
                         "d:mo:y",
                         "short"
                       )} : ${formatTime(
-                        new Date(shape?.["created_at"]).getTime(),
+                        new Date(bat?.["created_at"]).getTime(),
                         "h:m",
                         "short"
                       )}`,
                       updated_at: ` ${formatTime(
-                        new Date(shape?.["updated_at"]).getTime(),
+                        new Date(bat?.["updated_at"]).getTime(),
                         "d:mo:y",
                         "short"
                       )} : ${formatTime(
-                        new Date(shape?.["updated_at"]).getTime(),
+                        new Date(bat?.["updated_at"]).getTime(),
                         "h:m",
                         "short"
                       )}`,
@@ -1383,9 +1090,14 @@ export const ShapeCardboard: FC<{}> = ({}) => {
               }}
             />
           ) : null} */}
+          {/* <Export
+            title="Voir le pdf"
+            type="pdf"
+            entry={{ headers: [], data: [] }}
+          /> */}
         </div>
         <div className="relative w-full overflow-auto bg-white">
-          {!cartonnerieShapes || isLoading ? (
+          {!bats || isLoading ? (
             <TableSkeleton head={tableHead} />
           ) : currentDatas?.length > 0 ? (
             <motion.div
@@ -1404,7 +1116,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                       <th
                         key={index}
                         className={`relative w-fit ${
-                          index === 0 ? "w-0" : "min-w-[180px] w-auto"
+                          index === 0 ? "w-0" : "min-w-[300px] w-auto"
                         } text-[14px] py-[10px] font-medium  ${
                           index > 0 && index < tableHead.length
                         }  text-[#000000]`}
@@ -1440,6 +1152,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                             >
                               {head}
                             </div>
+
                             <div>
                               {![
                                 "Options",
@@ -1585,7 +1298,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                               <div className="my-[10px] px-[20px]">
                                 <Form form={form} onSubmit={onSubmit}>
                                   <ComboboxMultiSelect
-                                    placeholder=""
+                                    //placeholder=""
                                     className="w-full"
                                     icon={
                                       <svg
@@ -1687,26 +1400,22 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                       e.stopPropagation();
                                       setOpenEditionModal(true);
                                     }}
-                                    className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                    className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
                                   >
-                                    {/* <UpdateIcon color={""} /> */}
                                     <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
                                       Modifier les entrées
                                     </span>
                                   </button>
                                 ) : null}
 
-                                <Export
-                                  onClick={() => {
-                                    goToDoc(row);
-                                  }}
+                                {/* <Export
                                   title="Voir le pdf"
                                   type="pdf"
                                   entry={{
                                     headers: [],
-                                    data: shapeInEntry,
+                                    data: batInEntry,
                                   }}
-                                />
+                                /> */}
 
                                 <button
                                   type="button"
@@ -1747,7 +1456,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                       className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                     >
                                       <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        {shapeInEntry?.status_id === 3
+                                        {batInEntry?.status_id === 3
                                           ? "Débloquer"
                                           : "Bloquer"}
                                       </span>
@@ -1762,7 +1471,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                       className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                     >
                                       <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                        {shapeInEntry?.status_id === 2
+                                        {batInEntry?.status_id === 2
                                           ? "Enlever en standby"
                                           : "Mettre en standby"}
                                       </span>
@@ -1789,7 +1498,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                       className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                     >
                                       <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                        Supprimer la forme
+                                        Supprimer la bat
                                       </span>
                                     </button>
                                   </>
@@ -1837,82 +1546,18 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                         >
                           {row?.code}
                         </td>
-
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.reference}
-                        </td>
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.theoretical_weight}
-                        </td>
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.compression_box}
-                        </td>
-
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.dim_square}
-                        </td>
-
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.dim_plate}
-                        </td>
-
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.dim_int}
-                        </td>
-
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.weight_code}
-                        </td>
-
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.weight}
-                        </td>
-
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.cardboard_junction}
-                        </td>
-
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {row?.plate_surface}
-                        </td>
-
                         <td
                           onClick={() => goToDetail(row?.id)}
                           className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.client?.name}
                         </td>
-
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {row?.reference}
+                        </td>
                         <td
                           onClick={() => goToDetail(row?.id)}
                           className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
@@ -1929,16 +1574,53 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                           onClick={() => goToDetail(row?.id)}
                           className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
                         >
+                          {row?.product}
+                        </td>
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px]  px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          <div className="truncate w-[100px]">
+                            {row?.details}
+                          </div>
+                        </td>
+                        {/* <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {row?.dim_plate}
+                        </td> */}
+                        {/* <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {row?.paper_type}
+                        </td> */}
+                        {/* <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
                           {row?.pose_number}
-                        </td>
-
-                        <td
-                          onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
+                        </td> */}
+                        {/* <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
                           {row?.part}
+                        </td> */}
+                        <td
+                          onClick={() => goToDetail(row?.id)}
+                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                        >
+                          {formatTime(
+                            new Date(row?.["created_at"]).getTime(),
+                            "d:mo:y",
+                            "short"
+                          )}
+                          {" à "}
+                          {formatTime(
+                            new Date(row?.["created_at"]).getTime(),
+                            "h:m",
+                            "short"
+                          )}
                         </td>
-
                         <td
                           onClick={() => goToDetail(row?.id)}
                           className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
@@ -1955,26 +1637,8 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                             "short"
                           )}
                         </td>
-                        <td
-                          //  onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
-                        >
-                          {formatTime(
-                            new Date(row?.["updated_at"]).getTime(),
-                            "d:mo:y",
-                            "short"
-                          )}
-                          {" à "}
-                          {formatTime(
-                            new Date(row?.["updated_at"]).getTime(),
-                            "h:m",
-                            "short"
-                          )}
-                        </td>
-                        <td
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-[#636363] w-auto px-[20px] text-start font-poppins"
-                        >
+
+                        <td className="text-[#636363] w-auto px-[20px] text-start font-poppins">
                           <div className="w-full h-full flex items-center justify-end">
                             <div ref={box}>
                               <MenuDropdown
@@ -1995,7 +1659,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                 }
                               >
                                 <div className="bg-white w-[200px] shadow-large h-auto border border-[#FFF] rounded-[12px] overlow-hidden relative">
-                                  <div className="flex flex-col items-center w-full">
+                                  <div className="flex flex-col items-center w-full overlow-hidden">
                                     {roleAdmin || rolePrototype ? (
                                       <button
                                         type="button"
@@ -2003,7 +1667,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                           e.stopPropagation();
                                           setOpenEditionModal(true);
                                         }}
-                                        className="flex items-center justify-start border-b w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
+                                        className="flex items-center justify-start w-full gap-[8px] py-[8px] px-[10px] rounded-t-[12px] cursor-pointer"
                                       >
                                         {/* <UpdateIcon color={""} /> */}
                                         <span className="text-[14px] text-[#000] font-poppins font-medium leading-[20px]">
@@ -2012,17 +1676,22 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                       </button>
                                     ) : null}
 
-                                    <Export
-                                      onClick={() => {
-                                        goToDoc(row);
-                                      }}
+                                    {/* <Export
                                       title="Voir le pdf"
                                       type="pdf"
+                                      onClick={() => {
+                                        // (e) => {
+                                        //   e.stopPropagation();
+                                        //   handleDownloadPDF();
+                                        //   setModal(true);
+                                        // }
+                                        goToDoc(row);
+                                      }}
                                       entry={{
                                         headers: [],
-                                        data: shapeInEntry,
+                                        data: batInEntry,
                                       }}
-                                    />
+                                    /> */}
 
                                     <button
                                       type="button"
@@ -2037,22 +1706,23 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                         Voir les détails
                                       </span>
                                     </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenAssignToUserModal(true);
-                                      }}
-                                      className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
-                                    >
-                                      {/* <DetailsIcon color={""} /> */}
-                                      <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
-                                        Assigner à un utilisateur
-                                      </span>
-                                    </button>
 
                                     {roleAdmin ? (
                                       <>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenAssignToUserModal(true);
+                                          }}
+                                          className="flex items-center border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px]  cursor-pointer"
+                                        >
+                                          {/* <DetailsIcon color={""} /> */}
+                                          <span className="text-[14px]  font-poppins text-grayscale-900 font-medium leading-[20px]">
+                                            Assigner à un utilisateur
+                                          </span>
+                                        </button>
+
                                         <button
                                           type="button"
                                           onClick={(e) => {
@@ -2062,7 +1732,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                           className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                         >
                                           <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                            {shapeInEntry?.status_id === 3
+                                            {batInEntry?.status_id === 3
                                               ? "Débloquer"
                                               : "Bloquer"}
                                           </span>
@@ -2077,7 +1747,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                           className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                         >
                                           <span className="text-[14px] text-grayscale-900 font-medium font-poppins leading-[20px] ">
-                                            {shapeInEntry?.status_id === 2
+                                            {batInEntry?.status_id === 2
                                               ? "Enlever en standby"
                                               : "Mettre en standby"}
                                           </span>
@@ -2103,7 +1773,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                                           className="flex items-center justify-start border-t w-full py-[8px] gap-[8px] px-[10px] rounded-b-[12px] cursor-pointer"
                                         >
                                           <span className="text-[14px] text-red-500 font-medium font-poppins leading-[20px] ">
-                                            Supprimer la forme
+                                            Supprimer la bat
                                           </span>
                                         </button>
                                       </>
@@ -2139,7 +1809,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                     row={""}
                     index={""}
                     list={[]}
-                    filterDatas={cartonnerieShapes ? cartonnerieShapes : []}
+                    filterDatas={bats ? bats : []}
                     dataHandler={setCurrentDatas}
                     filterHandler={setOffsetShapes}
                     onClick={() => {
@@ -2172,7 +1842,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
           <div className="w-[calc(150vh)] h-[98vh]">
             <div className="w-full bg-white/80 rounded-t-xl h-[50px] flex items-center justify-between px-[20px] py-[10px] border-b">
               <span className="text-[20px] font-medium font-poppins text-[#060606]">
-                Nouvelle forme
+                Nouvelle bat
               </span>
               <button
                 type="button"
@@ -2185,10 +1855,10 @@ export const ShapeCardboard: FC<{}> = ({}) => {
               </button>
             </div>
             <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-scroll relative py-[10px] px-[20px]">
-              <div className="w-full gap-[20px] grid grid-cols-3">
+              <div className="w-full grid gap-[20px] grid-cols-3">
                 {/* <ComboboxMultiSelect
                   label={"Département"}
-                  placeholder=""
+                  //placeholder="Selectionnez un département"
                   className="w-full"
                   icon={
                     <svg
@@ -2209,7 +1879,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   }
                   id={`departement`}
                   options={departments
-                    ?.filter((dep) => [3].includes(dep.id))
+                    ?.filter((dep) => [2].includes(dep.id))
                     ?.map((department: Department) => ({
                       value: department.id as unknown as string,
                       label: department.name,
@@ -2222,7 +1892,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                 /> */}
                 <ComboboxMultiSelect
                   label={"Client"}
-                  placeholder=""
+                  //placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg
@@ -2256,7 +1926,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                 />
                 <ComboboxMultiSelect
                   label={"Commercial"}
-                  placeholder=""
+                  //placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg
@@ -2291,125 +1961,73 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   borderColor="border-grayscale-200"
                 />
                 {/* <BaseInput
-                  label="Code"
-                  id="code"
-                  placeholder=""
-                  // leftIcon={<RulerIcon color={""} size={20} />}
-                  type="text"
-                  {...form.register("code")}
-                /> */}
-                <BaseInput
                   label="Reference"
                   id="reference"
-                  placeholder=""
+                  //placeholder="Reference"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("reference")}
-                />
+                /> */}
                 {/* <BaseInput
                   label="Code"
                   id="code"
-                  placeholder="Code"
+                  //placeholder="Code"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("code")}
                 /> */}
-                <BaseInput
-                  label="Box Compression"
+                {/* <BaseInput
+                  label="Produit"
                   id="dim_lx_lxh"
-                  placeholder=""
+                  //placeholder="Produit"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
-                  {...form.register("compression_box")}
+                  {...form.register("dim_lx_lh")}
                 />
                 <BaseInput
-                  label="Dimension Carrée"
+                  label="Dimensions Carrée"
                   id="dim_square"
-                  placeholder=""
+                  //placeholder="Dimensions Carrée"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("dim_square")}
                 />
                 <BaseInput
-                  label="Dimension plaque"
+                  label="Dimensions plaque"
                   id="dim_plate"
-                  placeholder=""
+                  //placeholder="Dimensions plaque"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("dim_plate")}
                 />
                 <BaseInput
-                  label="Dimension Interieur"
-                  id="dim_int"
-                  placeholder=""
+                  label="Type Papier"
+                  id="paper_type"
+                  //placeholder="Type Papier"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
-                  {...form.register("dim_int")}
+                  {...form.register("paper_type")}
                 />
-                <BaseInput
-                  label="Code grammage"
-                  id="weight_code"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("weight_code")}
-                />
-                <BaseInput
-                  label="Grammage en (g)"
-                  id="weight"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("weight")}
-                />
-
-                <BaseInput
-                  label="Jonction du carton"
-                  id="cardboard_junction"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("cardboard_junction")}
-                />
-
-                <BaseInput
-                  label="Poids Théorique"
-                  id="theoretical_weight"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("theoretical_weight")}
-                />
-
-                <BaseInput
-                  label="Surface de la plaques en m"
-                  id="plate_surface"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("plate_surface")}
-                />
-
                 <BaseInput
                   label="N° des poses"
                   id="pose_number"
-                  placeholder=""
+                  //placeholder="N° des poses"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("pose_number")}
                 />
+
                 <BaseInput
                   label="1/3"
                   id="part"
-                  placeholder=""
+                  //placeholder="1/3"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("part")}
-                />
-
+                /> */}
                 <ComboboxMultiSelect
                   label={"Règle"}
-                  placeholder=""
+                  //placeholder="Sélectionnez la règle a appliquer"
                   className="w-full"
                   icon={
                     <svg
@@ -2439,6 +2057,29 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setSelectedRule}
                   borderColor="border-grayscale-200"
                 />
+
+                <BaseInput
+                  label="Produit"
+                  id="product"
+                  type="text"
+                  {...form.register("product")}
+                />
+
+                <BaseInput
+                  label="Réference"
+                  id="ref"
+                  type="text"
+                  {...form.register("reference")}
+                />
+                <br />
+              </div>
+              <div className="flex gap-x-[10px] mt-[20px] items-center">
+                <BaseTextArea
+                  label="Détails"
+                  id="details"
+                  type="text"
+                  {...form.register("details")}
+                />
               </div>
               {observationList?.map(
                 (
@@ -2462,7 +2103,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                       <BaseTextArea
                         label="Nouvelle observation"
                         id="observation"
-                        placeholder=""
+                        //placeholder="Observation"
                         // leftIcon={<RulerIcon color={""} size={20} />}
                         type="text"
                         onChange={(e) => {
@@ -2550,10 +2191,10 @@ export const ShapeCardboard: FC<{}> = ({}) => {
               </button>
             </div>
             <div className="flex flex-col justify-start w-full h-[calc(100%-130px)] overflow-auto relative py-[10px] px-[20px]">
-              <div className="w-full gap-[20px] grid grid-cols-3">
+              <div className="w-full grid gap-[20px] grid-cols-3">
                 {/* <ComboboxMultiSelect
                   label={"Département"}
-                  placeholder=""
+                  //placeholder="Selectionnez un département"
                   className="w-full"
                   icon={
                     <svg
@@ -2574,7 +2215,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   }
                   id={`departement`}
                   options={departments
-                    ?.filter((dep) => [3].includes(dep.id))
+                    ?.filter((dep) => [2].includes(dep.id))
                     ?.map((department: Department) => ({
                       value: department.id as unknown as string,
                       label: department.name,
@@ -2585,9 +2226,10 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setDepartment}
                   borderColor="border-grayscale-200"
                 /> */}
+
                 <ComboboxMultiSelect
                   label={"Client"}
-                  placeholder=""
+                  //placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg
@@ -2621,7 +2263,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                 />
                 <ComboboxMultiSelect
                   label={"Commercial"}
-                  placeholder=""
+                  //placeholder="Selectionnez un utilisateur"
                   className="w-full"
                   icon={
                     <svg
@@ -2655,104 +2297,58 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setCommercial}
                   borderColor="border-grayscale-200"
                 />
-
+                {/* <BaseInput
+                  label="Reference"
+                  id="reference"
+                  //placeholder="Reference"
+                  // leftIcon={<RulerIcon color={""} size={20} />}
+                  type="text"
+                  {...form.register("reference")}
+                /> */}
                 {/* <BaseInput
                   label="Code"
                   id="code"
-                  placeholder=""
+                  //placeholder="Code"
                   // leftIcon={<RulerIcon color={""} size={20} />}
                   type="text"
                   {...form.register("code")}
                 /> */}
-                <BaseInput
-                  label="Reference"
-                  id="reference"
-                  placeholder=""
-                  // leftIcon={<RulerIcon color={""} size={20} />}
-                  type="text"
-                  {...form.register("reference")}
-                />
-
-                <BaseInput
-                  label="Box compression"
-                  id="compression_box"
-                  placeholder=""
+                {/* <BaseInput
+                  label="Dimension LxLxh"
+                  id="dim_lx_lxh"
+                  //placeholder="Dimension LxLxh"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
-                  {...form.register("compression_box")}
+                  {...form.register("dim_lx_lh")}
                 />
                 <BaseInput
-                  label="Dimension Carrée"
+                  label="Dimensions Carrée"
                   id="dim_square"
-                  placeholder=""
+                  //placeholder="Dimensions Carrée"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("dim_square")}
                 />
                 <BaseInput
-                  label="Dimension plaque"
+                  label="Dimensions plaque"
                   id="dim_plate"
-                  placeholder=""
+                  //placeholder="Dimensions plaque"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("dim_plate")}
                 />
                 <BaseInput
-                  label="Dimension Interieur"
-                  id="dim_int"
-                  placeholder="Dimension Interieur"
+                  label="Type Papier"
+                  id="paper_type"
+                  //placeholder="Type Papier"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
-                  {...form.register("dim_int")}
+                  {...form.register("paper_type")}
                 />
-                <BaseInput
-                  label="Code grammage"
-                  id="weight_code"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("weight_code")}
-                />
-                <BaseInput
-                  label="Grammage en (g)"
-                  id="weight"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("weight")}
-                />
-
-                <BaseInput
-                  label="Jonction du carton"
-                  id="cardboard_junction"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("cardboard_junction")}
-                />
-
-                <BaseInput
-                  label="Poids Théorique"
-                  id="theoretical_weight"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("theoretical_weight")}
-                />
-
-                <BaseInput
-                  label="Surface de la plaques en m"
-                  id="plate_surface"
-                  placeholder=""
-                  // leftIcon={<FolderIcon size={18} color={""} />}
-                  type="text"
-                  {...form.register("plate_surface")}
-                />
-
                 <BaseInput
                   label="N° des poses"
                   id="pose_number"
-                  placeholder=""
+                  //placeholder="N° des poses"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("pose_number")}
@@ -2760,15 +2356,15 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                 <BaseInput
                   label="1/3"
                   id="part"
-                  placeholder=""
+                  //placeholder="1/3"
                   // leftIcon={<FolderIcon size={18} color={""} />}
                   type="text"
                   {...form.register("part")}
-                />
+                /> */}
 
                 <ComboboxMultiSelect
                   label={"Règle"}
-                  placeholder=""
+                  //placeholder="Sélectionnez la règle a appliquer"
                   className="w-full"
                   icon={
                     <svg
@@ -2798,6 +2394,29 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   setSelectedUniqElementInDropdown={setSelectedRule}
                   borderColor="border-grayscale-200"
                 />
+
+                <BaseInput
+                  label="Produit"
+                  id="product"
+                  type="text"
+                  {...form.register("product")}
+                />
+
+                <BaseInput
+                  label="Réference"
+                  id="ref"
+                  type="text"
+                  {...form.register("reference")}
+                />
+              </div>
+
+              <div className="flex gap-x-[10px] mt-[20px] items-center">
+                <BaseTextArea
+                  label="Détails"
+                  id="details"
+                  type="text"
+                  {...form.register("details")}
+                />
               </div>
 
               {observationList?.map(
@@ -2822,7 +2441,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                       <BaseTextArea
                         label="Nouvelle observation"
                         id="observation"
-                        placeholder=""
+                        //placeholder="Observation"
                         // leftIcon={<RulerIcon color={""} size={20} />}
                         type="text"
                         onChange={(e) => {
@@ -2895,7 +2514,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                 Confirmer la suppression
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                Vous êtes sur point de supprimer <br /> une forme, cette action
+                Vous êtes sur point de supprimer <br /> une bat, cette action
                 est definitive !
               </span>
             </div>
@@ -2934,10 +2553,10 @@ export const ShapeCardboard: FC<{}> = ({}) => {
           <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
             <div className="flex flex-col">
               <span className="text-[20px] font-poppins text-[#060606]">
-                Terminer la forme
+                Terminer la bat
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                Vous êtes sur point de terminer <br /> cette forme .
+                Vous êtes sur point de terminer <br /> cette bat .
               </span>
             </div>
             <button
@@ -2970,7 +2589,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
               </span>
               <span className="text-[14px] font-poppins text-primary-black-leg-600">
                 {
-                  "Vous consultez ici l'historique des actions menées sur cette forme."
+                  "Vous consultez ici l'historique des actions menées sur cette bat."
                 }
               </span>
             </div>
@@ -2985,7 +2604,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
           </div>
           {/* "Utilisateur assigné" */}
           <div className="overflow-auto max-h-[80vh]">
-            {!shapeInEntry?.logs ? (
+            {!batInEntry?.logs ? (
               <div className="w-full flex justify-center items-center p-[20px]">
                 <span>Aucun log</span>
               </div>
@@ -3016,7 +2635,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   </tr>
                 </thead>{" "}
                 <tbody className="bg-white/80">
-                  {shapeInEntry?.logs?.map((row, index) => (
+                  {batInEntry?.logs?.map((row, index) => (
                     <tr key={index} className="border-b">
                       <td className="text-[#636363] min-w-[100px] py-[10px] px-[20px] text-start font-poppins text-[14px]">
                         {row?.title}
@@ -3057,19 +2676,24 @@ export const ShapeCardboard: FC<{}> = ({}) => {
       </BaseModal>
       {/* standBy MODAL */}
       <BaseModal open={openStandByModal} classname={""}>
-        <Form form={standByform} onSubmit={onSubmitStandBy}>
+        <Form
+          form={standByform}
+          onSubmit={
+            batInEntry?.status_id !== 2 ? onSubmitStandBy : onSubmitResume
+          }
+        >
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[20px] font-poppins text-[#060606]">
-                  {shapeInEntry?.status_id !== 2
+                  {batInEntry?.status_id !== 2
                     ? "Mettre en standby"
                     : "Enlever en standby"}
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
                   {`Vous êtes sur point ${
-                    shapeInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "
-                  } une forme en standby`}
+                    batInEntry?.status_id !== 2 ? " de mettre" : "d'enlever "
+                  } une bat en standby`}
                 </span>
               </div>
               <button
@@ -3086,7 +2710,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                 label="Raison"
                 id="reason"
                 placeholder={` Dites pourquoi vous ${
-                  shapeInEntry?.status_id !== 2
+                  batInEntry?.status_id !== 2
                     ? "mettez en standBy"
                     : "enlevez en standby"
                 } `}
@@ -3109,7 +2733,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
               >
                 {loading ? (
                   <Spinner color={"#fff"} size={20} />
-                ) : shapeInEntry?.status_id !== 2 ? (
+                ) : batInEntry?.status_id !== 2 ? (
                   "Mettre en standBy"
                 ) : (
                   "Enlever en standby"
@@ -3120,17 +2744,20 @@ export const ShapeCardboard: FC<{}> = ({}) => {
         </Form>
       </BaseModal>
       <BaseModal open={openLockModal} classname={""}>
-        <Form form={standByform} onSubmit={onSubmitLock}>
+        <Form
+          form={standByform}
+          onSubmit={batInEntry?.status_id !== 3 ? onSubmitLock : onSubmitUnlock}
+        >
           <div className="w-[calc(80vh)] h-auto overflow-auto">
             <div className="w-full bg-white/80 rounded-t-xl h-auto flex items-start justify-between px-[20px] py-[10px] border-b">
               <div className="flex flex-col">
                 <span className="text-[20px] font-poppins text-[#060606]">
-                  {shapeInEntry?.status_id !== 3 ? "Bloquer" : "Débloquer"}
+                  {batInEntry?.status_id !== 3 ? "Bloquer" : "Débloquer"}
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
                   {`Vous êtes sur point de ${
-                    shapeInEntry?.status_id !== 3 ? "bloquer" : "débloquer"
-                  } une forme `}
+                    batInEntry?.status_id !== 3 ? "bloquer" : "débloquer"
+                  } une bat `}
                 </span>
               </div>
               <button
@@ -3147,8 +2774,8 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                 label="Raison"
                 id="reason"
                 placeholder={`Dites pourquoi vous  ${
-                  shapeInEntry?.status_id !== 3 ? "bloquer" : "débloquer"
-                }  cette forme`}
+                  batInEntry?.status_id !== 3 ? "bloquer" : "débloquer"
+                }  cette bat`}
                 // leftIcon={<RulerIcon color={""} size={20} />}
                 type="text"
                 {...standByform.register("reason")}
@@ -3169,7 +2796,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                 {loading ? (
                   <Spinner color={"#fff"} size={20} />
                 ) : (
-                  `${shapeInEntry?.status_id !== 3 ? "Bloquer" : "Débloquer"}`
+                  `${batInEntry?.status_id !== 3 ? "Bloquer" : "Débloquer"}`
                 )}
               </button>
             </div>
@@ -3186,7 +2813,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
                   Assigner à un utilisateur
                 </span>
                 <span className="text-[14px] font-poppins text-primary-black-leg-600">
-                  Vous allez attribuer cette forme à un utilisateur
+                  Vous allez attribuer cette bat à un utilisateur
                 </span>
               </div>
               <button
@@ -3201,7 +2828,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
             <div className="p-[20px]">
               <ComboboxMultiSelect
                 label={"Utilisateur"}
-                placeholder="Selectionnez un utilisateur"
+                //placeholder="Selectionnez un utilisateur"
                 className="w-full"
                 icon={
                   <svg
@@ -3239,7 +2866,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
               <BaseTextArea
                 label="Description"
                 id="description"
-                placeholder="Décrivez cette tâche"
+                //placeholder="Décrivez cette tâche"
                 // leftIcon={<RulerIcon color={""} size={20} />}
                 type="text"
                 {...assignForm.register("description")}
@@ -3282,7 +2909,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
               <BaseTextArea
                 label="Observation"
                 id="observation"
-                placeholder="observation"
+                //placeholder="observation"
                 // leftIcon={<FolderIcon size={18} color={""} />}
                 type="text"
                 field="text-area"
@@ -3337,7 +2964,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
               <BaseTextArea
                 label="Observation"
                 id="observation"
-                placeholder="observation"
+                //placeholder="observation"
                 // leftIcon={<FolderIcon size={18} color={""} />}
                 type="text"
                 field="text-area"
@@ -3393,7 +3020,7 @@ export const ShapeCardboard: FC<{}> = ({}) => {
               <BaseTextArea
                 label="Observation"
                 id="observation"
-                placeholder="observation"
+                //placeholder="observation"
                 // leftIcon={<FolderIcon size={18} color={""} />}
                 type="text"
                 field="text-area"

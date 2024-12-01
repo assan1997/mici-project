@@ -17,7 +17,7 @@ import { getAllUsers } from "@/services/users";
 import { getAllClients } from "@/services/clients";
 import { getAllOffsetShapes } from "@/services/shapes";
 import { getAllFolders } from "@/services/folder";
-import { getAllBats } from "@/services/bat";
+import { getAllBats } from "@/services/bats";
 import { getTasks } from "@/services/task";
 import { useToast } from "@/contexts/toast.context";
 
@@ -63,6 +63,8 @@ export interface BatInterface {
   logs: any[];
   reference: string;
   assignated_user: User;
+  rule_id: number;
+  code: string;
 }
 
 // "id": 1,
@@ -184,7 +186,9 @@ export interface DataContextType {
   getFolders: Function;
   getBats: Function;
   onRefreshingData: Boolean;
+  onRefreshData: Boolean;
   checkIfCommercial: (user: User) => Boolean;
+  refreshData: (cb: Function) => void;
 }
 export interface Status {
   id: number;
@@ -263,6 +267,7 @@ const DataContext = createContext<DataContextType>({
   onRefreshingTask: false,
   onRefreshingUsers: false,
   onRefreshingData: false,
+  onRefreshData: false,
   refreshShapeData: (cb: Function) => {},
   refreshTaskData: () => {},
   refreshUsersData: () => {},
@@ -277,6 +282,7 @@ const DataContext = createContext<DataContextType>({
   getFolders: () => {},
   getBats: () => {},
   checkIfCommercial: (arg) => false,
+  refreshData: (cb: Function) => {},
 });
 
 export const useData = () => useContext(DataContext);
@@ -296,6 +302,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [bats, setBats] = useState<BatInterface[] | undefined>();
   const [tasks, setTasks] = useState<TaskInterface[] | undefined>();
   const { showToast } = useToast();
+  const [onRefreshData , setOnRefreshData] = useState<boolean>(false)
 
   const status: Status[] = useMemo(
     () => [
@@ -559,6 +566,19 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const refreshData = async (cb: Function) => {
+    setOnRefreshData(true);
+    setTimeout(() => {
+      showToast({
+        type: "success",
+        message: "Synchronisation terminée",
+        position: "top-center",
+      });
+      cb();
+      setOnRefreshData(false);
+    }, 5000);
+  };
+
   function checkIfCommercial(user: User): Boolean {
     return user.sections.map((section: Section) => section.id).includes(6);
   }
@@ -604,6 +624,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         getFolders,
         getBats,
         checkIfCommercial,
+        refreshData,
+        onRefreshData
       }}
     >
       {children}

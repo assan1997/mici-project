@@ -1163,7 +1163,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                       <th
                         key={index}
                         className={`relative w-fit ${
-                          index === 0 ? "w-0" : "min-w-[300px] w-auto"
+                          index === 0 ? "w-0" : "min-w-[180px] w-auto"
                         } text-[14px] py-[10px] font-medium  ${
                           index > 0 && index < tableHead.length
                         }  text-[#000000]`}

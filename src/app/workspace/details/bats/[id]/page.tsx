@@ -1,9 +1,10 @@
+import { Details } from "@/components/sections/details/bats";
 import MainContainer from "@/components/sections/shared/MainContainer";
-import { BatCardboard } from "@/components/sections/bat/cartonnerie/";
+
 const Home = () => {
   return (
-    <MainContainer title="BAT">
-      <BatCardboard />
+    <MainContainer title={"Détails"}>
+      <Details />
     </MainContainer>
   );
 };

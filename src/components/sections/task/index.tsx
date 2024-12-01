@@ -844,7 +844,7 @@ export const Task: FC<{}> = ({}) => {
                       <th
                         key={index}
                         className={`relative w-fit ${
-                          index === 0 ? "w-0" : "min-w-[300px] w-auto"
+                          index === 0 ? "w-0" : "min-w-[180px] w-auto"
                         } text-[14px] py-[10px] font-medium  ${
                           index > 0 && index < tableHead.length
                         }  text-[#000000]`}
@@ -1182,21 +1182,21 @@ export const Task: FC<{}> = ({}) => {
                         </td>
                         <td
                           onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                          className="text-[#636363] relative min-w-[100px] w-auto px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.assignable?.reference}
                         </td>
 
                         <td
                           onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                          className="text-[#636363] relative min-w-[100px] w-auto px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.assignable_type.split("\\")[2]}
                         </td>
 
                         <td
                           onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                          className="text-[#636363] relative min-w-[100px] w-auto px-[20px] text-start font-poppins text-[14px]"
                         >
                           {
                             departments?.find(
@@ -1208,7 +1208,7 @@ export const Task: FC<{}> = ({}) => {
 
                         <td
                           onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                          className="text-[#636363] relative min-w-[100px] w-auto px-[20px] text-start font-poppins text-[14px]"
                         >
                           {
                             clients?.find(
@@ -1220,21 +1220,21 @@ export const Task: FC<{}> = ({}) => {
 
                         <td
                           onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                          className="text-[#636363] relative min-w-[100px] w-auto px-[20px] text-start font-poppins text-[14px]"
                         >
                           {row?.assignable?.code}
                         </td>
 
                         <td
                           onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                          className="text-[#636363] relative min-w-[100px] w-auto px-[20px] text-start font-poppins text-[14px]"
                         >
                           {users?.find((user) => user.id === row.user_id)?.name}
                         </td>
 
                         <td
                           onClick={() => goToDetail(row?.id)}
-                          className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[14px]"
+                          className="text-[#636363] relative min-w-[100px] w-auto px-[20px] text-start font-poppins text-[14px]"
                         >
                           <div
                             className={`flex w-fit justify-center py-[3px] rounded-full`}

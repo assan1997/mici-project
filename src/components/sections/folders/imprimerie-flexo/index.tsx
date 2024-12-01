@@ -1675,7 +1675,7 @@ export const ImprimerieFlexo: FC<{}> = ({}) => {
                         {tableHead?.map((head, index) => (
                           <th
                             key={index}
-                            className={`relative min-w-[300px] w-auto
+                            className={`relative min-w-[180px] w-auto
                              text-[14px] py-[10px] font-medium  ${
                                index > 0 && index < tableHead.length
                              }  text-[#000000]`}

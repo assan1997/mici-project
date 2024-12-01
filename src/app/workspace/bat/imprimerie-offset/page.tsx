@@ -1,9 +1,9 @@
+import { ImprimerieOffset } from "@/components/sections/bat/imprimerie-offset/";
 import MainContainer from "@/components/sections/shared/MainContainer";
-import { BatCardboard } from "@/components/sections/bat/cartonnerie/";
 const Home = () => {
   return (
     <MainContainer title="BAT">
-      <BatCardboard />
+      <ImprimerieOffset />
     </MainContainer>
   );
 };

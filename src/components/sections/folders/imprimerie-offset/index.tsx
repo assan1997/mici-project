@@ -1675,7 +1675,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                         {tableHead?.map((head, index) => (
                           <th
                             key={index}
-                            className={`relative min-w-[300px] w-auto
+                            className={`relative min-w-[180px] w-auto
                              text-[14px] py-[10px] font-medium  ${
                                index > 0 && index < tableHead.length
                              }  text-[#000000]`}
@@ -2168,11 +2168,11 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                           >
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.code}
                             </td>
-                            <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                            <td className="text-[#636363] relative  w-auto px-[20px] text-start font-poppins text-[12px]">
                               <div
                                 className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
                                   row?.status_id === 2
@@ -2190,7 +2190,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[12px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[12px]"
                             >
                               <div
                                 className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
@@ -2215,7 +2215,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[12px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[12px]"
                             >
                               <div
                                 className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
@@ -2239,7 +2239,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {formatTime(
                                 new Date(row?.["shape_ordered_at"]).getTime(),
@@ -2255,7 +2255,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {formatTime(
                                 new Date(row?.["shape_received_at"]).getTime(),
@@ -2270,7 +2270,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {formatTime(
                                 new Date(row?.["plate_ordered_at"]).getTime(),
@@ -2286,7 +2286,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {formatTime(
                                 new Date(row?.["plate_received_at"]).getTime(),
@@ -2302,7 +2302,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {
                                 allShapes?.find(
@@ -2313,7 +2313,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {
                                 allPrintingPlates?.find(
@@ -2325,75 +2325,75 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] relative min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] relative px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.file_number}
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.client?.name}
                             </td>
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.reference}
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.commercial?.name}
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.state}
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.department?.name}
                             </td>
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.product}
                             </td>
 
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row.format}
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.color}
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {row?.support}
                             </td>
-                            <td className="text-[#636363] min-w-[100px]  px-[20px] text-start font-poppins text-[14px]">
+                            <td className="text-[#636363]  px-[20px] text-start font-poppins text-[14px]">
                               <div className="w-[200px] truncate">
                                 {row?.details}
                               </div>
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {formatTime(
                                 new Date(row?.["created_at"]).getTime(),
@@ -2408,7 +2408,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                             </td>
                             <td
                               onClick={() => goToDetail(row?.id)}
-                              className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]"
+                              className="text-[#636363] px-[20px] text-start font-poppins text-[14px]"
                             >
                               {formatTime(
                                 new Date(row?.["updated_at"]).getTime(),
@@ -3095,7 +3095,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                           );
                         }}
                       >
-                        {/* <td className="text-[#636363] relative min-w-[150px] w-auto px-[20px] text-start font-poppins text-[12px]">
+                        {/* <td className="text-[#636363] relative  w-auto px-[20px] text-start font-poppins text-[12px]">
                           <div
                             className={`flex w-fit justify-center py-[3px] px-[10px] font-medium rounded-full ${
                               row?.status_id === 2
@@ -3110,23 +3110,23 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                             {statut?.name}
                           </div>
                         </td> */}
-                        <td className="text-[#636363] relative min-w-[100px]  px-[20px] text-start font-poppins text-[14px]">
+                        <td className="text-[#636363] relative  px-[20px] text-start font-poppins text-[14px]">
                           {row?.code}
                         </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
+                        <td className="text-[#636363] px-[20px] text-start font-poppins text-[14px]">
                           {row?.ref}
                         </td>
 
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
+                        <td className="text-[#636363] px-[20px] text-start font-poppins text-[14px]">
                           {row?.name}
                         </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
+                        <td className="text-[#636363] px-[20px] text-start font-poppins text-[14px]">
                           {row?.is_ordered === 1 ? "Commandé" : "Non commandé"}
                         </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
+                        <td className="text-[#636363] px-[20px] text-start font-poppins text-[14px]">
                           {row?.is_received === 1 ? "Recu" : "Non recu"}
                         </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
+                        <td className="text-[#636363] px-[20px] text-start font-poppins text-[14px]">
                           {row?.received_at
                             ? formatTime(
                                 new Date(row?.["ordered_at"]).getTime(),
@@ -3136,7 +3136,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                             : null}
                         </td>
 
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
+                        <td className="text-[#636363] px-[20px] text-start font-poppins text-[14px]">
                           {row?.received_at
                             ? formatTime(
                                 new Date(row?.["received_at"]).getTime(),
@@ -3145,7 +3145,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                               )
                             : null}
                         </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
+                        <td className="text-[#636363] px-[20px] text-start font-poppins text-[14px]">
                           {formatTime(
                             new Date(row?.["created_at"]).getTime(),
                             "d:mo:y",
@@ -3157,7 +3157,7 @@ export const ImprimerieOffset: FC<{}> = ({}) => {
                             "short"
                           )}
                         </td>
-                        <td className="text-[#636363] min-w-[100px] px-[20px] text-start font-poppins text-[14px]">
+                        <td className="text-[#636363] px-[20px] text-start font-poppins text-[14px]">
                           {formatTime(
                             new Date(row?.["updated_at"]).getTime(),
                             "d:mo:y",
